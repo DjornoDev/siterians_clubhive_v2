@@ -39,12 +39,28 @@
                         <h2 class="text-xl font-bold text-white">Today's Events</h2>
                     </div>
                     <div class="p-5 space-y-4">
-                        <!-- Placeholder Event -->
-                        <div class="border-l-4 border-blue-500 pl-4 py-2 hover:bg-blue-50 rounded-r-lg transition-all">
-                            <div class="flex items-center justify-between">
-                                <h3 class="font-semibold text-gray-800">No events today</h3>
+                        @forelse ($todayEvents as $event)
+                            <div class="border-l-4 border-blue-500 pl-4 py-2 hover:bg-blue-50 rounded-r-lg transition-all">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="font-semibold text-gray-800">{{ $event->event_name }}</h3>
+                                        <div class="text-sm text-gray-600 mt-1">
+                                            {{ $event->event_time }} • {{ $event->event_location }}
+                                        </div>
+                                    </div>
+                                    <a href="{{ route('clubs.events.index', [$club, $event]) }}"
+                                        class="text-blue-600 hover:text-blue-800 ml-4">
+                                        View Details
+                                    </a>
+                                </div>
                             </div>
-                        </div>
+                        @empty
+                            <div class="border-l-4 border-blue-500 pl-4 py-2 hover:bg-blue-50 rounded-r-lg transition-all">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="font-semibold text-gray-800">No events today</h3>
+                                </div>
+                            </div>
+                        @endforelse
                     </div>
                 </div>
 
@@ -65,10 +81,28 @@
                         </div>
                     </div>
                     <div class="p-5 space-y-4">
-                        <!-- Placeholder Event -->
-                        <div class="border-l-4 border-purple-500 pl-4 py-2 hover:bg-purple-50 rounded-r-lg transition-all">
-                            <div class="text-sm text-gray-600 mt-1">No upcoming events</div>
-                        </div>
+                        @forelse ($upcomingEvents as $event)
+                            <div
+                                class="border-l-4 border-purple-500 pl-4 py-2 hover:bg-purple-50 rounded-r-lg transition-all">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="font-semibold text-gray-800">{{ $event->event_name }}</h3>
+                                        <div class="text-sm text-gray-600 mt-1">
+                                            {{ $event->event_date->format('M d, Y') }} • {{ $event->event_location }}
+                                        </div>
+                                    </div>
+                                    <a href="{{ route('clubs.events.index', [$club, $event]) }}"
+                                        class="text-purple-600 hover:text-purple-800 ml-4">
+                                        View Details
+                                    </a>
+                                </div>
+                            </div>
+                        @empty
+                            <div
+                                class="border-l-4 border-purple-500 pl-4 py-2 hover:bg-purple-50 rounded-r-lg transition-all">
+                                <div class="text-sm text-gray-600 mt-1">No upcoming events</div>
+                            </div>
+                        @endforelse
                     </div>
                 </div>
             </div>
@@ -108,8 +142,7 @@
 
                             <!-- Improved typography and messaging -->
                             <h3 class="text-2xl font-bold text-gray-800 mb-3">No Posts Yet</h3>
-                            <p class="text-gray-600 mb-6 max-w-md">Looks like there aren't any posts available right now.
-                                Check back later or be the first to create something amazing!</p>
+                            <p class="text-gray-600 max-w-md">Looks like there aren't any posts available right now.</p>
                             <p>You can only create posts if you have permissions.</p>
                         </div>
                     </div>
@@ -185,8 +218,8 @@
                                         "
                                                 class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 hover:text-blue-800">
                                                 <div class="flex items-center">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
-                                                        viewBox="0 0 24 24" stroke="currentColor">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                     </svg>

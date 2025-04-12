@@ -94,7 +94,7 @@ class PostController extends Controller
             }
         }
 
-        return redirect()->route('clubs.show', $club);
+        return redirect()->back()->with('success', 'Post updated successfully');
     }
 
     public function destroy(Club $club, Post $post)

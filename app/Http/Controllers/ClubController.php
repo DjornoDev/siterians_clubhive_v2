@@ -233,17 +233,41 @@ class ClubController extends Controller
 
     public function show(Club $club)
     {
+        $todayEvents = $club->events()
+            ->whereDate('event_date', today())
+            ->orderBy('event_time')
+            ->get();
+
+        $upcomingEvents = $club->events()
+            ->where('event_date', '>', today())
+            ->orderBy('event_date')
+            ->take(5) // Adjust the number of upcoming events to show
+            ->get();
+
         return view('clubs.index', [
             'club' => $club->loadCount('members'),
-            'posts' => $club->posts()->latest()->paginate(10)
+            'posts' => $club->posts()->latest()->paginate(10),
+            'todayEvents' => $todayEvents,
+            'upcomingEvents' => $upcomingEvents,
         ]);
     }
 
     public function events(Club $club)
     {
+        $todayEvents = $club->events()
+            ->whereDate('event_date', today())
+            ->orderBy('event_time')
+            ->get();
+
+        $upcomingEvents = $club->events()
+            ->where('event_date', '>', today())
+            ->orderBy('event_date')
+            ->paginate(10);
+
         return view('clubs.events.index', [
             'club' => $club,
-            'events' => $club->events()->latest()->paginate(10)
+            'todayEvents' => $todayEvents,
+            'upcomingEvents' => $upcomingEvents
         ]);
     }
 

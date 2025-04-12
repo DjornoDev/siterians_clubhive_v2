@@ -4,18 +4,37 @@
 
 @section('content')
     <div class="container mx-auto px-4 py-8">
-        <!-- Header Section -->
-        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg mb-10 overflow-hidden">
+        <!-- Enhanced Header Section with visual elements -->
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg mb-10 overflow-hidden relative">
+            <div class="absolute right-0 top-0 opacity-10">
+                <svg width="200" height="200" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z"
+                        stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M16 2V6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M8 2V6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M3 10H21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
             <div class="px-6 py-8 md:px-10 md:py-10">
-                <h1 class="text-3xl md:text-4xl font-bold text-white mb-3">Events</h1>
-                <p class="text-indigo-100 text-lg max-w-2xl">View all upcoming events organized by all clubs.</p>
+                <h1 class="text-3xl md:text-4xl font-bold text-white mb-3">Upcoming Events</h1>
+                <p class="text-indigo-100 text-lg max-w-2xl">Discover exciting events hosted by your favorite clubs.
+                    Connect, learn, and have fun!</p>
             </div>
         </div>
 
         <!-- Improved Filter Section -->
         <div class="bg-white rounded-xl shadow-md p-6 mb-10">
             <div class="flex flex-col gap-6">
-                <h2 class="text-xl font-semibold text-gray-800">Filter Events</h2>
+                <h2 class="text-xl font-semibold text-gray-800 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" viewBox="0 0 20 20"
+                        fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Filter Events
+                </h2>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Club Filter (Checkboxes) -->
@@ -30,37 +49,16 @@
                             </div>
                             <div class="border-t border-gray-200 my-2"></div>
 
-                            <div class="flex items-center">
-                                <input id="club-1" name="club[]" value="1" type="checkbox"
-                                    class="club-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                <label for="club-1" class="ml-2 text-sm text-gray-700">Supreme Secondary Learner
-                                    Government</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input id="club-2" name="club[]" value="2" type="checkbox"
-                                    class="club-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                <label for="club-2" class="ml-2 text-sm text-gray-700">Robotics Club</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input id="club-3" name="club[]" value="3" type="checkbox"
-                                    class="club-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                <label for="club-3" class="ml-2 text-sm text-gray-700">Debate Society</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input id="club-4" name="club[]" value="4" type="checkbox"
-                                    class="club-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                <label for="club-4" class="ml-2 text-sm text-gray-700">Art & Photography Club</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input id="club-5" name="club[]" value="5" type="checkbox"
-                                    class="club-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                <label for="club-5" class="ml-2 text-sm text-gray-700">Science Explorers</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input id="club-6" name="club[]" value="6" type="checkbox"
-                                    class="club-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                <label for="club-6" class="ml-2 text-sm text-gray-700">Sports Excellence Team</label>
-                            </div>
+                            @foreach ($clubs as $club)
+                                <div class="flex items-center">
+                                    <input id="club-{{ $club->club_id }}" name="club[]" value="{{ $club->club_id }}"
+                                        type="checkbox"
+                                        class="club-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                    <label for="club-{{ $club->club_id }}" class="ml-2 text-sm text-gray-700">
+                                        {{ $club->club_name }}
+                                    </label>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
 
@@ -73,7 +71,6 @@
                             <option value="upcoming">Upcoming Events</option>
                             <option value="this-month">This Month</option>
                             <option value="next-month">Next Month</option>
-                            <option value="next-3-months">Next 3 Months</option>
                             <option value="custom">Custom Date Range</option>
                         </select>
 
@@ -97,177 +94,115 @@
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-3 border-t border-gray-200">
                     <span id="events-count"
                         class="inline-flex items-center rounded-full bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-800">
-                        4 events found
+                        {{ $events->total() }} event{{ $events->total() !== 1 ? 's' : '' }} found
                     </span>
 
                     <div class="flex gap-3">
                         <button id="clear-filters"
-                            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-                            Clear Filters
+                            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Clear
                         </button>
                         <button id="apply-filters"
-                            class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
-                            Apply Filters
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Apply
                         </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Events List -->
-        <div class="space-y-6">
-            <!-- Event 1 -->
-            <div class="bg-white rounded-xl shadow-md p-6">
-                <h3 class="text-xl font-bold text-gray-800 mb-2">Annual Leadership Summit</h3>
-                <p class="text-gray-600 mb-4">Join us for a day of workshops, guest speakers, and networking opportunities
-                    designed to enhance your leadership skills and connect with fellow student leaders.</p>
-                <div class="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-gray-600">
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span>Friday, February 14, 2025</span>
-                    </div>
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>8:00AM - 5:00PM</span>
-                    </div>
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                        <span>Supreme Secondary Learner Government</span>
-                    </div>
-                </div>
-            </div>
+        <!-- Redesigned Events Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach ($events as $event)
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col h-full event-item border border-gray-100"
+                    data-club-id="{{ $event->club->club_id }}"
+                    data-event-date="{{ $event->event_date->format('Y-m-d') }}">
+                    <!-- Color Banner based on club -->
+                    <div class="h-2 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
 
-            <!-- Event 2 -->
-            <div class="bg-white rounded-xl shadow-md p-6">
-                <h3 class="text-xl font-bold text-gray-800 mb-2">Tech Innovation Showcase</h3>
-                <p class="text-gray-600 mb-4">Discover the latest technological innovations created by our talented
-                    students. Experience demos, prototypes, and learn about the future of technology.</p>
-                <div class="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-gray-600">
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span>Sunday, March 5, 2025</span>
-                    </div>
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>1:00PM - 6:00PM</span>
-                    </div>
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                        <span>Robotics Club</span>
-                    </div>
-                </div>
-            </div>
+                    <div class="p-6 flex-1 flex flex-col">
+                        <!-- Date Badge -->
+                        <div class="flex justify-between items-start mb-4">
+                            <div
+                                class="bg-indigo-50 text-indigo-700 rounded-lg px-3 py-1 text-sm font-semibold inline-flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                {{ $event->event_date->format('M j, Y') }}
+                            </div>
+                            @if ($event->event_time)
+                                <div class="text-gray-500 text-sm font-medium">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    {{ $event->event_time }}
+                                </div>
+                            @endif
+                        </div>
 
-            <!-- Event 3 -->
-            <div class="bg-white rounded-xl shadow-md p-6">
-                <h3 class="text-xl font-bold text-gray-800 mb-2">Environmental Awareness Day</h3>
-                <p class="text-gray-600 mb-4">Help make our campus greener! Join us for a day of tree planting, recycling
-                    activities, and educational workshops about sustainable living practices.</p>
-                <div class="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-gray-600">
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span>Wednesday, April 12, 2025</span>
-                    </div>
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>9:00AM - 3:00PM</span>
-                    </div>
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                        <span>Science Explorers</span>
-                    </div>
-                </div>
-            </div>
+                        <!-- Event Name -->
+                        <h3 class="text-xl font-bold text-gray-800 mb-2 hover:text-indigo-600 transition-colors">
+                            {{ $event->event_name }}</h3>
 
-            <!-- Event 4 -->
-            <div class="bg-white rounded-xl shadow-md p-6">
-                <h3 class="text-xl font-bold text-gray-800 mb-2">Charity Fundraiser Gala</h3>
-                <p class="text-gray-600 mb-4">An elegant evening to raise funds for our annual community outreach programs.
-                    Join us for dinner, entertainment, and the opportunity to support important causes.</p>
-                <div class="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-gray-600">
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span>Thursday, May 9, 2025</span>
-                    </div>
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>6:00PM - 10:00PM</span>
-                    </div>
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                        <span>Supreme Secondary Learner Government</span>
+                        <!-- Event Description -->
+                        @if ($event->event_description)
+                            <p class="text-gray-600 mb-4 flex-1">{{ Str::limit($event->event_description, 100) }}</p>
+                        @endif
+
+                        <!-- Club Badge -->
+                        <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div
+                                    class="bg-purple-100 text-purple-600 rounded-full h-8 w-8 flex items-center justify-center mr-2">
+                                    {{ strtoupper(substr($event->club->club_name, 0, 1)) }}
+                                </div>
+                                <span class="text-sm font-medium text-gray-700">{{ $event->club->club_name }}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            @endforeach
         </div>
 
-        <!-- Empty State -->
-        <div id="empty-state" class="hidden mt-8 text-center py-16 bg-gray-50 rounded-xl shadow-inner">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mx-auto text-gray-400 mb-6" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <h3 class="text-xl font-semibold text-gray-700 mb-3">No events found</h3>
-            <p class="text-gray-500 max-w-md mx-auto mb-8">There are no upcoming events for the selected club. Try
-                selecting a different club or check back later.</p>
-            <button
-                class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors duration-300 inline-flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        <!-- Enhanced Pagination -->
+        <div class="mt-10 flex justify-center">
+            {{ $events->links() }}
+        </div>
+
+        <!-- Improved Empty State -->
+        <div id="empty-state" class="hidden mt-8 text-center py-16 bg-indigo-50 rounded-xl shadow-inner">
+            <div class="max-w-md mx-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mx-auto text-indigo-300 mb-6" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                Reset Filter
-            </button>
+                <h3 class="text-xl font-semibold text-indigo-700 mb-3">No events found</h3>
+                <p class="text-gray-600 mb-8">There are no upcoming events matching your selected filters. Try adjusting
+                    your filters to see more events.</p>
+                <button id="reset-filters"
+                    class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors duration-300 inline-flex items-center shadow-md hover:shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Reset Filters
+                </button>
+            </div>
         </div>
     </div>
 
@@ -282,8 +217,9 @@
             const dateTo = document.getElementById('date-to');
             const applyButton = document.getElementById('apply-filters');
             const clearButton = document.getElementById('clear-filters');
+            const resetButton = document.getElementById('reset-filters');
 
-            const eventItems = document.querySelectorAll('.space-y-6 > div');
+            const eventItems = document.querySelectorAll('.event-item');
             const emptyState = document.getElementById('empty-state');
             const eventsCount = document.getElementById('events-count');
 
@@ -321,25 +257,6 @@
                 });
             });
 
-            // Function to parse date from event item
-            function getEventDate(eventItem) {
-                const dateElement = eventItem.querySelector('.flex.items-center:nth-child(1) span');
-                if (!dateElement) return null;
-
-                const dateText = dateElement.textContent.trim();
-                // Parse date text like "Friday, February 14, 2025"
-                return new Date(dateText);
-            }
-
-            // Function to get club ID from event item
-            function getClubId(eventItem) {
-                const clubNameElement = eventItem.querySelector('.flex.items-center:nth-child(3) span');
-                if (!clubNameElement) return null;
-
-                const clubName = clubNameElement.textContent.trim();
-                return getClubIdByName(clubName);
-            }
-
             // Function to apply filters
             function applyFilters() {
                 // Get selected clubs
@@ -353,8 +270,6 @@
                 // Get current date for date filtering
                 const currentDate = new Date();
                 const today = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
-                const currentMonth = currentDate.getMonth();
-                const currentYear = currentDate.getFullYear();
 
                 let visibleEvents = 0;
 
@@ -362,101 +277,65 @@
                     let showEvent = true;
 
                     // Club filter
-                    const eventClubId = getClubId(item);
-                    if (eventClubId && !selectedClubs.includes(eventClubId)) {
+                    const eventClubId = item.dataset.clubId;
+                    if (!selectedClubs.includes(eventClubId)) {
                         showEvent = false;
                     }
 
                     // Date filter
                     if (showEvent && selectedDateOption) {
-                        const eventDate = getEventDate(item);
-                        if (eventDate) {
-                            const eventMonth = eventDate.getMonth();
-                            const eventYear = eventDate.getFullYear();
+                        const eventDate = new Date(item.dataset.eventDate);
 
-                            if (selectedDateOption === 'upcoming') {
-                                if (eventDate < today) {
-                                    showEvent = false;
-                                }
-                            } else if (selectedDateOption === 'this-month') {
-                                if (eventMonth !== currentMonth || eventYear !== currentYear) {
-                                    showEvent = false;
-                                }
-                            } else if (selectedDateOption === 'next-month') {
-                                const nextMonth = (currentMonth + 1) % 12;
-                                const nextMonthYear = currentMonth === 11 ? currentYear + 1 : currentYear;
-                                if (eventMonth !== nextMonth || eventYear !== nextMonthYear) {
-                                    showEvent = false;
-                                }
-                            } else if (selectedDateOption === 'next-3-months') {
-                                // Check if event is within the next 3 months
-                                const threeMonthsFromNow = new Date(today);
-                                threeMonthsFromNow.setMonth(currentMonth + 3);
+                        if (selectedDateOption === 'upcoming') {
+                            if (eventDate < today) {
+                                showEvent = false;
+                            }
+                        } else if (selectedDateOption === 'this-month') {
+                            if (eventDate.getMonth() !== today.getMonth() ||
+                                eventDate.getFullYear() !== today.getFullYear()) {
+                                showEvent = false;
+                            }
+                        } else if (selectedDateOption === 'next-month') {
+                            const nextMonth = new Date(today);
+                            nextMonth.setMonth(today.getMonth() + 1);
+                            if (eventDate.getMonth() !== nextMonth.getMonth() ||
+                                eventDate.getFullYear() !== nextMonth.getFullYear()) {
+                                showEvent = false;
+                            }
+                        } else if (selectedDateOption === 'custom') {
+                            const fromDate = dateFrom.value ? new Date(dateFrom.value) : null;
+                            const toDate = dateTo.value ? new Date(dateTo.value) : null;
 
-                                if (eventDate > threeMonthsFromNow || eventDate < today) {
+                            if (fromDate && eventDate < fromDate) {
+                                showEvent = false;
+                            }
+
+                            if (toDate) {
+                                const toDateEnd = new Date(toDate);
+                                toDateEnd.setHours(23, 59, 59, 999);
+                                if (eventDate > toDateEnd) {
                                     showEvent = false;
-                                }
-                            } else if (selectedDateOption === 'custom') {
-                                // Custom date range
-                                const fromDate = dateFrom.value ? new Date(dateFrom.value) : null;
-                                const toDate = dateTo.value ? new Date(dateTo.value) : null;
-
-                                if (fromDate && eventDate < fromDate) {
-                                    showEvent = false;
-                                }
-
-                                if (toDate) {
-                                    // Set toDate to end of the day for inclusive comparison
-                                    const toDateEnd = new Date(toDate);
-                                    toDateEnd.setHours(23, 59, 59, 999);
-
-                                    if (eventDate > toDateEnd) {
-                                        showEvent = false;
-                                    }
                                 }
                             }
                         }
                     }
 
-                    // Show or hide based on filter results
-                    if (showEvent) {
-                        item.classList.remove('hidden');
-                        visibleEvents++;
-                    } else {
-                        item.classList.add('hidden');
-                    }
+                    // Show/hide event
+                    item.style.display = showEvent ? 'block' : 'none';
+                    if (showEvent) visibleEvents++;
                 });
 
                 // Update counter
                 eventsCount.textContent = `${visibleEvents} event${visibleEvents !== 1 ? 's' : ''} found`;
 
-                // Show empty state if no events for selected filters
-                if (visibleEvents === 0) {
-                    emptyState.classList.remove('hidden');
-                } else {
-                    emptyState.classList.add('hidden');
-                }
-            }
-
-            // Helper function to get club ID from name
-            function getClubIdByName(name) {
-                const clubMap = {
-                    'Supreme Secondary Learner Government': '1',
-                    'Robotics Club': '2',
-                    'Debate Society': '3',
-                    'Art & Photography Club': '4',
-                    'Science Explorers': '5',
-                    'Sports Excellence Team': '6'
-                };
-
-                return clubMap[name] || '';
+                // Toggle empty state
+                emptyState.classList.toggle('hidden', visibleEvents > 0);
             }
 
             // Clear all filters
             function clearFilters() {
                 // Select all clubs
                 selectAllClubs.checked = true;
-                selectAllClubs.indeterminate = false;
                 clubCheckboxes.forEach(checkbox => {
                     checkbox.checked = true;
                 });
@@ -469,7 +348,7 @@
 
                 // Show all events
                 eventItems.forEach(item => {
-                    item.classList.remove('hidden');
+                    item.style.display = 'block';
                 });
 
                 // Update counter
@@ -482,12 +361,7 @@
             // Event listeners
             applyButton.addEventListener('click', applyFilters);
             clearButton.addEventListener('click', clearFilters);
-
-            // Reset filter button in empty state
-            const resetButton = document.querySelector('#empty-state button');
-            if (resetButton) {
-                resetButton.addEventListener('click', clearFilters);
-            }
+            resetButton.addEventListener('click', clearFilters);
         });
     </script>
 @endsection

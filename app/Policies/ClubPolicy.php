@@ -21,9 +21,8 @@ class ClubPolicy
      */
     public function view(User $user, Club $club): bool
     {
-        return $user->role === 'TEACHER'
-            ? $club->club_adviser === $user->user_id
-            : $club->members()->where('user_id', $user->user_id)->exists();
+        return $user->user_id === $club->club_adviser ||
+            $club->members()->where('tbl_club_membership.user_id', $user->user_id)->exists();
     }
 
     /**
@@ -39,7 +38,7 @@ class ClubPolicy
      */
     public function update(User $user, Club $club): bool
     {
-        return false;
+        return $user->user_id === $club->club_adviser;
     }
 
     /**

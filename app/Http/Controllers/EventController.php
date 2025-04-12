@@ -18,6 +18,25 @@ class EventController extends Controller
         return view('clubs.events.index', compact('club', 'events'));
     }
 
+    public function globalIndex()
+    {
+        $clubs = Club::all();
+        $events = Event::with('club')
+            ->where('event_visibility', 'PUBLIC')
+            ->orderBy('event_date')
+            ->paginate(10);
+
+        return view('events.index', [
+            'events' => $events,
+            'clubs' => $clubs
+        ]);
+    }
+
+    public function show(Club $club, Event $event)
+    {
+        return view('clubs.events.index', compact('club', 'event'));
+    }
+
     public function create(Club $club)
     {
         $this->authorize('create', [Event::class, $club]);

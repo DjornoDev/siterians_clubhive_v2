@@ -1,4 +1,3 @@
-<!-- resources/views/clubs/posts/partials/edit.blade.php -->
 <div x-cloak>
     <!-- Backdrop -->
     <div x-show="showEditModal" class="fixed inset-0 bg-black/20 transition-opacity z-50"
@@ -10,21 +9,17 @@
     <div x-show="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4"
         @click.away="showEditModal = false">
         <div class="bg-white rounded-xl shadow-lg w-full max-w-2xl transform transition-all max-h-[90vh] flex flex-col"
-            @click.stop x-transition:enter="ease-out duration-300"
-            x-transition:enter-start="opacity-0 translate-y-4 sm:scale-95"
-            x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200"
-            x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-            x-transition:leave-end="opacity-0 translate-y-4 sm:scale-95">
-
-            <!-- Header -->
+            @click.stop>
             <div class="p-6 border-b">
                 <h2 class="text-2xl font-bold">Edit Post</h2>
             </div>
 
             <!-- Scrollable Content Area -->
             <div class="p-6 overflow-y-auto flex-grow">
-                <form id="edit-club-post-form"
-                    :action="`{{ route('clubs.posts.update', [$club, 'POST_ID']) }}`.replace('POST_ID', currentPostId)"
+                <form
+                    :action="`{{ route('clubs.posts.update', ['club' => 'CLUB_ID', 'post' => 'POST_ID']) }}`
+                    .replace('CLUB_ID', currentClubId)
+                        .replace('POST_ID', currentPostId)"
                     method="POST" enctype="multipart/form-data">
                     @csrf @method('PUT')
                     <div class="mb-4">
@@ -86,7 +81,7 @@
                         class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors">
                         Cancel
                     </button>
-                    <button type="submit" form="edit-club-post-form"
+                    <button type="submit" form="edit-post-form"
                         class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                         Update Post
                     </button>

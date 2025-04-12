@@ -69,26 +69,26 @@ Route::middleware(['auth'])->group(function () {
         $sections = App\Models\Section::where('class_id', $classId)->get();
         return response()->json($sections);
     });
-    
+
     Route::middleware(['role:TEACHER,STUDENT'])->group(function () {
         // Home page with all clubs/posts
         Route::get('/home', [HomeController::class, 'index'])->name('home.index');
 
         // Global events list
-        Route::get('/events', function () {
-            $events = Event::with('club')->latest()->paginate(10);
-            return view('events.index', compact('events'));
-        })->name('events.index');
+        Route::get('/events', [EventController::class, 'globalIndex'])->name('events.index');
 
         // Club-specific routes - Consolidated group
         Route::prefix('clubs/{club}')->group(function () {
             Route::get('/', [ClubController::class, 'show'])
-                ->middleware('can:club-access,club')
+                ->middleware('can:view,club')
                 ->name('clubs.show');
-            Route::get('/events', [ClubController::class, 'events'])->name('clubs.events.index');
-            Route::get('/people', [ClubController::class, 'people'])->name('clubs.people.index');
-            Route::get('/voting', [ClubController::class, 'voting'])->name('clubs.voting.index');
-            Route::get('/about', [ClubController::class, 'about'])->name('clubs.about.index');
+
+            Route::middleware('can:view,club')->group(function () {
+                Route::get('/events', [ClubController::class, 'events'])->name('clubs.events.index');
+                Route::get('/people', [ClubController::class, 'people'])->name('clubs.people.index');
+                Route::get('/voting', [ClubController::class, 'voting'])->name('clubs.voting.index');
+                Route::get('/about', [ClubController::class, 'about'])->name('clubs.about.index');
+            });
 
             // Move posts and events routes here
             Route::get('/posts/create', [PostController::class, 'create'])->name('clubs.posts.create');
@@ -102,49 +102,11 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('clubs.events.edit');
             Route::put('/events/{event}', [EventController::class, 'update'])->name('clubs.events.update');
             Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('clubs.events.delete');
+
+            Route::get('/events/{event}', [EventController::class, 'show'])
+                ->name('clubs.events.show');
         });
     });
-
-    // Shared Club Routes (Teacher + Student)
-    // Route::middleware(['role:TEACHER,STUDENT'])->group(function () {
-    //     // Home page with all clubs/posts
-    //     Route::get('/home', [HomeController::class, 'index'])->name('home.index');
-
-    //     // Global events list
-    //     Route::get('/events', function () {
-    //         $events = Event::with('club')->latest()->paginate(10);
-    //         return view('events.index', compact('events'));
-    //     })->name('events.index');
-
-    //     // Club-specific routes
-    //     Route::prefix('clubs/{club}')->group(function () {
-    //         Route::get('/', [ClubController::class, 'show'])
-    //             ->middleware('can:club-access,club')
-    //             ->name('clubs.show');
-    //         Route::get('/events', [ClubController::class, 'events'])->name('clubs.events.index');
-    //         Route::get('/people', [ClubController::class, 'people'])->name('clubs.people.index');
-    //         Route::get('/voting', [ClubController::class, 'voting'])->name('clubs.voting.index');
-    //         Route::get('/about', [ClubController::class, 'about'])->name('clubs.about.index');
-    //     });
-    // });
-
-    // Route::middleware(['role:TEACHER,STUDENT'])->group(function () {
-    //     Route::prefix('clubs/{club}')->group(function () {
-    //         // Posts
-    //         Route::get('/posts/create', [PostController::class, 'create'])->name('clubs.posts.create');
-    //         Route::post('/posts', [PostController::class, 'store'])->name('clubs.posts.store');
-    //         Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('clubs.posts.edit');
-    //         Route::put('/posts/{post}', [PostController::class, 'update'])->name('clubs.posts.update');
-    //         Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('clubs.posts.delete');
-
-    //         // Events
-    //         Route::get('/events/create', [EventController::class, 'create'])->name('clubs.events.create');
-    //         Route::post('/events', [EventController::class, 'store'])->name('clubs.events.store');
-    //         Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('clubs.events.edit');
-    //         Route::put('/events/{event}', [EventController::class, 'update'])->name('clubs.events.update');
-    //         Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('clubs.events.delete');
-    //     });
-    // });
 
     // TEACHER-only routes
     Route::middleware(['auth', 'role:TEACHER'])->group(function () {
