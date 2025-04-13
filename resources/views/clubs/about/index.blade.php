@@ -1,3 +1,4 @@
+@section('title', 'About ' . $club->club_name)
 @extends('clubs.layouts.navigation')
 
 @section('club_content')

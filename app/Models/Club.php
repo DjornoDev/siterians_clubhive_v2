@@ -18,6 +18,7 @@ class Club extends Model
         'club_description',
         'club_logo',
         'club_banner',
+        'is_club_hunting_day',
     ];
 
     public function adviser()

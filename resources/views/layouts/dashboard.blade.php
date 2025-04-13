@@ -241,22 +241,13 @@
                                     d="M4 6h16M4 12h16M4 18h16" />
                             </svg>
                         </button>
-                        <h1 class="text-lg sm:text-xl font-semibold text-blue-900 ml-2 sm:ml-4 truncate">Dashboard</h1>
+                        <h1 class="text-lg sm:text-xl font-semibold text-blue-900 ml-2 sm:ml-4 truncate">
+                            {{ explode(' | ', $__env->yieldContent('title', 'ClubHive Dashboard'))[0] }}
+                        </h1>
                     </div>
 
                     <!-- Right side: User profile -->
                     <div class="flex items-center">
-                        {{-- <div class="relative mr-1 sm:mr-4">
-                            <button id="notificationButton"
-                                class="text-gray-600 hover:text-blue-600 focus:outline-none relative p-2 rounded-full hover:bg-gray-100">
-                                <svg class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                                </svg>
-                                <span class="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
-                            </button>
-                        </div> --}}
 
                         <div class="relative">
                             <button id="userMenuButton"
@@ -275,8 +266,8 @@
                                         <img src="{{ asset('storage/profile_pictures/' . auth()->user()->profile_picture) }}"
                                             alt="{{ auth()->user()->name }}" class="h-full w-full object-cover">
                                     @else
-                                        <img src="{{ asset('images/default_profile.jpg') }}" alt="{{ auth()->user()->name }}"
-                                            class="h-full w-full object-cover">
+                                        <img src="{{ asset('images/default_profile.jpg') }}"
+                                            alt="{{ auth()->user()->name }}" class="h-full w-full object-cover">
                                     @endif
                                 </div>
                                 <i class="fas fa-chevron-down text-sm text-gray-500 hidden sm:block"></i>

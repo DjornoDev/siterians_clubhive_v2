@@ -1,3 +1,4 @@
+@section('title', $club->club_name . ' - Elections')
 @extends('clubs.layouts.navigation')
 
 @section('club_content')

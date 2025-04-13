@@ -37,28 +37,85 @@
                 </h2>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Club Filter (Checkboxes) -->
+                    <!-- Club Filter (Dropdown) -->
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-3">Clubs</label>
-                        <div class="space-y-2 max-h-60 overflow-y-auto pr-2 border rounded-lg p-3 bg-gray-50">
-                            <div class="flex items-center mb-2">
-                                <input id="select-all-clubs" type="checkbox"
-                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                <label for="select-all-clubs" class="ml-2 text-sm font-medium text-gray-700">Select
-                                    All</label>
-                            </div>
-                            <div class="border-t border-gray-200 my-2"></div>
+                        <div x-data="clubFilter({
+                            clubs: {{ $clubs->toJson() }},
+                            initialSelected: {{ $clubs->pluck('club_id')->toJson() }}
+                        })" x-id="['club-filter']" class="relative" @click.away="isOpen = false">
+                            <!-- Hidden input to store selected club IDs -->
+                            <input type="hidden" name="club[]" :value="selectedClubs.join(',')" id="selected-clubs">
 
-                            @foreach ($clubs as $club)
-                                <div class="flex items-center">
-                                    <input id="club-{{ $club->club_id }}" name="club[]" value="{{ $club->club_id }}"
-                                        type="checkbox"
-                                        class="club-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                    <label for="club-{{ $club->club_id }}" class="ml-2 text-sm text-gray-700">
-                                        {{ $club->club_name }}
-                                    </label>
+                            <!-- Dropdown Trigger -->
+                            <div class="cursor-pointer rounded-lg border border-gray-300 bg-gray-50 p-2 flex items-center justify-between"
+                                @click="isOpen = !isOpen">
+                                <div class="flex flex-wrap gap-2 flex-1">
+                                    <template x-for="(clubId, index) in selectedClubs" :key="clubId">
+                                        <template x-if="index < 3">
+                                            <div
+                                                class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full text-sm flex items-center">
+                                                <span x-text="getClubName(clubId)"></span>
+                                                <button @click.stop="toggleClub(clubId)" type="button"
+                                                    class="ml-1 hover:text-indigo-900 focus:outline-none">
+                                                    ×
+                                                </button>
+                                            </div>
+                                        </template>
+                                    </template>
+                                    <span x-show="selectedClubs.length > 3" class="text-gray-500 text-sm">
+                                        +<span x-text="selectedClubs.length - 3"></span>
+                                    </span>
+                                    <span x-show="selectedClubs.length === 0" class="text-gray-500 text-sm">
+                                        Select clubs...
+                                    </span>
                                 </div>
-                            @endforeach
+                                <svg class="h-5 w-5 text-gray-400 transition-transform duration-200"
+                                    :class="{ 'rotate-180': isOpen }" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+
+                            <!-- Dropdown Content -->
+                            <div x-show="isOpen"
+                                class="absolute mt-1 w-full rounded-lg bg-white shadow-lg border border-gray-200 z-50 max-h-96 overflow-y-auto"
+                                x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 transform scale-95"
+                                x-transition:enter-end="opacity-100 transform scale-100"
+                                x-transition:leave="transition ease-in duration-150"
+                                x-transition:leave-start="opacity-100 transform scale-100"
+                                x-transition:leave-end="opacity-0 transform scale-95">
+                                <!-- Search Input -->
+                                <div class="p-2 border-b border-gray-200">
+                                    <input type="text" x-model="searchQuery" placeholder="Search clubs..."
+                                        class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-transparent">
+                                </div>
+
+                                <!-- Select All -->
+                                <div class="flex items-center p-2 hover:bg-gray-50 cursor-pointer border-b border-gray-200">
+                                    <input type="checkbox" :checked="selectAll" :indeterminate="selectAllIndeterminate"
+                                        @change="toggleAll"
+                                        class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                    <label class="ml-2 text-sm text-gray-700">Select All</label>
+                                </div>
+
+                                <!-- Club List -->
+                                <template x-if="filteredClubs.length === 0">
+                                    <div class="p-3 text-gray-500 text-sm">
+                                        No clubs match your search
+                                    </div>
+                                </template>
+                                <template x-for="club in filteredClubs" :key="club.club_id">
+                                    <div class="flex items-center p-2 hover:bg-gray-50 cursor-pointer"
+                                        @click.stop="toggleClub(club.club_id)">
+                                        <input type="checkbox" :checked="selectedClubs.includes(club.club_id)"
+                                            class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                        <label class="ml-2 text-sm text-gray-700" x-text="club.club_name"></label>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
                     </div>
 
@@ -100,8 +157,8 @@
                     <div class="flex gap-3">
                         <button id="clear-filters"
                             class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M6 18L18 6M6 6l12 12" />
                             </svg>
@@ -109,9 +166,10 @@
                         </button>
                         <button id="apply-filters"
                             class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7" />
                             </svg>
                             Apply
                         </button>
@@ -209,8 +267,6 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Filter elements
-            const clubCheckboxes = document.querySelectorAll('.club-checkbox');
-            const selectAllClubs = document.getElementById('select-all-clubs');
             const dateFilter = document.getElementById('date-filter');
             const customDateRange = document.getElementById('custom-date-range');
             const dateFrom = document.getElementById('date-from');
@@ -223,12 +279,6 @@
             const emptyState = document.getElementById('empty-state');
             const eventsCount = document.getElementById('events-count');
 
-            // Initialize - check all clubs by default
-            selectAllClubs.checked = true;
-            clubCheckboxes.forEach(checkbox => {
-                checkbox.checked = true;
-            });
-
             // Toggle custom date range visibility
             dateFilter.addEventListener('change', function() {
                 if (this.value === 'custom') {
@@ -238,31 +288,12 @@
                 }
             });
 
-            // Select All clubs functionality
-            selectAllClubs.addEventListener('change', function() {
-                const isChecked = this.checked;
-                clubCheckboxes.forEach(checkbox => {
-                    checkbox.checked = isChecked;
-                });
-            });
-
-            // When any club checkbox changes, update "Select All" status
-            clubCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const allChecked = Array.from(clubCheckboxes).every(cb => cb.checked);
-                    const noneChecked = Array.from(clubCheckboxes).every(cb => !cb.checked);
-
-                    selectAllClubs.checked = allChecked;
-                    selectAllClubs.indeterminate = !allChecked && !noneChecked;
-                });
-            });
-
             // Function to apply filters
             function applyFilters() {
-                // Get selected clubs
-                const selectedClubs = Array.from(clubCheckboxes)
-                    .filter(checkbox => checkbox.checked)
-                    .map(checkbox => checkbox.value);
+                // Get selected clubs from hidden input
+                const selectedClubs = document.getElementById('selected-clubs').value
+                    .split(',')
+                    .filter(id => id !== '');
 
                 // Get date filter value
                 const selectedDateOption = dateFilter.value;
@@ -334,11 +365,12 @@
 
             // Clear all filters
             function clearFilters() {
-                // Select all clubs
-                selectAllClubs.checked = true;
-                clubCheckboxes.forEach(checkbox => {
-                    checkbox.checked = true;
-                });
+                // Reset Alpine component state through DOM
+                const clubFilterComponent = document.querySelector('[x-data^="clubFilter"]');
+                if (clubFilterComponent) {
+                    const component = Alpine.$data(clubFilterComponent, 'clubFilter');
+                    component.selectedClubs = component.clubs.map(c => c.club_id);
+                }
 
                 // Reset date filter
                 dateFilter.value = '';
@@ -362,6 +394,63 @@
             applyButton.addEventListener('click', applyFilters);
             clearButton.addEventListener('click', clearFilters);
             resetButton.addEventListener('click', clearFilters);
+        });
+    </script>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('clubFilter', (config) => ({
+                // Component state
+                clubs: config.clubs,
+                selectedClubs: config.initialSelected,
+                searchQuery: '',
+                isOpen: false,
+
+                // Get club name from ID
+                getClubName(clubId) {
+                    const club = this.clubs.find(c => c.club_id == clubId);
+                    return club ? club.club_name : '';
+                },
+
+                // Toggle individual club selection
+                toggleClub(clubId) {
+                    if (this.selectedClubs.includes(clubId)) {
+                        this.selectedClubs = this.selectedClubs.filter(id => id !== clubId);
+                    } else {
+                        this.selectedClubs.push(clubId);
+                    }
+                },
+
+                // Toggle all clubs
+                toggleAll() {
+                    if (this.selectAll) {
+                        this.selectedClubs = [];
+                    } else {
+                        this.selectedClubs = this.clubs.map(c => c.club_id);
+                    }
+                },
+
+                // Filtered clubs based on search query
+                get filteredClubs() {
+                    const query = this.searchQuery.toLowerCase();
+                    return this.clubs.filter(club =>
+                        club.club_name.toLowerCase().includes(query)
+                    );
+                },
+
+                // Computed select all state
+                get selectAll() {
+                    return this.clubs.length > 0 &&
+                        this.clubs.every(club => this.selectedClubs.includes(club.club_id));
+                },
+
+                // Computed indeterminate state
+                get selectAllIndeterminate() {
+                    return !this.selectAll &&
+                        this.selectedClubs.length > 0 &&
+                        this.selectedClubs.length < this.clubs.length;
+                }
+            }));
         });
     </script>
 @endsection

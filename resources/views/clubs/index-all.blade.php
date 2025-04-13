@@ -1,6 +1,11 @@
 @extends('layouts.dashboard')
 
+@section('title', 'All Clubs | ClubHive')
+
 @section('content')
+    @php
+        $isHuntingActive = \App\Models\Club::find(1)?->is_club_hunting_day ?? false;
+    @endphp
     <div class="container mx-auto px-4 py-8">
         <h1 class="text-3xl font-bold mb-8 text-gray-800">Explore All Clubs</h1>
 
@@ -149,6 +154,8 @@
 
 @push('scripts')
     <script>
+        const isHuntingActive = @json($isHuntingActive);
+
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.view-details-btn').forEach(button => {
                 button.addEventListener('click', function() {
@@ -166,13 +173,32 @@
 
                     // Handle Join button
                     const joinButton = document.getElementById('joinClubButton');
-                    joinButton.classList.toggle('hidden', isMember);
+                    joinButton.classList.toggle('hidden', isMember || !isHuntingActive);
                     joinButton.onclick = () => handleJoinClub(this.dataset.clubId);
 
                     modal.classList.remove('hidden');
                 });
             });
         });
+
+        async function toggleHuntingDay() {
+            try {
+                const response = await fetch("{{ route('clubs.toggle-hunting-day', \App\Models\Club::find(1)) }}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    },
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    location.reload(); // Refresh to update all Join buttons
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
 
         function closeModal() {
             document.getElementById('clubDetailsModal').classList.add('hidden');

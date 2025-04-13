@@ -1,6 +1,6 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Home Page | ClubHive')
+@section('title', 'Home | ClubHive')
 
 @section('content')
     <div x-data="{

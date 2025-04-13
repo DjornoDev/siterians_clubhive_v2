@@ -118,6 +118,12 @@ Route::middleware(['auth'])->group(function () {
 
         Route::put('/clubs/{club}/members/{user}', [ClubController::class, 'updateMember'])
             ->name('clubs.members.update');
+
+        Route::post('/clubs/{club}/toggle-hunting-day', [ClubController::class, 'toggleHuntingDay'])
+            ->name('clubs.toggle-hunting-day');
+
+        Route::put('/clubs/{club}/update-settings', [ClubController::class, 'updateSettings'])
+            ->name('clubs.update-settings');
     });
 
     // STUDENT-only routes

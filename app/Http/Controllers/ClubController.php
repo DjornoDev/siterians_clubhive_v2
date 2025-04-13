@@ -23,6 +23,61 @@ class ClubController extends Controller
         return view('clubs.index-all', compact('clubs'));
     }
 
+    public function toggleHuntingDay(Club $club)
+    {
+        // Ensure only the adviser of club 1 can toggle
+        abort_if(auth()->id() !== $club->club_adviser || $club->club_id !== 1, 403);
+
+        // Get the new status based on club 1's current state
+        $newStatus = !$club->is_club_hunting_day;
+
+        // Update all clubs to the new status
+        Club::query()->update(['is_club_hunting_day' => $newStatus]);
+
+        return response()->json(['status' => 'success']);
+    }
+
+    public function updateSettings(Request $request, Club $club)
+    {
+        abort_if(auth()->id() !== $club->club_adviser, 403);
+
+        $validated = $request->validate([
+            'club_name' => 'required|string|max:255',
+            'club_description' => 'nullable|string',
+            'club_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'club_banner' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+        ]);
+
+        // Handle logo update
+        if ($request->hasFile('club_logo')) {
+            // Delete old logo
+            if ($club->club_logo) {
+                Storage::disk('public')->delete($club->club_logo);
+            }
+            // Store new logo
+            $logoPath = $request->file('club_logo')->store('club-logos', 'public');
+            $validated['club_logo'] = $logoPath;
+        } else {
+            unset($validated['club_logo']);
+        }
+
+        // Handle banner update
+        if ($request->hasFile('club_banner')) {
+            // Delete old banner
+            if ($club->club_banner) {
+                Storage::disk('public')->delete($club->club_banner);
+            }
+            // Store new banner
+            $bannerPath = $request->file('club_banner')->store('club-banners', 'public');
+            $validated['club_banner'] = $bannerPath;
+        } else {
+            unset($validated['club_banner']);
+        }
+
+        $club->update($validated);
+        return back()->with('success', 'Club settings updated!');
+    }
+
     public function join(Club $club)
     {
         $user = auth()->user();
