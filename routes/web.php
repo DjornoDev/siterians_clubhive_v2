@@ -18,6 +18,11 @@ Route::get('/', function () {
     return view('welcome'); //or auth.login to redirect to login page
 });
 
+Route::get('/clubs/{id}', function ($id) {
+    $club = Club::findOrFail($id);
+    return redirect()->route('clubs.show', $club, 301);
+})->where('id', '[0-9]+'); // Add this numeric constraint
+
 // Remove 'verified' middleware and add role-based routes
 Route::middleware(['auth'])->group(function () {
     // Dynamic dashboard redirection
@@ -63,6 +68,10 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/clubs/{club}', [ClubController::class, 'destroy'])->name('admin.clubs.destroy');
         Route::post('/clubs', [App\Http\Controllers\ClubController::class, 'store'])->name('admin.clubs.store');
     });
+
+    Route::post('/admin/users/bulk', [UserController::class, 'bulkStore'])
+        ->name('admin.users.bulk.store')
+        ->middleware('role:ADMIN');
 
     // AJAX Route for sections
     Route::get('/get-sections/{classId}', function ($classId) {

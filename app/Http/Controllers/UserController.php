@@ -11,10 +11,31 @@ use App\Models\SchoolClass;
 use App\Models\Club;
 use App\Models\Event;
 use App\Models\ClubMembership;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 
 class UserController extends Controller
 {
+
+    public function index(Request $request)
+    {
+        $users = User::query()
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->input('search');
+                $query->where('name', 'like', "%$search%")
+                    ->orWhere('email', 'like', "%$search%");
+            })
+            ->when($request->filled('role'), function ($query) use ($request) { // Changed from has() to filled()
+                $query->where('role', $request->input('role'));
+            })
+            ->paginate(10);
+
+        $classes = SchoolClass::with('sections')->get();
+
+        return view('admin.users.index', compact('users', 'classes'));
+    }
+
     public function store(Request $request)
     {
 
@@ -54,23 +75,82 @@ class UserController extends Controller
         }
     }
 
-    public function index(Request $request)
+    // Add this method to UserController
+    // This method handles the bulk upload of users from a CSV file
+    public function bulkStore(Request $request)
     {
-        $users = User::query()
-            ->when($request->filled('search'), function ($query) use ($request) {
-                $search = $request->input('search');
-                $query->where('name', 'like', "%$search%")
-                    ->orWhere('email', 'like', "%$search%");
-            })
-            ->when($request->filled('role'), function ($query) use ($request) { // Changed from has() to filled()
-                $query->where('role', $request->input('role'));
-            })
-            ->paginate(10);
+        $request->validate([
+            'users_file' => 'required|file|mimes:csv,txt'
+        ]);
 
-        $classes = SchoolClass::all();
+        $file = $request->file('users_file');
+        $csvData = array_map('str_getcsv', file($file->getRealPath()));
+        $header = array_shift($csvData);
 
-        return view('admin.users.index', compact('users', 'classes'));
+        // Validate CSV header
+        $expectedHeader = ['name', 'email', 'role', 'password', 'class_id', 'section_id'];
+        if ($header !== $expectedHeader) {
+            return redirect()->back()
+                ->withErrors(['users_file' => 'Invalid CSV format. Please use the provided template.']);
+        }
+
+        $errors = [];
+        $successCount = 0;
+
+        foreach ($csvData as $index => $row) {
+            $data = array_combine($header, $row);
+            $rowNumber = $index + 2; // Account for header row
+
+            $validator = Validator::make($data, [
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:tbl_users,email',
+                'role' => 'required|in:ADMIN,TEACHER,STUDENT',
+                'password' => 'required|min:8',
+                'class_id' => 'nullable|required_if:role,STUDENT|exists:tbl_classes,class_id',
+                'section_id' => 'nullable|required_if:role,STUDENT|exists:tbl_sections,section_id',
+            ]);
+
+            if ($validator->fails()) {
+                $errors["Row $rowNumber"] = $validator->errors()->all();
+                continue;
+            }
+
+            try {
+                $user = User::create([
+                    'name' => $data['name'],
+                    'email' => $data['email'],
+                    'role' => $data['role'],
+                    'section_id' => $data['role'] === 'STUDENT' ? $data['section_id'] : null,
+                    'password' => Hash::make($data['password']),
+                ]);
+
+                if ($user->role === 'STUDENT') {
+                    ClubMembership::create([
+                        'club_id' => 1,
+                        'user_id' => $user->user_id,
+                        'club_role' => 'MEMBER',
+                        'joined_date' => now(),
+                        'club_accessibility' => null
+                    ]);
+                }
+
+                $successCount++;
+            } catch (\Exception $e) {
+                $errors["Row $rowNumber"] = ["Error creating user: " . $e->getMessage()];
+            }
+        }
+
+        if (!empty($errors)) {
+            return redirect()->back()
+                ->with('bulk_errors', $errors)
+                ->withInput();
+        }
+
+        return redirect()->route('admin.users.index')
+            ->with('success', "Successfully imported $successCount users");
     }
+
+
 
     public function update(Request $request, User $user)
     {

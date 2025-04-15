@@ -16,6 +16,16 @@
                     </svg>
                     Add User
                 </button>
+                {{-- Add this button next to the existing "Add User" button --}}
+                <button onclick="toggleBulkModal()"
+                    class="bg-green-600 text-white px-5 py-2.5 rounded-lg hover:bg-green-700 transition-all duration-200 font-medium flex items-center gap-2 shadow-sm hover:shadow">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Bulk Upload
+                </button>
             </div>
 
             <!-- Filters -->
@@ -61,6 +71,17 @@
                     </div>
                 </form>
             </div>
+
+            @if (session('bulk_errors'))
+                <div class="mb-4 bg-red-50 p-4 rounded-lg border border-red-200">
+                    <h4 class="font-medium text-red-800 mb-2">Bulk Upload Errors:</h4>
+                    <ul class="list-disc list-inside text-sm text-red-700">
+                        @foreach (session('bulk_errors') as $row => $messages)
+                            <li><strong>{{ $row }}:</strong> {{ implode(', ', $messages) }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
             <!-- User Table -->
             <div class="overflow-hidden rounded-lg border border-gray-200 shadow-md">
@@ -153,6 +174,10 @@
             <!-- Add User Modal -->
             @include('admin.users.partials.add-user-modal')
 
+            {{-- Add this modal partial include at the bottom near other modals --}}
+            <!-- Bulk Upload Modal -->
+            @include('admin.users.partials.bulk-upload-modal')
+
             <!-- Edit User Modal -->
             @include('admin.users.partials.edit-user-modal')
 
@@ -203,6 +228,12 @@
         // User Modal Interactions
         function toggleUserModal() {
             document.getElementById('addUserModal').classList.toggle('hidden');
+        }
+
+        // Add to your existing JavaScript
+        // Bulk Upload Modal Interactions
+        function toggleBulkModal() {
+            document.getElementById('bulkUploadModal').classList.toggle('hidden');
         }
 
         function toggleSectionModal() {

@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
+use Hashids\Hashids;
+use App\Models\Club;
+use Illuminate\Support\Facades\Route;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -12,7 +15,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(Hashids::class, function () {
+            return new Hashids(
+                env('HASHIDS_SALT', 'your-secret-salt'),
+                env('HASHIDS_LENGTH', 16),
+                env('HASHIDS_ALPHABET', 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890')
+            );
+        });
     }
 
     /**
@@ -21,5 +30,17 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         config(['app.timezone' => 'Asia/Manila']); // Set your school's timezone
+
+        Route::bind('club', function ($value) {
+            // First try to decode as hashid
+            $decoded = app(Hashids::class)->decode($value);
+
+            if (!empty($decoded)) {
+                return Club::findOrFail($decoded[0]);
+            }
+
+            // If that fails, try as numeric ID (for existing URLs)
+            return Club::findOrFail($value);
+        });
     }
 }

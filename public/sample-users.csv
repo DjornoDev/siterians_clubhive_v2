@@ -1,0 +1,13 @@
+name,email,role,password,class_id,section_id
+Alex Rivera,arivera@example.com,STUDENT,student123,1,2
+Morgan Lee,mlee@example.com,STUDENT,pass2023,2,1
+Samantha Taylor,staylor@example.com,STUDENT,secure789,3,4
+Ethan Brown,ebrown@example.com,STUDENT,ethan2023,1,3
+Daniel Park,dpark@example.com,STUDENT,dp456789,2,2
+Ryan Martinez,rmartinez@example.com,STUDENT,ryanpass,3,1
+Hannah Kim,hkim@example.com,TEACHER,teach456,,
+David Thompson,dthompson@example.com,TEACHER,faculty123,,
+Olivia Jackson,ojackson@example.com,TEACHER,olivia789,,
+Nathan Singh,nsingh@example.com,TEACHER,teach2023,,
+Sophia Williams,swilliams@example.com,TEACHER,sophia456,,
+Carlos Mendez,cmendez@example.com,TEACHER,carlos123,,

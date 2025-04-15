@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Hashids\Hashids;
 
 class Club extends Model
 {
@@ -20,6 +21,11 @@ class Club extends Model
         'club_banner',
         'is_club_hunting_day',
     ];
+
+    public function getRouteKey()
+    {
+        return app(Hashids::class)->encode($this->getKey());
+    }
 
     public function adviser()
     {
