@@ -11,6 +11,9 @@ use App\Models\User;
 use App\Models\Event;
 use App\Models\ClubMembership;
 use App\Models\Post;
+use App\Models\Election;
+use App\Models\Candidate;
+use App\Models\Vote;
 
 class ClubController extends Controller
 {
@@ -25,8 +28,12 @@ class ClubController extends Controller
 
     public function toggleHuntingDay(Club $club)
     {
-        // Ensure only the adviser of club 1 can toggle
-        abort_if(auth()->id() !== $club->club_adviser || $club->club_id !== 1, 403);
+        // Allow both the club adviser and any admin to toggle hunting day
+        abort_if(
+            (auth()->id() !== $club->club_adviser && auth()->user()->role !== 'ADMIN') || 
+            $club->club_id !== 1, 
+            403
+        );
 
         // Get the new status based on club 1's current state
         $newStatus = !$club->is_club_hunting_day;
@@ -39,13 +46,11 @@ class ClubController extends Controller
 
     public function updateSettings(Request $request, Club $club)
     {
-        abort_if(auth()->id() !== $club->club_adviser, 403);
-
-        $validated = $request->validate([
+        abort_if(auth()->id() !== $club->club_adviser, 403);            $validated = $request->validate([
             'club_name' => 'required|string|max:255',
             'club_description' => 'nullable|string',
-            'club_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'club_banner' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'club_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'club_banner' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
         ]);
 
         // Handle logo update
@@ -199,8 +204,8 @@ class ClubController extends Controller
                 'club_name' => 'required|string|max:255',
                 'club_adviser' => 'required|exists:tbl_users,user_id',
                 'club_description' => 'nullable|string',
-                'club_logo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
-                'club_banner' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120', // Max 5MB
+                'club_logo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048', // Max 2MB
+                'club_banner' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // Max 5MB
             ]);
 
             $logoPath = $request->file('club_logo')->store('club-logos', 'public');
@@ -229,8 +234,8 @@ class ClubController extends Controller
                 'club_name' => 'required|string|max:255',
                 'club_adviser' => 'required|exists:tbl_users,user_id',
                 'club_description' => 'nullable|string',
-                'club_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                'club_banner' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+                'club_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+                'club_banner' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             ]);
 
             // Handle logo update
@@ -285,6 +290,44 @@ class ClubController extends Controller
             return back()->with('error', 'Error deleting club: ' . $e->getMessage());
         }
     }
+    
+    public function verifyAndDelete(Request $request, Club $club)
+    {
+        // Validate request
+        $request->validate([
+            'password' => 'required|string',
+        ]);
+        
+        $user = auth()->user();
+        
+        // Check if password is correct
+        if (!password_verify($request->password, $user->password)) {
+            return response()->json([
+                'message' => 'Incorrect password'
+            ], 401);
+        }
+        
+        // Password verified, now delete the club
+        try {
+            // Delete associated files
+            if ($club->club_logo) {
+                Storage::disk('public')->delete($club->club_logo);
+            }
+            if ($club->club_banner) {
+                Storage::disk('public')->delete($club->club_banner);
+            }
+
+            $club->delete();
+
+            return response()->json([
+                'message' => 'Club deleted successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error deleting club: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 
     public function show(Club $club)
     {
@@ -298,12 +341,69 @@ class ClubController extends Controller
             ->orderBy('event_date')
             ->take(5) // Adjust the number of upcoming events to show
             ->get();
+            
+        $userId = auth()->id();
+        $isClubMember = $club->members()->where('tbl_club_membership.user_id', $userId)->exists();
+        $isClubAdviser = $club->club_adviser == $userId;
+        
+        // If the user is a club member or adviser, show all posts
+        // Otherwise, show only PUBLIC posts
+        $postsQuery = $club->posts();
+        
+        if (!$isClubMember && !$isClubAdviser) {
+            // If not a member or adviser, only show public posts
+            $postsQuery->where('post_visibility', 'PUBLIC');
+        } else {
+            // For club members/adviser, we show all posts (both PUBLIC and CLUB_ONLY)
+            // No need for additional filtering here since they can see all posts in this club
+            // $postsQuery will get all posts for this club
+        }
 
         return view('clubs.index', [
             'club' => $club->loadCount('members'),
-            'posts' => $club->posts()->latest()->paginate(10),
+            'posts' => $postsQuery->latest()->paginate(10),
             'todayEvents' => $todayEvents,
             'upcomingEvents' => $upcomingEvents,
+            'isClubMember' => $isClubMember,
+            'isClubAdviser' => $isClubAdviser,
+        ]);
+    }
+    
+    public function checkPostChanges(Request $request, Club $club)
+    {
+        $currentChecksum = $request->query('checksum', '');
+        
+        // Get all posts for this club
+        $posts = $club->posts()->latest()->get();
+        
+        // Generate a new checksum that includes post IDs and updated timestamps
+        // This will change if posts are added, edited, or deleted
+        $newChecksum = md5(json_encode($posts->pluck('post_id')->merge($posts->pluck('updated_at'))));
+        
+        // Compare the checksums to determine if there are any changes
+        $hasChanges = $currentChecksum !== $newChecksum;
+            
+        return response()->json([
+            'hasChanges' => $hasChanges
+        ]);
+    }
+    
+    public function checkEventChanges(Request $request, Club $club)
+    {
+        $currentChecksum = $request->query('checksum', '');
+        
+        // Get all events for this club
+        $events = $club->events()->get();
+        
+        // Generate a new checksum that includes event IDs and updated timestamps
+        // This will change if events are added, edited, or deleted
+        $newChecksum = md5(json_encode($events->pluck('event_id')->merge($events->pluck('updated_at'))));
+        
+        // Compare the checksums to determine if there are any changes
+        $hasChanges = $currentChecksum !== $newChecksum;
+            
+        return response()->json([
+            'hasChanges' => $hasChanges
         ]);
     }
 
@@ -355,15 +455,42 @@ class ClubController extends Controller
         return view('clubs.people.index', compact('club', 'members', 'classes', 'sections'));
     }
 
-    public function voting(Club $club)
-    {
-        return view('clubs.voting.index', compact('club'));
-    }
-
     public function about(Club $club)
     {
         return view('clubs.about.index', [
             'club' => $club->load('adviser')
         ]);
+    }
+
+    public function checkClubNameExists(Request $request)
+    {
+        $name = $request->input('value');
+        $excludeId = $request->input('exclude');
+        
+        $query = Club::where('club_name', $name);
+        
+        // If we're excluding a club (for edit validation), add the condition
+        if ($excludeId) {
+            $query->where('club_id', '!=', $excludeId);
+        }
+        
+        $exists = $query->exists();
+        
+        return response()->json(['exists' => $exists]);
+    }
+
+    public function removeMember(Request $request, Club $club, User $user)
+    {
+        abort_if(auth()->id() !== $club->club_adviser, 403);
+
+        try {
+            // Detach the member from the club
+            // This will remove the entry from the pivot table (tbl_club_membership)
+            $club->members()->detach($user->user_id);
+
+            return response()->json(['message' => 'Member removed successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error removing member: ' . $e->getMessage()], 500);
+        }
     }
 }

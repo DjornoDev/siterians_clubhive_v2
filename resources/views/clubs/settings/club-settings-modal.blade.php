@@ -11,7 +11,7 @@
 
             <div class="mb-4">
                 <label class="block text-gray-700 mb-2">Description</label>
-                <textarea name="club_description" class="w-full p-2 border rounded">{{ $club->club_description }}</textarea>
+                <textarea name="club_description" rows="6" class="w-full p-2 border rounded">{{ $club->club_description }}</textarea>
             </div>
 
             <div class="mb-4">

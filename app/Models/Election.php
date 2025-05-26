@@ -17,11 +17,14 @@ class Election extends Model
         'description',
         'start_date',
         'end_date',
+        'club_id',
+        'is_published',
     ];
 
     protected $casts = [
         'start_date' => 'datetime',
         'end_date' => 'datetime',
+        'is_published' => 'boolean',
     ];
 
     public function candidates()

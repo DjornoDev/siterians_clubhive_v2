@@ -2,6 +2,107 @@
 
 @section('title', 'All Clubs | ClubHive')
 
+@push('styles')
+<style>
+    /* Custom animation for fading in elements */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-fadeIn {
+        animation: fadeIn 0.4s ease-out forwards;
+    }
+      /* Pulse effect for the membership badge */
+    .pulse-shadow {
+        box-shadow: 0 0 0 rgba(52, 211, 153, 0.4);
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(52, 211, 153, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(52, 211, 153, 0);
+        }
+    }
+      /* Confetti particles */
+    .confetti {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+        opacity: 0;
+    }
+    
+    .confetti-animation {
+        animation-name: confetti-fall, confetti-shake;
+        animation-duration: 3s, 2s;
+        animation-timing-function: ease-out, ease-in-out;
+        animation-iteration-count: 1, infinite;
+        animation-fill-mode: forwards;
+        animation-play-state: running;
+    }
+    
+    @keyframes confetti-fall {
+        0% {
+            opacity: 1;
+            transform: translateY(-10px);
+        }
+        100% {
+            opacity: 0;
+            transform: translateY(150px);
+        }
+    }
+      @keyframes confetti-shake {
+        0% {
+            transform: translateX(0) rotate(0deg);
+        }
+        25% {
+            transform: translateX(15px) rotate(90deg);
+        }
+        50% {
+            transform: translateX(-10px) rotate(180deg);
+        }
+        75% {
+            transform: translateX(15px) rotate(270deg);
+        }
+        100% {
+            transform: translateX(-10px) rotate(360deg);
+        }
+    }
+</style>
+@endpush
+
+@push('styles')
+<style>
+    /* Custom animation for fading in elements */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-fadeIn {
+        animation: fadeIn 0.4s ease-out forwards;
+    }
+    
+    /* Pulse effect for the membership badge */
+    @keyframes gentlePulse {
+        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    
+    .pulse-effect {
+        animation: gentlePulse 2s infinite;
+    }
+</style>
+@endpush
+
 @section('content')
     @php
         $isHuntingActive = \App\Models\Club::find(1)?->is_club_hunting_day ?? false;
@@ -131,7 +232,35 @@
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="space-y-3 mt-8">
+                <div class="space-y-3 mt-8">                    <!-- Already joined club status -->
+                    <div id="alreadyJoinedMessage" 
+                        class="relative text-center w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium py-4 px-5 rounded-lg shadow-md hidden border border-green-400 transition-all duration-300 transform pulse-shadow overflow-hidden">                        <!-- Confetti elements -->
+                        <div id="confettiContainer" class="absolute inset-0 -top-20 -bottom-20 overflow-hidden pointer-events-none z-0"></div>
+                          <!-- Badge and Text -->
+                        <div class="flex flex-col sm:flex-row items-center justify-center sm:space-x-3 relative z-10">
+                            <!-- Badge/Icon -->
+                            <div class="bg-white bg-opacity-20 p-2 rounded-full mb-2 sm:mb-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            
+                            <!-- Text Content -->
+                            <div>
+                                <h3 class="text-lg font-semibold">You're already a member of this club!</h3>
+                                <p class="text-green-100 text-sm mt-1">Access club activities, events and posts</p>
+                            </div>
+                        </div>
+                          <!-- Action Button -->
+                        <div class="flex justify-center mt-3 relative z-10">
+                            <a id="visitClubLink" href="#" class="bg-white bg-opacity-10 hover:bg-opacity-20 px-4 py-2 rounded-full text-white font-medium text-sm inline-flex items-center transition-colors duration-200 border border-white border-opacity-20 hover:border-opacity-30">
+                                <span>Go to club page</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
                     <button id="joinClubButton"
                         class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg shadow-sm transition-colors duration-200 hidden">
                         <div class="flex items-center justify-center">
@@ -169,12 +298,29 @@
                     document.getElementById('modalClubDescription').textContent = this.dataset
                         .clubDescription;
                     document.getElementById('modalClubLogo').src = this.dataset.clubLogo;
-                    document.getElementById('modalClubBanner').src = this.dataset.clubBanner;
-
-                    // Handle Join button
+                    document.getElementById('modalClubBanner').src = this.dataset.clubBanner;   // Handle Join button and already joined message
                     const joinButton = document.getElementById('joinClubButton');
+                    const alreadyJoinedMessage = document.getElementById('alreadyJoinedMessage');
+                      // Show Join button only if hunting is active AND user is not already a member
                     joinButton.classList.toggle('hidden', isMember || !isHuntingActive);
                     joinButton.onclick = () => handleJoinClub(this.dataset.clubId);
+                      // If user is already a member, show "already joined" message with animation
+                    if (isMember) {
+                        // First remove hidden class
+                        alreadyJoinedMessage.classList.remove('hidden');                        // Set the club page link
+                        document.getElementById('visitClubLink').href = `/clubs/${this.dataset.clubId}`;
+                        // Create confetti effect
+                        createConfetti();
+                        // Then add animation classes after a small delay
+                        setTimeout(() => {
+                            alreadyJoinedMessage.classList.add('animate-fadeIn', 'scale-105');
+                            setTimeout(() => {
+                                alreadyJoinedMessage.classList.remove('scale-105');
+                            }, 300);
+                        }, 10);
+                    } else {
+                        alreadyJoinedMessage.classList.add('hidden');
+                    }
 
                     modal.classList.remove('hidden');
                 });
@@ -198,12 +344,58 @@
             } catch (error) {
                 console.error('Error:', error);
             }
-        }
-
-        function closeModal() {
+        }        function closeModal() {
             document.getElementById('clubDetailsModal').classList.add('hidden');
         }
-
+          // Function to create confetti effect
+        function createConfetti() {
+            const container = document.getElementById('confettiContainer');
+            if (!container) return;
+            
+            // Clear previous confetti
+            container.innerHTML = '';
+            
+            // Create confetti particles
+            const colors = ['#10B981', '#34D399', '#6EE7B7', '#A7F3D0', '#ECFDF5', '#FFFFFF'];
+            const confettiCount = 40;
+            
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                
+                // Random color
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                // Random position
+                confetti.style.left = `${Math.random() * 100}%`;
+                
+                // Random size (slightly larger to be more visible)
+                const size = Math.random() * 10 + 5;
+                confetti.style.width = `${size}px`;
+                confetti.style.height = `${size}px`;
+                
+                // Random initial rotation
+                const rotation = Math.random() * 360;
+                confetti.style.transform = `rotate(${rotation}deg)`;
+                
+                // Random animation delay for cascade effect
+                const delay = i * 50;
+                confetti.style.animationDelay = `${delay}ms, ${delay}ms`;
+                
+                // Random animation duration to create varied movement
+                const duration = (Math.random() * 2) + 2; // 2-4 seconds
+                confetti.style.animationDuration = `${duration}s, ${duration * 0.8}s`;
+                
+                // Add to container
+                container.appendChild(confetti);
+                
+                // Start animation after a slight delay
+                setTimeout(() => {
+                    confetti.classList.add('confetti-animation');
+                }, 10);
+            }
+        }
+        
         function handleJoinClub(clubId) {
             fetch(`/clubs/${clubId}/join`, {
                     method: 'POST',
@@ -216,8 +408,25 @@
                 .then(data => {
                     if (data.success) {
                         window.location.reload();
-                    } else {
-                        alert(data.message || 'An error occurred');
+                    } else {                        // If user is already a member, show the already joined message and hide join button
+                        if (data.message && data.message.includes('already a member')) {
+                            const joinButton = document.getElementById('joinClubButton');
+                            const alreadyJoinedMessage = document.getElementById('alreadyJoinedMessage');
+                            
+                            joinButton.classList.add('hidden');                            // Show with animation
+                            alreadyJoinedMessage.classList.remove('hidden');                            // Set the club page link
+                            document.getElementById('visitClubLink').href = `/clubs/${clubId}`;
+                            // Create confetti effect
+                            createConfetti();
+                            setTimeout(() => {
+                                alreadyJoinedMessage.classList.add('animate-fadeIn', 'scale-105');
+                                setTimeout(() => {
+                                    alreadyJoinedMessage.classList.remove('scale-105');
+                                }, 300);
+                            }, 10);
+                        } else {
+                            alert(data.message || 'An error occurred');
+                        }
                     }
                 })
                 .catch(error => {

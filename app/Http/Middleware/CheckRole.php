@@ -19,7 +19,7 @@ class CheckRole
         $allowedRoles = array_map('strtoupper', $roles);
 
         if (!in_array($userRole, $allowedRoles)) {
-            abort(403, 'Unauthorized action. Bawal ka dito! 😼');
+            abort(403, 'Unauthorized action.');
         }
 
         return $next($request);

@@ -69,9 +69,8 @@
                     <div class="mb-4">
                         <label for="images" class="block text-sm font-medium text-gray-700">Add More Images</label>
                         <input type="file" name="images[]" id="images" multiple accept="image/*"
-                            class="mt-1 block w-full">
-                        <p class="text-sm text-gray-500 mt-1">You can upload multiple images
-                            (max 2MB each).</p>
+                            class="mt-1 block w-full">                        <p class="text-sm text-gray-500 mt-1">You can upload multiple images
+                            (max 5MB each).</p>
                         @error('images.*')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror

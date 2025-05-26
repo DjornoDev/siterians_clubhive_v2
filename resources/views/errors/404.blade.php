@@ -7,233 +7,112 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }} - Page Not Found</title>
+    <title>{{ config('app.name', 'ClubHive') }} - Page Not Found</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=poppins:400,500,600,700,800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    <style>
-        body {
-            background-color: #FFDF4F;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .wizard-container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 2rem;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-            min-height: 100vh;
-        }
-
-        .wizard-illustration {
-            flex: 1;
-            max-width: 350px;
-            position: relative;
-        }
-
-        .wizard-content {
-            flex: 1;
-            padding-left: 2rem;
-        }
-
-        .error-title {
-            color: #4A1E68;
-            font-weight: 800;
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .error-code {
-            color: #FF9231;
-            font-size: 8rem;
-            font-weight: 800;
-            line-height: 1;
-            margin-bottom: 1.5rem;
-        }
-
-        .error-message {
-            color: #4A1E68;
-            font-size: 1.5rem;
-            margin-bottom: 2rem;
-            max-width: 450px;
-        }
-
-        .home-button {
-            background-color: #FF5C7C;
-            color: white;
-            font-weight: 600;
-            padding: 0.75rem 2rem;
-            border-radius: 100px;
-            text-decoration: none;
-            display: inline-block;
-            transition: all 0.3s ease;
-        }
-
-        .home-button:hover {
-            background-color: #E84968;
-            transform: translateY(-2px);
-        }
-
-        .back-button {
-            background-color: #4A1E68;
-            color: white;
-            font-weight: 600;
-            padding: 0.75rem 2rem;
-            border-radius: 100px;
-            text-decoration: none;
-            display: inline-block;
-            margin-right: 1rem;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-        }
-
-        .back-button:hover {
-            background-color: #3A1850;
-            transform: translateY(-2px);
-        }
-
-        .button-container {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .magical-effects {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-        }
-
-        @media (max-width: 768px) {
-            .wizard-container {
-                flex-direction: column;
-                text-align: center;
-                padding: 2rem 1rem;
-            }
-
-            .wizard-content {
-                padding-left: 0;
-                padding-top: 2rem;
-            }
-
-            .error-message {
-                margin: 0 auto 2rem auto;
-            }
-
-            .button-container {
-                justify-content: center;
-            }
-
-            .wizard-illustration {
-                max-width: 250px;
-            }
-
-            .error-code {
-                font-size: 6rem;
-            }
-        }
-    </style>
 </head>
 
-<body>
-    <div class="wizard-container">
-        <div class="wizard-illustration">
-            <svg width="100%" height="100%" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg">
-                <!-- Magical Effects -->
-                <g class="magical-effects">
-                    <path d="M50,50 L40,30" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" />
-                    <path d="M70,80 L90,70" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" />
-                    <path d="M230,70 L250,50" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" />
-                    <path d="M260,120 L280,110" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" />
+<body class="bg-gray-100 font-sans">
+    <div class="min-h-screen flex flex-col items-center justify-center px-4 py-12">
+        <div class="w-full max-w-lg bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="bg-gradient-to-r from-red-500 to-orange-500 p-6">
+                <div class="flex items-center justify-between">
+                    <h1 class="text-3xl font-bold text-white">Error 404</h1>
+                    <div class="p-2 bg-white bg-opacity-20 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+                <p class="text-orange-100 mt-1">Page Not Found</p>
+            </div>
 
-                    <path d="M30,100 L10,90" stroke="#FF9231" stroke-width="3" stroke-linecap="round" />
-                    <path d="M200,40 L220,20" stroke="#FF9231" stroke-width="3" stroke-linecap="round" />
+            <div class="p-6">
+                <div class="border-l-4 border-orange-500 bg-orange-50 p-4 mb-6">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-orange-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-orange-800">
+                                The requested URL could not be found on this server.
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
-                    <!-- Magnifying Glass -->
-                    <circle cx="240" cy="130" r="20" stroke="#FFFFFF" stroke-width="3" fill="none" />
-                    <line x1="255" y1="145" x2="275" y2="165" stroke="#FFFFFF" stroke-width="4"
-                        stroke-linecap="round" />
+                <div class="text-gray-700 text-base mb-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-2">Why am I seeing this page?</h2>
+                    <p class="mb-4">This error occurs when you attempt to access a URL that doesn't exist on our
+                        server. There are several possible reasons for this:</p>
 
-                    <!-- Spiral -->
-                    <path d="M60,140 C70,135 75,145 70,150 C65,155 55,150 55,145 C55,140 65,135 70,135" stroke="#FFFFFF"
-                        stroke-width="2" fill="none" />
+                    <div class="space-y-2">
+                        <p class="flex items-start">
+                            <svg class="h-5 w-5 text-orange-500 mr-2 mt-0.5" xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            The page may have been moved or deleted.
+                        </p>
+                        <p class="flex items-start">
+                            <svg class="h-5 w-5 text-orange-500 mr-2 mt-0.5" xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            You may have typed the URL incorrectly or followed a broken link.
+                        </p>
+                        <p class="flex items-start">
+                            <svg class="h-5 w-5 text-orange-500 mr-2 mt-0.5" xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            The resource may have been temporarily removed for maintenance.
+                        </p>
+                    </div>
+                </div>
 
-                    <!-- Question Mark -->
-                    <text x="190" y="80" fill="#FFFFFF" font-size="30" font-weight="bold">?</text>
-                    <text x="90" y="170" fill="#FFFFFF" font-size="30" font-weight="bold">?</text>
+                <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                    <button onclick="window.history.back()"
+                        class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                        <svg class="h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Return to Previous Page
+                    </button>
+                    <a href="{{ url('/') }}"
+                        class="inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                        <svg class="h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        Return to Homepage
+                    </a>
+                </div>
+            </div>
 
-                    <!-- X mark -->
-                    <path d="M40,170 L50,180 M40,180 L50,170" stroke="#FFFFFF" stroke-width="2"
-                        stroke-linecap="round" />
-                    <path d="M250,170 L260,180 M250,180 L260,170" stroke="#FFFFFF" stroke-width="2"
-                        stroke-linecap="round" />
-                </g>
-
-                <!-- Wizard -->
-                <g transform="translate(100, 100)">
-                    <!-- Hat -->
-                    <path d="M50,0 L100,120 L0,120 Z" fill="#4A1E68" />
-                    <circle cx="50" cy="60" r="10" fill="#FFDF4F" />
-
-                    <!-- Head -->
-                    <rect x="35" y="120" width="30" height="40" fill="#FFDF4F" />
-
-                    <!-- Beard -->
-                    <path d="M35,130 Q50,200 65,130" fill="#FFFFFF" />
-
-                    <!-- Eyes -->
-                    <circle cx="42" cy="135" r="4" fill="#4A1E68" />
-                    <circle cx="58" cy="135" r="4" fill="#4A1E68" />
-
-                    <!-- Nose -->
-                    <path d="M50,138 Q55,143 50,148" stroke="#FF5C7C" stroke-width="3" fill="none" />
-
-                    <!-- Mouth -->
-                    <path d="M42,152 Q50,158 58,152" stroke="#4A1E68" stroke-width="2" fill="none" />
-
-                    <!-- Body/Robe -->
-                    <path d="M20,160 L80,160 L90,250 L10,250 Z" fill="#4A1E68" />
-
-                    <!-- Belt -->
-                    <rect x="20" y="180" width="60" height="10" fill="#FF5C7C" />
-                    <circle cx="50" cy="185" r="6" fill="#FFDF4F" />
-
-                    <!-- Magnifying Glass in Hand -->
-                    <circle cx="90" cy="180" r="15" stroke="#FFFFFF" stroke-width="3" fill="none" />
-                    <line x1="100" y1="190" x2="110" y2="200" stroke="#FFFFFF" stroke-width="4"
-                        stroke-linecap="round" />
-                    <line x1="85" y1="155" x2="88" y2="170" stroke="#FFFFFF"
-                        stroke-width="3" stroke-linecap="round" />
-
-                    <!-- Feet -->
-                    <rect x="25" y="250" width="20" height="10" fill="#FF9231" />
-                    <rect x="55" y="250" width="20" height="10" fill="#FF9231" />
-                </g>
-            </svg>
-        </div>
-
-        <div class="wizard-content">
-            <h1 class="error-title">PAGE NOT FOUND!</h1>
-            <div class="error-code">404</div>
-            <p class="error-message">Oops! Even with my magical powers, I couldn't find the page you're looking for.</p>
-            <div class="button-container">
-                <button onclick="window.history.back()" class="back-button">
-                    GO BACK
-                </button>
-                <a href="{{ url('/') }}" class="home-button">
-                    BACK TO HOME PAGE
-                </a>
+            <div class="bg-gray-50 border-t border-gray-200 p-4 text-center text-xs text-gray-500">
+                If you believe this is an error, please contact your system administrator for assistance.
             </div>
         </div>
     </div>

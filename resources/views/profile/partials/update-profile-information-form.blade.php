@@ -9,7 +9,8 @@
         </p>
     </header>
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6" enctype="multipart/form-data">
+    <form method="post" action="{{ route('profile.update') }}" class="mt-6" enctype="multipart/form-data"
+        id="profile-form">
         @csrf
         @method('patch')
 
@@ -69,10 +70,20 @@
                     <x-text-input id="email" name="email" type="email" class="mt-1 block w-full"
                         :value="old('email', $user->email)" required autocomplete="username" />
                     <x-input-error class="mt-2" :messages="$errors->get('email')" />
+                    <p class="text-xs text-gray-500 mt-1">
+                        {{ __('Changing your email address will require password verification for security.') }}</p>
                 </div>
 
                 <div class="pt-4">
-                    <x-primary-button>{{ __('Save') }}</x-primary-button>
+                    <x-primary-button x-data="{ originalEmail: '{{ $user->email }}' }"
+                        x-on:click.prevent="
+                            const currentEmail = document.getElementById('email').value;
+                            if (currentEmail !== originalEmail) {
+                                $dispatch('open-modal', 'confirm-email-change');
+                            } else {
+                                document.getElementById('profile-form').submit();
+                            }
+                        ">{{ __('Save') }}</x-primary-button>
 
                     @if (session('status') === 'profile-updated')
                         <p x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 2000)"
@@ -82,6 +93,48 @@
             </div>
         </div>
     </form>
+
+    <!-- Password Confirmation Modal for Email Change -->
+    <x-modal name="confirm-email-change" :show="$errors->emailChange->isNotEmpty()" focusable>
+        <form method="post" action="{{ route('profile.update') }}" class="p-6">
+            @csrf
+            @method('patch')
+
+            <!-- Hidden inputs to carry over the form data -->
+            <input type="hidden" id="modal_name" name="name">
+            <input type="hidden" id="modal_email" name="email">
+            <input id="confirm_email_change" name="confirm_email_change" type="hidden" value="1">
+            <!-- Include profile_picture if it's been uploaded -->
+            <input type="hidden" id="modal_has_profile_picture" name="modal_has_profile_picture" value="0">
+
+            <h2 class="text-lg font-medium text-gray-900">
+                {{ __('Confirm Email Change') }}
+            </h2>
+
+            <p class="mt-1 text-sm text-gray-600">
+                {{ __('For security, please enter your password to confirm you want to change your email address.') }}
+            </p>
+
+            <div class="mt-6">
+                <x-input-label for="confirm_password" value="{{ __('Password') }}" class="sr-only" />
+
+                <x-text-input id="confirm_password" name="password" type="password" class="mt-1 block w-3/4"
+                    placeholder="{{ __('Password') }}" required />
+
+                <x-input-error :messages="$errors->emailChange->get('password')" class="mt-2" />
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <x-secondary-button x-on:click="$dispatch('close')">
+                    {{ __('Cancel') }}
+                </x-secondary-button>
+
+                <x-primary-button class="ms-3">
+                    {{ __('Confirm Email Change') }}
+                </x-primary-button>
+            </div>
+        </form>
+    </x-modal>
 </section>
 
 <script>
@@ -90,6 +143,20 @@
         const imagePreviewContainer = document.getElementById('image_preview_container');
         const imagePreview = document.getElementById('image_preview');
         const currentImage = document.getElementById('current_image');
+
+        // Add event listener for modal opening
+        document.addEventListener('open-modal', function(event) {
+            if (event.detail === 'confirm-email-change') {
+                // Copy form values to the modal form
+                document.getElementById('modal_name').value = document.getElementById('name').value;
+                document.getElementById('modal_email').value = document.getElementById('email').value;
+
+                // Check if a new profile picture was selected
+                if (profilePictureInput.files && profilePictureInput.files[0]) {
+                    document.getElementById('modal_has_profile_picture').value = '1';
+                }
+            }
+        });
 
         profilePictureInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {

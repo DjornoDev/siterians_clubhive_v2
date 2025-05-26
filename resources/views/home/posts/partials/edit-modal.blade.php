@@ -15,8 +15,7 @@
             </div>
 
             <!-- Scrollable Content Area -->
-            <div class="p-6 overflow-y-auto flex-grow">
-                <form
+            <div class="p-6 overflow-y-auto flex-grow">                <form id="edit-post-form"
                     :action="`{{ route('clubs.posts.update', ['club' => 'CLUB_ID', 'post' => 'POST_ID']) }}`
                     .replace('CLUB_ID', currentClubId)
                         .replace('POST_ID', currentPostId)"
@@ -24,7 +23,7 @@
                     @csrf @method('PUT')
                     <div class="mb-4">
                         <label for="post_caption" class="block text-sm font-medium text-gray-700">Caption</label>
-                        <textarea name="post_caption" x-model="editPostCaption"
+                        <textarea name="post_caption" x-model="editPostCaption" rows="8"
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required></textarea>
                         @error('post_caption')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -64,9 +63,8 @@
                     <div class="mb-4">
                         <label for="images" class="block text-sm font-medium text-gray-700">Add More Images</label>
                         <input type="file" name="images[]" id="images" multiple accept="image/*"
-                            class="mt-1 block w-full">
-                        <p class="text-sm text-gray-500 mt-1">You can upload multiple images
-                            (max 2MB each).</p>
+                            class="mt-1 block w-full">                        <p class="text-sm text-gray-500 mt-1">You can upload multiple images
+                            (max 5MB each).</p>
                         @error('images.*')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror

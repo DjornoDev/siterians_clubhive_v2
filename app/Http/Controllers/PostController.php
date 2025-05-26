@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Club;
 use App\Models\Post;
+use App\Models\User;
 use App\Models\PostImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -26,7 +27,7 @@ class PostController extends Controller
 
         $validator = Validator::make($request->all(), [
             'post_caption' => 'required|string',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'visibility' => 'required|in:PUBLIC,CLUB_ONLY',
         ]);
 
@@ -67,7 +68,7 @@ class PostController extends Controller
         $validated = $request->validate([
             'post_caption' => 'required|string',
             'visibility' => 'required|in:PUBLIC,CLUB_ONLY',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'delete_images' => 'nullable|array',
             'delete_images.*' => 'exists:tbl_post_images,image_id',
         ]);

@@ -127,7 +127,6 @@
                                         <path fill-rule="evenodd"
                                             d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
                                             clip-rule="evenodd" />
-                                    </svg>
                                 </div>
                                 <input type="text" name="search" id="search"
                                     placeholder="Search by name or email" value="{{ request('search') }}"
@@ -275,15 +274,22 @@
                                     {{ $member->section->section_name ?? 'N/A' }}
                                 </td>
                                 @if (auth()->user()->user_id === $club->club_adviser)
-                                    <td class="px-6 py-4 text-right text-sm font-medium">
+                                    <td class="px-6 py-4 text-right text-sm font-medium space-x-2">
                                         <button @click="openEditModal(@js($member))"
-                                            class="text-blue-600 hover:text-blue-900 transition-colors flex items-center gap-1 ml-auto">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20"
-                                                fill="currentColor">
-                                                <path
-                                                    d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                            class="text-blue-600 hover:text-blue-900 transition-colors inline-flex items-center gap-1"
+                                            title="Edit Member">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM5 12V7a1 1 0 011-1h9a1 1 0 110 2H7v3a1 1 0 01-1 1H5z" />
                                             </svg>
                                             Edit
+                                        </button>
+                                        <button @click="openRemoveModal(@js($member))"
+                                            class="text-red-600 hover:text-red-900 transition-colors inline-flex items-center gap-1"
+                                            title="Remove Member">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                            </svg>
+                                            Remove
                                         </button>
                                     </td>
                                 @endif
@@ -315,6 +321,47 @@
 
         @if (auth()->user()->user_id === $club->club_adviser)
             @include('clubs.people.partials.edit-member-modal')
+
+            {{-- Remove Member Confirmation Modal --}}
+            <div x-cloak x-show="isRemoveModalOpen"
+                class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+                @click.self="isRemoveModalOpen = false">
+                <div class="bg-white rounded-xl shadow-xl w-full max-w-md" @click.outside="isRemoveModalOpen = false">
+                    <form @submit.prevent="confirmRemoveMember" method="POST" :action="removeFormAction">
+                        @csrf
+                        @method('DELETE')
+                        <div class="p-6">
+                            <div class="flex items-center mb-4">
+                                <div class="mr-3 flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:h-10 sm:w-10">
+                                    <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-900">Remove Member</h3>
+                            </div>
+                            <p class="text-gray-600 mb-2">
+                                Are you sure you want to remove <strong x-text="memberToRemove ? memberToRemove.name : ''"></strong> from {{ $club->club_name }}?
+                            </p>
+                            <p class="text-sm text-gray-500">
+                                This action will only remove their membership from this club. Their account, posts, and events will not be deleted. This action cannot be undone.
+                            </p>
+                        </div>
+                        <div class="bg-gray-50 px-6 py-4 flex justify-end gap-3 rounded-b-xl">
+                            <button type="button" @click="isRemoveModalOpen = false"
+                                class="px-5 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                                Cancel
+                            </button>
+                            <button type="submit"
+                                class="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                                Remove Member
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         @endif
     </div>
 @endsection
@@ -398,15 +445,16 @@
                     email: '',
                     role: '',
                     position: '',
-                    permissions: {
-                        manage_posts: false,
-                        manage_events: false
-                    }
+                    permissions: {} // Ensure permissions is an object
                 },
                 formAction: '',
+                isRemoveModalOpen: false, // New state for remove modal
+                memberToRemove: null,    // New state for member to remove
+                removeFormAction: '',    // New state for remove form action
 
                 openEditModal(member) {
-                    const permissions = member.pivot.club_accessibility || {};
+                    // Corrected: member.pivot.club_accessibility is already an object if available
+                    const permissions = member.pivot.club_accessibility || {}; 
                     this.currentMember = {
                         id: member.user_id,
                         name: member.name,
@@ -414,35 +462,92 @@
                         role: member.pivot.club_role,
                         position: member.pivot.club_position || '',
                         permissions: {
-                            manage_posts: Boolean(permissions.manage_posts),
-                            manage_events: Boolean(permissions.manage_events)
+                            can_manage_members: permissions.can_manage_members || false,
+                            can_create_posts: permissions.can_create_posts || false,
+                            manage_posts: permissions.manage_posts || false, // Corrected key
+                            can_create_events: permissions.can_create_events || false,
+                            manage_events: permissions.manage_events || false, // Corrected key
+                            can_view_analytics: permissions.can_view_analytics || false,
+                            can_customize_club: permissions.can_customize_club || false,
                         }
                     };
-                    this.formAction = `/clubs/{{ $club->club_id }}/members/${member.user_id}`;
+                    this.formAction = `{{ url('clubs/' . $club->club_id . '/members') }}/${member.user_id}`;
                     this.isEditModalOpen = true;
                 },
 
-                togglePermissions(value) {
-                    // Reset permissions if position is cleared
-                    if (!value) {
-                        this.currentMember.permissions = {
-                            manage_posts: false,
-                            manage_events: false
-                        };
+                // New methods for remove modal
+                openRemoveModal(member) {
+                    this.memberToRemove = member;
+                    // Corrected route name to 'clubs.members.destroy'
+                    this.removeFormAction = `{{ route('clubs.members.destroy', ['club' => $club->club_id, 'user' => ':userId']) }}`.replace(':userId', member.user_id);
+                    this.isRemoveModalOpen = true;
+                },
+
+                async confirmRemoveMember() {
+                    if (!this.memberToRemove) return;
+
+                    const form = this.$el; // Get the form element
+                     try {
+                        const response = await fetch(this.removeFormAction, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'), // Ensure CSRF token is present
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                            },
+                        });
+
+                        if (response.ok) {
+                            // Optionally, show a success message
+                            this.isRemoveModalOpen = false;
+                            this.memberToRemove = null;
+                            window.location.reload(); // Reload to see changes
+                        } else {
+                            const errorData = await response.json();
+                            console.error('Failed to remove member:', errorData.message || 'Unknown error');
+                            alert('Failed to remove member: ' + (errorData.message || 'Please try again.'));
+                        }
+                    } catch (error) {
+                        console.error('Error removing member:', error);
+                        alert('An error occurred while removing the member. Please check the console for details.');
                     }
+                },
+
+                togglePermissions(value) {
+                    // Reset specific permissions if position is cleared, without overwriting others
+                    if (!value) {
+                        if (this.currentMember && this.currentMember.permissions) {
+                            this.currentMember.permissions.manage_posts = false;
+                            this.currentMember.permissions.manage_events = false;
+                        }
+                    }
+                    // Add any logic here if certain positions should enable these permissions
                 },
 
                 async submitForm(event) {
                     const form = event.target;
                     const formData = new FormData(form);
 
+                    // Explicitly set boolean values for permissions
+                    formData.set('manage_posts', this.currentMember.permissions.manage_posts ? '1' : '0');
+                    formData.set('manage_events', this.currentMember.permissions.manage_events ? '1' : '0');
+
+                    // Remove position if it's empty to avoid sending an empty string 
+                    // if the backend expects it to be null or not present
+                    if (!this.currentMember.position) {
+                        formData.delete('club_position');
+                    } else {
+                        formData.set('club_position', this.currentMember.position);
+                    }
+
                     try {
                         const response = await fetch(form.action, {
-                            method: 'POST',
+                            method: 'POST', // Method is POST, but we use X-HTTP-Method-Override
                             headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'X-HTTP-Method-Override': 'PUT',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'X-HTTP-Method-Override': 'PUT', // Laravel uses this to treat POST as PUT
                                 'Accept': 'application/json',
+                                // 'Content-Type': 'application/x-www-form-urlencoded' or 'multipart/form-data' is set by FormData
                             },
                             body: formData
                         });
@@ -451,11 +556,20 @@
                             window.location.reload();
                         } else {
                             const error = await response.json();
-                            alert(error.message || 'An error occurred');
+                            // Display a more specific error if available
+                            let errorMessage = 'An error occurred';
+                            if (error && error.message) {
+                                errorMessage = error.message;
+                            }
+                            if (error && error.errors) {
+                                const firstErrorKey = Object.keys(error.errors)[0];
+                                errorMessage += `: ${error.errors[firstErrorKey][0]}`;
+                            }
+                            alert(errorMessage);
                         }
                     } catch (error) {
                         console.error('Error:', error);
-                        alert('An error occurred while saving changes');
+                        alert('An error occurred while saving changes. Please check the console.');
                     }
                 }
             }));

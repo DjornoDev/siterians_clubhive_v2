@@ -19,11 +19,11 @@
                     <textarea name="event_description" id="event_description" rows="3"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
                 </div>
-
                 <div>
                     <label for="event_date" class="block text-sm font-medium text-gray-700">Date</label>
                     <input type="date" name="event_date" id="event_date" required
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        min="{{ date('Y-m-d') }}">
                 </div>
                 <div>
                     <label for="event_time" class="block text-sm font-medium text-gray-700">Time (optional)</label>
@@ -43,7 +43,7 @@
 
                 <div>
                     <label for="event_location" class="block text-sm font-medium text-gray-700">Location</label>
-                    <input type="text" name="event_location" id="event_location" required
+                    <input type="text" name="event_location" id="event_location"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
             </div>

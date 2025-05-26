@@ -26,14 +26,27 @@ class UserController extends Controller
                 $query->where('name', 'like', "%$search%")
                     ->orWhere('email', 'like', "%$search%");
             })
-            ->when($request->filled('role'), function ($query) use ($request) { // Changed from has() to filled()
+            ->when($request->filled('role'), function ($query) use ($request) {
                 $query->where('role', $request->input('role'));
+            })
+            ->when($request->filled('class_id'), function ($query) use ($request) {
+                $query->whereHas('section', function ($q) use ($request) {
+                    $q->where('class_id', $request->input('class_id'));
+                });
+            })
+            ->when($request->filled('section_id'), function ($query) use ($request) {
+                $query->where('section_id', $request->input('section_id'));
             })
             ->paginate(10);
 
         $classes = SchoolClass::with('sections')->get();
+        $sections = collect();
+        
+        if ($request->filled('class_id')) {
+            $sections = Section::where('class_id', $request->input('class_id'))->get();
+        }
 
-        return view('admin.users.index', compact('users', 'classes'));
+        return view('admin.users.index', compact('users', 'classes', 'sections'));
     }
 
     public function store(Request $request)
@@ -155,6 +168,20 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         try {
+            // If email or password is being changed, verify admin's password
+            $emailChanged = $request->filled('email') && $user->email !== $request->email;
+            $passwordChanged = $request->filled('password');
+            
+            if (($emailChanged || $passwordChanged) && $request->has('admin_password')) {
+                // Verify the admin's password
+                if (!Hash::check($request->admin_password, auth()->user()->password)) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'Invalid password. Please try again.'
+                    ], 401);
+                }
+            }
+            
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => [
@@ -166,6 +193,7 @@ class UserController extends Controller
                 'class_id' => 'nullable|required_if:role,STUDENT|exists:tbl_classes,class_id',
                 'section_id' => 'nullable|required_if:role,STUDENT|exists:tbl_sections,section_id',
                 'password' => 'nullable|min:8',
+                'admin_password' => 'nullable|string', // Added for verification
             ]);
 
             $updateData = [
@@ -181,9 +209,25 @@ class UserController extends Controller
 
             $user->update($updateData);
 
-            return redirect()->route('admin.users.index')->with('success', 'User updated successfully');
+            // Return appropriate response based on request type
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'User updated successfully'
+                ]);
+            } else {
+                return redirect()->route('admin.users.index')->with('success', 'User updated successfully');
+            }
         } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'Error updating user: ' . $e->getMessage());
+            // Return appropriate error response based on request type
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Error updating user: ' . $e->getMessage()
+                ], 500);
+            } else {
+                return back()->withInput()->with('error', 'Error updating user: ' . $e->getMessage());
+            }
         }
     }
 
@@ -209,5 +253,65 @@ class UserController extends Controller
                 'error' => 'Error deleting user: ' . $e->getMessage()
             ], 500);
         }
+    }
+    
+    /**
+     * Check if a user with the given name or email already exists.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function checkExists(Request $request)
+    {
+        $field = $request->input('field');
+        $value = $request->input('value');
+        $excludeId = $request->input('exclude');
+        
+        if (!in_array($field, ['name', 'email'])) {
+            return response()->json(['error' => 'Invalid field'], 400);
+        }
+        
+        $query = User::where($field, $value);
+        
+        // If we're excluding a user (for edit validation), add the condition
+        if ($excludeId) {
+            $query->where('user_id', '!=', $excludeId);
+        }
+        
+        $exists = $query->exists();
+        
+        return response()->json(['exists' => $exists]);
+    }
+
+    public function getUserDetails(Request $request, User $user)
+    {
+        // Verify password first
+        if (!Hash::check($request->password, auth()->user()->password)) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Invalid password'
+            ], 401);
+        }
+
+        // Load relationships for detailed view
+        $user->load([
+            'section.schoolClass',
+            'clubMemberships.club',
+            'posts',
+            'organizedEvents'
+        ]);
+        
+        // If the user is a teacher, also load the clubs they advise
+        if ($user->role === 'TEACHER') {
+            $advisedClubs = Club::where('club_adviser', $user->user_id)
+                ->withCount('memberships')
+                ->get();
+            $user->advised_clubs = $advisedClubs;
+        }
+
+        return response()->json([
+            'success' => true,
+            'user' => $user
+        ]);
     }
 }

@@ -37,4 +37,29 @@ class Event extends Model
     {
         return $this->belongsTo(User::class, 'organizer_id');
     }
+    
+    /**
+     * Determine if a user can view this event.
+     *
+     * @param  \App\Models\User|null  $user
+     * @return bool
+     */
+    public function canBeViewedBy($user)
+    {
+        // PUBLIC events can be viewed by anyone
+        if ($this->event_visibility === 'PUBLIC') {
+            return true;
+        }
+        
+        // For CLUB_ONLY events, check permissions
+        // User must be logged in and either the organizer, club adviser, or club member
+        if ($user &&
+            ($user->user_id === $this->organizer_id ||
+             $user->user_id === $this->club->club_adviser ||
+             $this->club->members()->where('tbl_club_membership.user_id', $user->user_id)->exists())) {
+            return true;
+        }
+        
+        return false;
+    }
 }

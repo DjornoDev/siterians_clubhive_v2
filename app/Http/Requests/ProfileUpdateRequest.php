@@ -15,7 +15,7 @@ class ProfileUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => [
                 'required',
@@ -28,9 +28,16 @@ class ProfileUpdateRequest extends FormRequest
             'profile_picture' => [
                 'nullable',
                 'image',
-                'mimes:jpeg,png,jpg,gif',
-                'max:2048', // 2MB max size
+                'mimes:jpeg,png,jpg,gif,webp',
+                'max:5120', // 5MB max size
             ],
         ];
+
+        // Add password validation if email is being changed and the confirm_email_change flag is set
+        if ($this->has('confirm_email_change') && $this->user()->email !== $this->input('email')) {
+            $rules['password'] = ['required', 'current_password'];
+        }
+
+        return $rules;
     }
 }

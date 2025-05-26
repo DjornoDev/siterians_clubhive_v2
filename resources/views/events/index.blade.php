@@ -3,7 +3,32 @@
 @section('title', 'Events | ClubHive')
 
 @section('content')
-    <div class="container mx-auto px-4 py-8">
+    <div tabindex="-1" x-data="{
+        lastChecksum: '{{ md5(json_encode($events->pluck('event_id')->merge($events->pluck('updated_at')))) }}',
+        modalOpen: false,
+        
+        checkForEventChanges() {
+            // Skip refresh check if a modal is open
+            if (this.modalOpen) return;
+            
+            // Check if any modals are visible (if added in the future)
+            const anyModalOpen = document.querySelector('.modal:not(.hidden)');
+            if (anyModalOpen) return;
+            
+            fetch('{{ route('events.check-changes') }}?checksum=' + this.lastChecksum)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.hasChanges) {
+                        window.location.reload();
+                    }
+                });
+        },
+        
+        init() {
+            // Check for event changes every 10 seconds
+            setInterval(() => this.checkForEventChanges(), 10000);
+        }
+    }" class="container mx-auto px-4 py-8">
         <!-- Enhanced Header Section with visual elements -->
         <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg mb-10 overflow-hidden relative">
             <div class="absolute right-0 top-0 opacity-10">
@@ -218,9 +243,7 @@
                         <!-- Event Description -->
                         @if ($event->event_description)
                             <p class="text-gray-600 mb-4 flex-1">{{ Str::limit($event->event_description, 100) }}</p>
-                        @endif
-
-                        <!-- Club Badge -->
+                        @endif                        <!-- Club Badge and Visibility -->
                         <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
                             <div class="flex items-center">
                                 <div
@@ -228,6 +251,9 @@
                                     {{ strtoupper(substr($event->club->club_name, 0, 1)) }}
                                 </div>
                                 <span class="text-sm font-medium text-gray-700">{{ $event->club->club_name }}</span>
+                            </div>
+                            <div>
+                                @include('clubs.partials.event-visibility-badge', ['event' => $event])
                             </div>
                         </div>
                     </div>

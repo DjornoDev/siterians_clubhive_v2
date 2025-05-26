@@ -7,7 +7,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'ClubHive Dashboard')</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -28,6 +33,59 @@
 
         .sidebar-icon-only .sidebar-logo-text {
             display: none;
+        }
+
+        /* Enhanced sidebar dropdown styles */
+        .sidebar-icon-only .dropdown-content {
+            position: absolute;
+            left: 5rem;
+            top: 0;
+            min-width: 220px;
+            @apply bg-blue-800 rounded-r-lg shadow-lg z-40;
+            display: flex !important;
+            /* Force display */
+            flex-direction: column;
+            overflow: visible;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-left: 3px solid #2563eb;
+        }
+
+        /* Fix for dropdown positioning */
+        .sidebar-icon-only .relative:hover .dropdown-content {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        /* Hover state styling */
+        .sidebar-icon-only .relative.hovered button {
+            @apply bg-blue-600;
+        }
+
+        /* Make sure all links in the dropdown are visible */
+        .sidebar-icon-only .dropdown-content a {
+            white-space: normal;
+            word-break: break-word;
+            width: 100%;
+            display: block;
+        }
+
+        .sidebar-icon-only .dropdown-title {
+            @apply bg-blue-700 px-4 py-2 font-medium text-white rounded-tr-lg;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Improved hover states for sidebar icons */
+        .sidebar-icon-only a:hover i,
+        .sidebar-icon-only button:hover i {
+            @apply transform scale-110 text-white;
+            transition: all 0.2s ease;
+        }
+
+        /* Enhanced icon styles when sidebar is collapsed */
+        .sidebar-icon-only i {
+            @apply mx-auto text-xl;
+            transition: all 0.2s ease;
         }
 
         .transition-width {
@@ -87,12 +145,11 @@
 <body class="font-['Poppins'] bg-gray-100">
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar - Hidden on mobile by default, translucent overlay when open -->
-        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden md:hidden"></div>
-
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden md:hidden"> </div>
         <div id="sidebar"
-            class="bg-gradient-to-b from-blue-900 to-blue-700 text-white w-64 md:w-64 lg:w-64 transition-all duration-300 space-y-6 py-7 px-2 absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 z-30 shadow-xl h-full overflow-y-auto custom-scrollbar">
+            class="bg-gradient-to-b from-blue-900 to-blue-700 text-white w-64 md:w-64 lg:w-64 transition-all duration-300 space-y-6 py-7 px-2 absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 z-30 shadow-xl h-full overflow-y-auto custom-scrollbar transition-width">
             <!-- Logo -->
-            <div class="flex items-center space-x-3 pr-4 pl-1 mb-8">
+            <div class="flex items-center space-x-3 pr-4 pl-1 mb-8 justify-center">
                 <div class="bg-white p-2 rounded-lg shadow flex-shrink-0">
                     <img src="{{ asset('images/school_logo.png') }}" alt="Logo" class="h-10 w-10 object-cover">
                 </div>
@@ -135,11 +192,32 @@
                         <i class="fas fa-calendar-alt w-6 text-center text-lg"></i>
                         <span class="nav-text ml-3 truncate">Events</span>
                     </a>
-
-                    @if (auth()->user()->role === 'TEACHER')
-                        {{-- Clubs Dropdown for TEACHER --}}
-                        <div x-data="{ isClubDropdownOpen: false }" class="mb-1">
+                    @if (auth()->user()->role === 'TEACHER') {{-- Clubs Dropdown for TEACHER --}} <div
+                            x-data="{
+                                isClubDropdownOpen: false,
+                                sidebarTimer: null,
+                                wasCollapsed: false,
+                                isSidebarCollapsed() { return document.getElementById('sidebar').classList.contains('sidebar-icon-only'); },
+                                expandSidebar() {
+                                    if (this.isSidebarCollapsed() && window.innerWidth >= 768) {
+                                        this.wasCollapsed = true;
+                                        document.getElementById('sidebar').classList.remove('sidebar-icon-only');
+                                    }
+                                },
+                                collapseSidebar() {
+                                    if (this.wasCollapsed && window.innerWidth >= 768) {
+                                        clearTimeout(this.sidebarTimer);
+                                        this.sidebarTimer = setTimeout(() => {
+                                            document.getElementById('sidebar').classList.add('sidebar-icon-only');
+                                            localStorage.setItem('sidebarCollapsed', 'true');
+                                            this.wasCollapsed = false;
+                                        }, 500);
+                                    }
+                                }
+                            }" @mouseleave="isClubDropdownOpen = false; collapseSidebar();"
+                            class="mb-1 relative">
                             <button @click="isClubDropdownOpen = !isClubDropdownOpen"
+                                @mouseenter="isSidebarCollapsed() && (isClubDropdownOpen = true); expandSidebar();"
                                 class="w-full flex items-center justify-between py-3 px-4 text-white hover:bg-blue-600 rounded-lg transition duration-200">
                                 <div class="flex items-center">
                                     <i class="fas fa-users w-6 text-center text-lg"></i>
@@ -152,22 +230,42 @@
                                         d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-
-                            <div x-show="isClubDropdownOpen" x-transition:enter="transition ease-out duration-300"
+                            <div x-show="isClubDropdownOpen" x-transition:enter="transition ease-out duration-200"
                                 x-transition:enter-start="opacity-0 transform -translate-y-2"
                                 x-transition:enter-end="opacity-100 transform translate-y-0"
-                                x-transition:leave="transition ease-in duration-200"
+                                x-transition:leave="transition ease-in duration-150"
                                 x-transition:leave-start="opacity-100 transform translate-y-0"
                                 x-transition:leave-end="opacity-0 transform -translate-y-2"
-                                class="pl-8 bg-blue-800 rounded-b-lg overflow-hidden">
-                                @foreach (auth()->user()->advisedClubs as $club)
-                                    <a href="{{ route('clubs.show', $club) }}"
-                                        class="block py-2 px-3 text-white hover:bg-blue-600 transition duration-200 text-sm rounded-lg my-1">
-                                        {{ $club->club_name }}
-                                    </a>
-                                @endforeach
+                                :class="{
+                                    'pl-8 bg-blue-800 rounded-b-lg overflow-hidden': !isSidebarCollapsed(),
+                                    'dropdown-content': isSidebarCollapsed()
+                                }"
+                                class="z-50">
+                                <div class="dropdown-title" x-show="isSidebarCollapsed()">Advised Clubs</div>
+                                <div class="p-1">
+                                    @foreach (auth()->user()->advisedClubs as $club)
+                                        <a href="{{ route('clubs.show', $club) }}" @click="collapseSidebar()"
+                                            class="block py-2 px-3 text-white hover:bg-blue-600 transition duration-200 text-sm rounded-lg my-1">
+                                            {{ $club->club_name }}
+                                        </a>
+                                    @endforeach
+                                </div>
                             </div>
                         </div>
+
+                        {{-- Check if user is adviser of Club ID 1 (SSLG) --}}
+                        @php
+                            $isClubOneAdviser = auth()->user()->advisedClubs->contains('club_id', 1);
+                        @endphp
+
+                        @if ($isClubOneAdviser)
+                            {{-- Voting link for Club ID 1 Adviser --}}
+                            <a href="{{ route('voting.index') }}"
+                                class="block py-3 px-4 rounded-lg transition duration-200 text-white mb-1 flex items-center {{ request()->routeIs('voting.*') ? 'bg-blue-600 hover:bg-blue-700' : 'hover:bg-blue-600' }}">
+                                <i class="fas fa-poll w-6 text-center text-lg"></i>
+                                <span class="nav-text ml-3 truncate">Voting</span>
+                            </a>
+                        @endif
                     @else
                         @if (auth()->user()->role === 'STUDENT')
                             {{-- Direct link to Clubs for STUDENT --}}
@@ -175,11 +273,31 @@
                                 class="block py-3 px-4 rounded-lg transition duration-200 text-white mb-1 flex items-center {{ request()->routeIs('clubs.index') ? 'bg-blue-600 hover:bg-blue-700' : 'hover:bg-blue-600' }}">
                                 <i class="fas fa-users w-6 text-center text-lg"></i>
                                 <span class="nav-text ml-3 truncate">Clubs</span>
-                            </a>
-
-                            {{-- Joined Clubs Dropdown for STUDENT --}}
-                            <div x-data="{ isJoinedClubsOpen: false }" class="mb-1">
+                            </a> {{-- Joined Clubs Dropdown for STUDENT --}} <div x-data="{
+                                isJoinedClubsOpen: false,
+                                sidebarTimer: null,
+                                wasCollapsed: false,
+                                isSidebarCollapsed() { return document.getElementById('sidebar').classList.contains('sidebar-icon-only'); },
+                                expandSidebar() {
+                                    if (this.isSidebarCollapsed() && window.innerWidth >= 768) {
+                                        this.wasCollapsed = true;
+                                        document.getElementById('sidebar').classList.remove('sidebar-icon-only');
+                                    }
+                                },
+                                collapseSidebar() {
+                                    if (this.wasCollapsed && window.innerWidth >= 768) {
+                                        clearTimeout(this.sidebarTimer);
+                                        this.sidebarTimer = setTimeout(() => {
+                                            document.getElementById('sidebar').classList.add('sidebar-icon-only');
+                                            localStorage.setItem('sidebarCollapsed', 'true');
+                                            this.wasCollapsed = false;
+                                        }, 500);
+                                    }
+                                }
+                            }"
+                                @mouseleave="isJoinedClubsOpen = false; collapseSidebar();" class="mb-1 relative">
                                 <button @click="isJoinedClubsOpen = !isJoinedClubsOpen"
+                                    @mouseenter="isSidebarCollapsed() && (isJoinedClubsOpen = true); expandSidebar();"
                                     class="w-full flex items-center justify-between py-3 px-4 text-white hover:bg-blue-600 rounded-lg transition duration-200">
                                     <div class="flex items-center">
                                         <i class="fas fa-clipboard-list w-6 text-center text-lg"></i>
@@ -192,22 +310,34 @@
                                             d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </button>
-
-                                <div x-show="isJoinedClubsOpen" x-transition:enter="transition ease-out duration-300"
+                                <div x-show="isJoinedClubsOpen" x-transition:enter="transition ease-out duration-200"
                                     x-transition:enter-start="opacity-0 transform -translate-y-2"
                                     x-transition:enter-end="opacity-100 transform translate-y-0"
-                                    x-transition:leave="transition ease-in duration-200"
+                                    x-transition:leave="transition ease-in duration-150"
                                     x-transition:leave-start="opacity-100 transform translate-y-0"
                                     x-transition:leave-end="opacity-0 transform -translate-y-2"
-                                    class="pl-8 bg-blue-800 rounded-b-lg overflow-hidden">
-                                    @foreach (auth()->user()->joinedClubs as $club)
-                                        <a href="{{ route('clubs.show', $club) }}"
-                                            class="block py-2 px-3 text-white hover:bg-blue-600 transition duration-200 text-sm rounded-lg my-1">
-                                            {{ $club->club_name }}
-                                        </a>
-                                    @endforeach
+                                    :class="{
+                                        'pl-8 bg-blue-800 rounded-b-lg overflow-hidden': !isSidebarCollapsed(),
+                                        'dropdown-content': isSidebarCollapsed()
+                                    }"
+                                    class="z-50">
+                                    <div class="dropdown-title" x-show="isSidebarCollapsed()">My Clubs</div>
+                                    <div class="p-1">
+                                        @foreach (auth()->user()->joinedClubs as $club)
+                                            <a href="{{ route('clubs.show', $club) }}" @click="collapseSidebar()"
+                                                class="block py-2 px-3 text-white hover:bg-blue-600 transition duration-200 text-sm rounded-lg my-1">
+                                                {{ $club->club_name }}
+                                            </a>
+                                        @endforeach
+                                    </div>
                                 </div>
                             </div>
+                            {{-- Voting link - visible to all STUDENTS --}}
+                            <a href="{{ route('voting.index') }}"
+                                class="block py-3 px-4 rounded-lg transition duration-200 text-white mb-1 flex items-center {{ request()->routeIs('voting.*') ? 'bg-blue-600 hover:bg-blue-700' : 'hover:bg-blue-600' }}">
+                                <i class="fas fa-poll w-6 text-center text-lg"></i>
+                                <span class="nav-text ml-3 truncate">Voting</span>
+                            </a>
                         @else
                             {{-- Direct link to Clubs for STUDENT --}}
                             <a href="{{ route('clubs.index') }}"
@@ -306,9 +436,37 @@
             </main>
         </div>
     </div>
-
     <script>
-        // Toggle sidebar
+        // Initialize sidebar state from localStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+
+            // Apply saved state on desktop only
+            if (window.innerWidth >= 768 && isSidebarCollapsed) {
+                sidebar.classList.add('sidebar-icon-only');
+
+                // Add event listeners for better hover effects on sidebar items
+                setupSidebarHoverEffects();
+            }
+        });
+
+        // Function to enhance sidebar hover effects
+        function setupSidebarHoverEffects() {
+            const menuItems = document.querySelectorAll('#sidebar .relative');
+
+            menuItems.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    if (document.getElementById('sidebar').classList.contains('sidebar-icon-only')) {
+                        this.classList.add('hovered');
+                    }
+                });
+
+                item.addEventListener('mouseleave', function() {
+                    this.classList.remove('hovered');
+                });
+            });
+        } // Toggle sidebar
         document.getElementById('sidebarToggle').addEventListener('click', function() {
             const sidebar = document.getElementById('sidebar');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -319,6 +477,15 @@
             // For desktop: toggle between full sidebar and icon-only sidebar
             if (window.innerWidth >= 768) {
                 sidebar.classList.toggle('sidebar-icon-only');
+
+                // Save state to localStorage
+                const isCollapsed = sidebar.classList.contains('sidebar-icon-only');
+                localStorage.setItem('sidebarCollapsed', isCollapsed);
+
+                // If sidebar is collapsed, setup hover effects
+                if (isCollapsed) {
+                    setupSidebarHoverEffects();
+                }
             }
 
             // Toggle overlay on mobile
@@ -379,22 +546,31 @@
                     dropdown.classList.add('hidden');
                 }, 200);
             }
-        });
-
-        // Handle window resize events for responsive design
+        }); // Handle window resize events for responsive design
         window.addEventListener('resize', function() {
             const sidebar = document.getElementById('sidebar');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
 
             // Reset sidebar state on screen size change
             if (window.innerWidth >= 768) {
                 sidebar.classList.remove('-translate-x-full');
                 sidebarOverlay.classList.add('hidden');
                 document.body.classList.remove('overflow-hidden');
+
+                // Apply saved collapsed state
+                if (isSidebarCollapsed) {
+                    sidebar.classList.add('sidebar-icon-only');
+                } else {
+                    sidebar.classList.remove('sidebar-icon-only');
+                }
             } else {
+                // On mobile, respect the sidebar visibility
                 if (!sidebar.classList.contains('-translate-x-full')) {
                     sidebarOverlay.classList.remove('hidden');
                 }
+                // Always remove icon-only on mobile
+                sidebar.classList.remove('sidebar-icon-only');
             }
         });
     </script>

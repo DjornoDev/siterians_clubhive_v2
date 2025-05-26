@@ -1,25 +1,35 @@
 <div id="addUserModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
     <div class="bg-white rounded-lg p-6 w-full max-w-md">
         <h3 class="text-xl font-bold mb-4">Add New User</h3>
-        <form action="{{ route('admin.users.store') }}" method="POST">
+        <form id="addUserForm" action="{{ route('admin.users.store') }}" method="POST">
             @csrf
+            <!-- General form error messages will appear here -->
+            <div id="formErrors" class="mb-4 hidden">
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <strong class="font-bold">Error!</strong>
+                    <span id="errorMessageGeneral" class="block sm:inline"></span>
+                </div>
+            </div>
+            
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-1">Name</label>
-                    <input type="text" name="name" required
+                    <input type="text" name="name" id="userName" required
                         class="w-full px-3 py-2 border rounded-lg @error('name') border-red-500 @enderror">
                     @error('name')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
+                    <p id="nameError" class="text-red-500 text-xs mt-1 hidden"></p>
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium mb-1">Email</label>
-                    <input type="email" name="email" required
+                    <input type="email" name="email" id="userEmail" required
                         class="w-full px-3 py-2 border rounded-lg @error('email') border-red-500 @enderror">
                     @error('email')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
+                    <p id="emailError" class="text-red-500 text-xs mt-1 hidden"></p>
                 </div>
 
                 <div>
@@ -79,17 +89,118 @@
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
-            </div>
-
-            <div class="mt-6 flex justify-end gap-3">
+            </div>            <div class="mt-6 flex justify-end gap-3">
                 <button type="button" onclick="toggleUserModal()"
                     class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">
                     Cancel
                 </button>
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                <button type="submit" id="addUserBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                     Add User
                 </button>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('addUserForm');
+    const nameInput = document.getElementById('userName');
+    const emailInput = document.getElementById('userEmail');
+    const nameError = document.getElementById('nameError');
+    const emailError = document.getElementById('emailError');
+    const formErrors = document.getElementById('formErrors');
+    const errorMessageGeneral = document.getElementById('errorMessageGeneral');
+    
+    // Function to check if user exists
+    async function checkUserExists(fieldName, value) {
+        try {
+            const response = await fetch(`/admin/users/check-exists?field=${fieldName}&value=${encodeURIComponent(value)}`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                },
+            });
+            
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            
+            return await response.json();
+        } catch (error) {
+            console.error('Error checking user existence:', error);
+            return { exists: false };
+        }
+    }
+    
+    // Validate name on blur
+    nameInput.addEventListener('blur', async function() {
+        if (this.value.trim()) {
+            const result = await checkUserExists('name', this.value);
+            if (result.exists) {
+                nameError.textContent = 'This name already exists in the database.';
+                nameError.classList.remove('hidden');
+                this.classList.add('border-red-500');
+            } else {
+                nameError.classList.add('hidden');
+                this.classList.remove('border-red-500');
+            }
+        }
+    });
+    
+    // Validate email on blur
+    emailInput.addEventListener('blur', async function() {
+        if (this.value.trim()) {
+            const result = await checkUserExists('email', this.value);
+            if (result.exists) {
+                emailError.textContent = 'This email already exists in the database.';
+                emailError.classList.remove('hidden');
+                this.classList.add('border-red-500');
+            } else {
+                emailError.classList.add('hidden');
+                this.classList.remove('border-red-500');
+            }
+        }
+    });
+    
+    // Form submission
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Reset errors
+        nameError.classList.add('hidden');
+        emailError.classList.add('hidden');
+        formErrors.classList.add('hidden');
+        
+        let hasErrors = false;
+        
+        // Check name
+        const nameResult = await checkUserExists('name', nameInput.value);
+        if (nameResult.exists) {
+            nameError.textContent = 'This name already exists in the database.';
+            nameError.classList.remove('hidden');
+            nameInput.classList.add('border-red-500');
+            hasErrors = true;
+        }
+        
+        // Check email
+        const emailResult = await checkUserExists('email', emailInput.value);
+        if (emailResult.exists) {
+            emailError.textContent = 'This email already exists in the database.';
+            emailError.classList.remove('hidden');
+            emailInput.classList.add('border-red-500');
+            hasErrors = true;
+        }
+        
+        if (hasErrors) {
+            formErrors.classList.remove('hidden');
+            errorMessageGeneral.textContent = 'Please fix the errors before submitting.';
+            return;
+        }
+        
+        // Submit the form if no errors
+        this.submit();
+    });
+});
+</script>

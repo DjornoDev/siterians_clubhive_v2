@@ -11,8 +11,7 @@ class Post extends Model
 
     protected $table = 'tbl_posts';
     protected $primaryKey = 'post_id';
-
-    public $timestamps = true;
+     public $timestamps = true;
 
     protected $fillable = [
         'post_caption',
@@ -39,5 +38,30 @@ class Post extends Model
     public function images()
     {
         return $this->hasMany(PostImage::class, 'post_id');
+    }
+    
+    /**
+     * Determine if a user can view this post.
+     *
+     * @param  \App\Models\User|null  $user
+     * @return bool
+     */
+    public function canBeViewedBy($user)
+    {
+        // PUBLIC posts can be viewed by anyone
+        if ($this->post_visibility === 'PUBLIC') {
+            return true;
+        }
+        
+        // For CLUB_ONLY posts, check permissions
+        // User must be logged in and either the author, club adviser, or club member
+        if ($user &&
+            ($user->user_id === $this->author_id ||
+             $user->user_id === $this->club->club_adviser ||
+             $this->club->members()->where('tbl_club_membership.user_id', $user->user_id)->exists())) {
+            return true;
+        }
+        
+        return false;
     }
 }

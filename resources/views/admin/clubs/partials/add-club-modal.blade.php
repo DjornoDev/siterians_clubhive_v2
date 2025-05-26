@@ -12,6 +12,7 @@
                     @error('club_name')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
+                    <p id="club_name_error" class="text-red-500 text-xs mt-1 hidden"></p>
                 </div>
 
                 <div>
@@ -53,9 +54,8 @@
                             <!-- Add custom error for client-side validation -->
                             <div id="club_logo_error" class="text-red-500 text-xs mt-1 hidden">Please select a logo
                                 file.</div>
-                        </div>
-                        <div id="logoPreviewContainer"
-                            class="hidden h-16 w-16 rounded-full border overflow-hidden bg-gray-100 flex items-center justify-center">
+                        </div>                        <div id="logoPreviewContainer"
+                            class="hidden h-16 w-16 rounded-full border overflow-hidden bg-gray-100">
                             <img id="logoPreview" src="#" alt="Logo preview" class="h-full w-full object-cover">
                         </div>
                     </div>
@@ -99,53 +99,124 @@
 
 <script>
     // Form submission handler with full validation
-    document.getElementById('addClubForm').addEventListener('submit', function(e) {
-        let isValid = true;
-        const logoInput = document.getElementById('club_logo');
-        const bannerInput = document.getElementById('club_banner');
-        const logoError = document.getElementById('club_logo_error');
-        const bannerError = document.getElementById('club_banner_error');
-        const submitButton = this.querySelector('button[type="submit"]');
+    document.addEventListener('DOMContentLoaded', function() {
+        const clubNameInput = document.getElementById('club_name');
+        const clubNameError = document.getElementById('club_name_error');
+        const addClubForm = document.getElementById('addClubForm');
+        
+        // Function to check if club name exists
+        async function checkClubNameExists(name) {
+            try {
+                const response = await fetch(
+                    `/admin/clubs/check-name-exists?value=${encodeURIComponent(name)}`, {
+                        method: 'GET',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                        },
+                    });
 
-        // Reset errors
-        logoError.classList.add('hidden');
-        bannerError.classList.add('hidden');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
 
-        // Validate logo
-        const logoValidation = validateFile(logoInput, 2); // 2MB max
-        if (logoValidation !== true) {
-            isValid = false;
-            logoError.textContent = typeof logoValidation === 'string' ? logoValidation :
-                'Please select a logo file.';
-            logoError.classList.remove('hidden');
-        }
-
-        // Validate banner
-        const bannerValidation = validateFile(bannerInput, 5); // 5MB max
-        if (bannerValidation !== true) {
-            isValid = false;
-            bannerError.textContent = typeof bannerValidation === 'string' ? bannerValidation :
-                'Please select a banner file.';
-            bannerError.classList.remove('hidden');
-        }
-
-        if (!isValid) {
-            e.preventDefault();
-            // Keep modal open
-            document.getElementById('addClubModal').classList.remove('hidden');
-            // Scroll to first error
-            const firstError = document.querySelector('.text-red-500:not(.hidden)');
-            if (firstError) {
-                firstError.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
-                });
+                return await response.json();
+            } catch (error) {
+                console.error('Error checking club name existence:', error);
+                return {
+                    exists: false
+                };
             }
-        } else {
-            // Add loading state
-            submitButton.innerHTML = 'Adding...';
-            submitButton.disabled = true;
         }
+        
+        // Validate club name on blur
+        clubNameInput.addEventListener('blur', async function() {
+            if (this.value.trim()) {
+                const result = await checkClubNameExists(this.value);
+
+                if (result.exists) {
+                    clubNameError.textContent = 'This club name already exists.';
+                    clubNameError.classList.remove('hidden');
+                    this.classList.add('border-red-500');
+                } else {
+                    clubNameError.classList.add('hidden');
+                    this.classList.remove('border-red-500');
+                }
+            } else {
+                clubNameError.classList.add('hidden');
+                this.classList.remove('border-red-500');
+            }
+        });
+
+        // Form submission handler with full validation
+        addClubForm.addEventListener('submit', async function(e) {
+            // Prevent default form submission first to allow for validation
+            e.preventDefault();
+            
+            let isValid = true;
+            const logoInput = document.getElementById('club_logo');
+            const bannerInput = document.getElementById('club_banner');
+            const logoError = document.getElementById('club_logo_error');
+            const bannerError = document.getElementById('club_banner_error');
+            const submitButton = this.querySelector('button[type="submit"]');
+            const clubName = clubNameInput.value.trim();
+
+            // Reset errors
+            logoError.classList.add('hidden');
+            bannerError.classList.add('hidden');
+            clubNameError.classList.add('hidden');
+            
+            // Validate club name uniqueness
+            if (clubName) {
+                const result = await checkClubNameExists(clubName);
+                if (result.exists) {
+                    isValid = false;
+                    clubNameError.textContent = 'This club name already exists.';
+                    clubNameError.classList.remove('hidden');
+                    clubNameInput.classList.add('border-red-500');
+                } else {
+                    clubNameError.classList.add('hidden');
+                    clubNameInput.classList.remove('border-red-500');
+                }
+            }
+
+            // Validate logo
+            const logoValidation = validateFile(logoInput, 5); // 5MB max
+            if (logoValidation !== true) {
+                isValid = false;
+                logoError.textContent = typeof logoValidation === 'string' ? logoValidation :
+                    'Please select a logo file.';
+                logoError.classList.remove('hidden');
+            }
+
+            // Validate banner
+            const bannerValidation = validateFile(bannerInput, 5); // 5MB max
+            if (bannerValidation !== true) {
+                isValid = false;
+                bannerError.textContent = typeof bannerValidation === 'string' ? bannerValidation :
+                    'Please select a banner file.';
+                bannerError.classList.remove('hidden');
+            }
+
+            if (!isValid) {
+                // Keep modal open
+                document.getElementById('addClubModal').classList.remove('hidden');
+                // Scroll to first error
+                const firstError = document.querySelector('.text-red-500:not(.hidden)');
+                if (firstError) {
+                    firstError.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+            } else {
+                // Add loading state
+                submitButton.innerHTML = 'Adding...';
+                submitButton.disabled = true;
+                // Submit the form
+                this.submit();
+            }
+        });
     });
 
     // File validation helper

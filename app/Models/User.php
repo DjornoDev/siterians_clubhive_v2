@@ -95,7 +95,8 @@ class User extends Authenticatable
 
     public function advisedClubs()
     {
-        return $this->hasMany(Club::class, 'club_adviser');
+        return $this->hasMany(Club::class, 'club_adviser')
+            ->select('tbl_clubs.*'); // Explicitly select all columns from the clubs table
     }
 
     public function joinedClubs()
@@ -104,6 +105,24 @@ class User extends Authenticatable
             ->using(ClubMembership::class)
             ->withPivot(['club_role', 'joined_date', 'club_accessibility'])
             ->withTimestamps()
-            ->where('tbl_club_membership.club_id', '!=', null); // Add table prefix
+            ->where('tbl_club_membership.club_id', '!=', null) // Add table prefix
+            ->select('tbl_clubs.*'); // Explicitly select all columns from the clubs table
+    }
+    
+    /**
+     * Get all clubs IDs that the user is associated with (either as a member or adviser)
+     *
+     * @return array
+     */
+    public function getAllAssociatedClubIds()
+    {
+        // Get clubs where user is a member
+        $memberClubIds = $this->joinedClubs()->pluck('tbl_clubs.club_id')->toArray();
+        
+        // Get clubs where user is an adviser
+        $adviserClubIds = $this->advisedClubs()->pluck('tbl_clubs.club_id')->toArray();
+        
+        // Combine both lists and remove duplicates
+        return array_unique(array_merge($memberClubIds, $adviserClubIds));
     }
 }

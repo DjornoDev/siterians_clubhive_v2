@@ -20,6 +20,11 @@
                 {{ $event->event_name }}
             </h2>
 
+            <!-- Event visibility badge -->
+            <div class="mb-2">
+                @include('clubs.partials.event-visibility-badge', ['event' => $event])
+            </div>
+
             <!-- Description with better spacing -->
             @if ($event->event_description)
                 <p class="text-gray-600 mb-3">{{ $event->event_description }}</p>
@@ -73,12 +78,13 @@
 
 @can('update', $event)
     <div class="flex flex-col sm:flex-row gap-2 self-end sm:self-start mt-4 sm:mt-0">
-        <button type="button"
+    <button type="button"
             class="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-3 py-2 rounded-lg transition-all duration-200 flex items-center gap-1.5 border border-transparent hover:border-indigo-200"
             data-event-id="{{ $event->event_id }}" data-event-name="{{ $event->event_name }}"
             data-event-description="{{ $event->event_description }}"
             data-event-date="{{ $event->event_date->format('Y-m-d') }}" data-event-time="{{ $event->event_time }}"
-            data-event-location="{{ $event->event_location }}" onclick="openEditModal(this)" aria-label="Edit event">
+            data-event-location="{{ $event->event_location }}" data-event-visibility="{{ $event->event_visibility }}"
+            onclick="openEditModal(this)" aria-label="Edit event">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

@@ -1,8 +1,36 @@
 @section('title', $club->club_name . ' - Events')
 @extends('clubs.layouts.navigation')
 
-@section('club_content')
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+@section('club_content') <div tabindex="-1" x-data="{
+    lastChecksum: '{{ md5(json_encode($todayEvents->pluck('event_id')->merge($todayEvents->pluck('updated_at'))->merge($upcomingEvents->pluck('event_id'))->merge($upcomingEvents->pluck('updated_at')))) }}',
+    modalOpen: false,
+    checkForEventChanges() {
+        // Skip refresh check if a modal is open
+        if (this.modalOpen) return;
+
+        // Check if any event modals are visible
+        const createModalOpen = document.getElementById('create-event-modal') &&
+            !document.getElementById('create-event-modal').classList.contains('hidden');
+        const editModalOpen = document.getElementById('edit-event-modal') &&
+            !document.getElementById('edit-event-modal').classList.contains('hidden');
+        const deleteModalOpen = document.getElementById('delete-event-modal') &&
+            !document.getElementById('delete-event-modal').classList.contains('hidden');
+
+        if (createModalOpen || editModalOpen || deleteModalOpen) return;
+
+        fetch('{{ route('clubs.check-event-changes', $club) }}?checksum=' + this.lastChecksum)
+            .then(response => response.json())
+            .then(data => {
+                if (data.hasChanges) {
+                    window.location.reload();
+                }
+            });
+    },
+    init() {
+        // Check for event changes every 10 seconds
+        setInterval(() => this.checkForEventChanges(), 10000);
+    }
+}" class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
 
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <h1 class="text-3xl font-bold text-gray-900">Club Events</h1>
@@ -103,6 +131,21 @@
                 modal.classList.remove('hidden');
                 modal.setAttribute('aria-hidden', 'false');
 
+                // Set minimum date to today
+                const dateInput = modal.querySelector('#event_date');
+                const today = new Date().toISOString().split('T')[0];
+                dateInput.min = today;
+
+                // Try to set modalOpen to true in Alpine.js data (as backup)
+                try {
+                    const eventsContainer = document.querySelector('[x-data]');
+                    if (eventsContainer && window.Alpine) {
+                        window.Alpine.evaluate(eventsContainer, 'modalOpen = true');
+                    }
+                } catch (e) {
+                    console.log('Could not set Alpine modalOpen state, using fallback');
+                }
+
                 // Focus on first input when modal opens
                 setTimeout(() => {
                     modal.querySelector('input[type="text"]').focus();
@@ -124,12 +167,39 @@
                 modal.querySelector('#event_id').value = eventId;
                 modal.querySelector('#event_name').value = button.dataset.eventName;
                 modal.querySelector('#event_description').value = button.dataset.eventDescription;
-                modal.querySelector('#event_date').value = button.dataset.eventDate;
+
+                // Set minimum date to today
+                const dateInput = modal.querySelector('#event_date');
+                const today = new Date().toISOString().split('T')[0];
+                dateInput.min = today;
+                dateInput.value = button.dataset.eventDate;
+
                 modal.querySelector('#event_time').value = button.dataset.eventTime;
                 modal.querySelector('#event_location').value = button.dataset.eventLocation;
 
+                // Set the correct visibility option
+                const visibilitySelect = modal.querySelector('#event_visibility');
+                const eventVisibility = button.dataset.eventVisibility;
+
+                for (let i = 0; i < visibilitySelect.options.length; i++) {
+                    if (visibilitySelect.options[i].value === eventVisibility) {
+                        visibilitySelect.selectedIndex = i;
+                        break;
+                    }
+                }
+
                 modal.classList.remove('hidden');
                 modal.setAttribute('aria-hidden', 'false');
+
+                // Try to set modalOpen to true in Alpine.js data (as backup)
+                try {
+                    const eventsContainer = document.querySelector('[x-data]');
+                    if (eventsContainer && window.Alpine) {
+                        window.Alpine.evaluate(eventsContainer, 'modalOpen = true');
+                    }
+                } catch (e) {
+                    console.log('Could not set Alpine modalOpen state, using fallback');
+                }
 
                 // Focus on first input when modal opens
                 setTimeout(() => {
@@ -151,6 +221,16 @@
                 modal.classList.remove('hidden');
                 modal.setAttribute('aria-hidden', 'false');
 
+                // Try to set modalOpen to true in Alpine.js data (as backup)
+                try {
+                    const eventsContainer = document.querySelector('[x-data]');
+                    if (eventsContainer && window.Alpine) {
+                        window.Alpine.evaluate(eventsContainer, 'modalOpen = true');
+                    }
+                } catch (e) {
+                    console.log('Could not set Alpine modalOpen state, using fallback');
+                }
+
                 // Focus on confirm button
                 setTimeout(() => {
                     modal.querySelector('button[type="submit"]').focus();
@@ -162,8 +242,24 @@
 
             function closeModal(modalId) {
                 const modal = document.getElementById(modalId);
+
+                // Move focus to a safe element before hiding the modal
+                // The main container is a good choice
+                document.querySelector('.max-w-7xl').focus();
+
+                // Then hide the modal
                 modal.classList.add('hidden');
                 modal.setAttribute('aria-hidden', 'true');
+
+                // Try to set modalOpen to false in Alpine.js data (as backup)
+                try {
+                    const eventsContainer = document.querySelector('[x-data]');
+                    if (eventsContainer && window.Alpine) {
+                        window.Alpine.evaluate(eventsContainer, 'modalOpen = false');
+                    }
+                } catch (e) {
+                    console.log('Could not set Alpine modalOpen state, using fallback');
+                }
 
                 // Re-enable body scroll
                 document.body.style.overflow = 'auto';
