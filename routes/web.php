@@ -19,9 +19,13 @@ use App\Models\User;
 use App\Models\Club;
 use App\Models\Event;
 use App\Http\Controllers\VotingController;
-use App\Http\Controllers\SiteroController;
 
 Route::get('/', [App\Http\Controllers\WelcomeController::class, 'index']);
+
+// Sitero Infographics Route
+Route::get('/sitero-infographics', function () {
+    return view('sitero-infographics.index');
+})->name('sitero.infographics');
 
 Route::get('/clubs/{id}', function ($id) {
     $club = Club::findOrFail($id);
