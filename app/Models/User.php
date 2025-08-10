@@ -23,8 +23,15 @@ class User extends Authenticatable
         'role',
         'name',
         'email',
+        'sex',
+        'address',
+        'contact_no',
         'password',
         'section_id',
+        'mother_name',
+        'mother_contact_no',
+        'father_name',
+        'father_contact_no',
         'profile_picture',
     ];
 
@@ -108,7 +115,7 @@ class User extends Authenticatable
             ->where('tbl_club_membership.club_id', '!=', null) // Add table prefix
             ->select('tbl_clubs.*'); // Explicitly select all columns from the clubs table
     }
-    
+
     /**
      * Get all clubs IDs that the user is associated with (either as a member or adviser)
      *
@@ -118,10 +125,10 @@ class User extends Authenticatable
     {
         // Get clubs where user is a member
         $memberClubIds = $this->joinedClubs()->pluck('tbl_clubs.club_id')->toArray();
-        
+
         // Get clubs where user is an adviser
         $adviserClubIds = $this->advisedClubs()->pluck('tbl_clubs.club_id')->toArray();
-        
+
         // Combine both lists and remove duplicates
         return array_unique(array_merge($memberClubIds, $adviserClubIds));
     }

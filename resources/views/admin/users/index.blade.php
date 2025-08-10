@@ -30,6 +30,15 @@
                         </svg>
                         Bulk Upload
                     </button>
+                    <a href="{{ route('admin.users.export', request()->query()) }}"
+                        class="bg-green-600 text-white px-5 py-2.5 rounded-lg hover:bg-green-700 transition-all duration-200 font-medium shadow-sm flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        Export Data
+                    </a>
                 </div>
             </div>
         </div>
@@ -290,7 +299,7 @@
                                                 <i class="fas fa-eye"></i> View
                                             </button>
                                             <button
-                                                onclick="openEditModal('{{ $user->user_id }}', '{{ $user->name }}', '{{ $user->email }}', '{{ $user->role }}', '{{ $user->section->class_id ?? '' }}', '{{ $user->section_id ?? '' }}')"
+                                                onclick="openEditModal('{{ $user->user_id }}', '{{ addslashes($user->name) }}', '{{ $user->email }}', '{{ $user->role }}', '{{ $user->sex ?? '' }}', '{{ addslashes($user->address ?? '') }}', '{{ $user->contact_no ?? '' }}', '{{ addslashes($user->mother_name ?? '') }}', '{{ $user->mother_contact_no ?? '' }}', '{{ addslashes($user->father_name ?? '') }}', '{{ $user->father_contact_no ?? '' }}', '{{ $user->section->class_id ?? '' }}', '{{ $user->section_id ?? '' }}')"
                                                 class="text-blue-600 hover:text-blue-900 transition-colors duration-150 flex items-center gap-1 border border-blue-200 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded">
                                                 <i class="fas fa-edit"></i> Edit
                                             </button>
@@ -539,13 +548,21 @@
             }
 
             // Edit Modal Functions
-            function openEditModal(userId, name, email, role, classId, sectionId) {
+            function openEditModal(userId, name, email, role, sex, address, contactNo, motherName, motherContactNo, fatherName,
+                fatherContactNo, classId, sectionId) {
                 const form = document.getElementById('editUserForm');
                 form.action = `/admin/users/${userId}`;
 
                 document.getElementById('editName').value = name;
                 document.getElementById('editEmail').value = email;
                 document.getElementById('editRole').value = role;
+                document.getElementById('editSex').value = sex;
+                document.getElementById('editAddress').value = address;
+                document.getElementById('editContactNo').value = contactNo;
+                document.getElementById('editMotherName').value = motherName;
+                document.getElementById('editMotherContactNo').value = motherContactNo;
+                document.getElementById('editFatherName').value = fatherName;
+                document.getElementById('editFatherContactNo').value = fatherContactNo;
 
                 const classSection = document.getElementById('editClassSection');
                 if (role === 'STUDENT') {
@@ -609,6 +626,13 @@
                 setTimeout(() => {
                     modal.classList.add('hidden');
                 }, 2000);
+            }
+
+            function closeSuccessModal() {
+                const modal = document.getElementById('deleteSuccessModal');
+                modal.classList.add('hidden');
+                // Optional: Refresh the page to update the user list
+                window.location.reload();
             }
 
             // Handle password verification
@@ -743,7 +767,7 @@
                 // Set class and section info
                 if (userData.section) {
                     document.getElementById('userGradeLevel').textContent =
-                    `Grade ${userData.section.school_class.grade_level}`;
+                        `Grade ${userData.section.school_class.grade_level}`;
                     document.getElementById('userSection').textContent = userData.section.section_name;
                 } else {
                     document.getElementById('userGradeLevel').textContent = 'N/A';
@@ -956,7 +980,7 @@
                             errorElement.textContent = data.error || 'Invalid password. Please try again.';
                             errorElement.classList.remove('hidden');
                             document.getElementById('editPasswordVerificationInput').classList.add(
-                            'border-red-500');
+                                'border-red-500');
                         }
                     })
                     .catch(error => {

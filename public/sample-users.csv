@@ -1,13 +1,13 @@
-name,email,role,password,class_id,section_id
-Alex Rivera,arivera@example.com,STUDENT,student123,1,2
-Morgan Lee,mlee@example.com,STUDENT,pass2023,2,1
-Samantha Taylor,staylor@example.com,STUDENT,secure789,3,4
-Ethan Brown,ebrown@example.com,STUDENT,ethan2023,1,3
-Daniel Park,dpark@example.com,STUDENT,dp456789,2,2
-Ryan Martinez,rmartinez@example.com,STUDENT,ryanpass,3,1
-Hannah Kim,hkim@example.com,TEACHER,teach456,,
-David Thompson,dthompson@example.com,TEACHER,faculty123,,
-Olivia Jackson,ojackson@example.com,TEACHER,olivia789,,
+name,email,role,sex,address,contact_no,mother_name,mother_contact_no,father_name,father_contact_no,password,class_id,section_id
+Alex Rivera,arivera@example.com,STUDENT,MALE,"123 Rivera St Manila",09123456789,Ana Rivera,09234567890,Carlos Rivera,09345678901,student123,1,2
+Morgan Lee,mlee@example.com,STUDENT,FEMALE,"456 Lee Ave Quezon City",09111222333,Lisa Lee,09222333444,Michael Lee,09333444555,pass2023,2,1
+Samantha Taylor,staylor@example.com,STUDENT,FEMALE,"789 Taylor Blvd Makati",09444555666,Sarah Taylor,09555666777,Steve Taylor,09666777888,secure789,3,4
+Ethan Brown,ebrown@example.com,STUDENT,MALE,"321 Brown Road Pasig",09777888999,Emma Brown,09888999000,Edward Brown,09999000111,ethan2023,1,3
+Daniel Park,dpark@example.com,STUDENT,MALE,"654 Park Street Taguig",09100200300,Diana Park,09200300400,David Park,09300400500,dp456789,2,2
+Ryan Martinez,rmartinez@example.com,STUDENT,MALE,"987 Martinez Lane Mandaluyong",09400500600,Rosa Martinez,09500600700,Roberto Martinez,09600700800,ryanpass,3,1
+Hannah Kim,hkim@example.com,TEACHER,FEMALE,"111 Kim Avenue BGC",09700800900,,,,,teach456,,
+David Thompson,dthompson@example.com,TEACHER,MALE,"222 Thompson Street Ortigas",09800901000,,,,,faculty123,,
+Olivia Jackson,ojackson@example.com,TEACHER,FEMALE,"333 Jackson Drive Alabang",09901002000,,,,,olivia789,,
 Nathan Singh,nsingh@example.com,TEACHER,teach2023,,
 Sophia Williams,swilliams@example.com,TEACHER,sophia456,,
 Carlos Mendez,cmendez@example.com,TEACHER,carlos123,,

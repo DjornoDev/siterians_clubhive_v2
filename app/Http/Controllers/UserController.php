@@ -41,12 +41,90 @@ class UserController extends Controller
 
         $classes = SchoolClass::with('sections')->get();
         $sections = collect();
-        
+
         if ($request->filled('class_id')) {
             $sections = Section::where('class_id', $request->input('class_id'))->get();
         }
 
         return view('admin.users.index', compact('users', 'classes', 'sections'));
+    }
+
+    public function export(Request $request)
+    {
+        $users = User::query()
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->input('search');
+                $query->where('name', 'like', "%$search%")
+                    ->orWhere('email', 'like', "%$search%");
+            })
+            ->when($request->filled('role'), function ($query) use ($request) {
+                $query->where('role', $request->input('role'));
+            })
+            ->when($request->filled('class_id'), function ($query) use ($request) {
+                $query->whereHas('section', function ($q) use ($request) {
+                    $q->where('class_id', $request->input('class_id'));
+                });
+            })
+            ->when($request->filled('section_id'), function ($query) use ($request) {
+                $query->where('section_id', $request->input('section_id'));
+            })
+            ->with(['section.schoolClass'])
+            ->get();
+
+        $filename = 'users_export_' . date('Y-m-d_H-i-s') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function () use ($users) {
+            $file = fopen('php://output', 'w');
+
+            // CSV headers
+            fputcsv($file, [
+                'User ID',
+                'Name',
+                'Email',
+                'Role',
+                'Sex',
+                'Address',
+                'Contact No.',
+                'Class',
+                'Section',
+                'Mother\'s Name',
+                'Mother\'s Contact No.',
+                'Father\'s Name',
+                'Father\'s Contact No.',
+                'Created At',
+                'Updated At'
+            ]);
+
+            // User data
+            foreach ($users as $user) {
+                fputcsv($file, [
+                    $user->user_id,
+                    $user->name,
+                    $user->email,
+                    $user->role,
+                    $user->sex ?? '',
+                    $user->address ?? '',
+                    $user->contact_no ?? '',
+                    $user->section ? 'Grade ' . $user->section->schoolClass->grade_level : '',
+                    $user->section ? $user->section->section_name : '',
+                    $user->mother_name ?? '',
+                    $user->mother_contact_no ?? '',
+                    $user->father_name ?? '',
+                    $user->father_contact_no ?? '',
+                    $user->created_at ? $user->created_at->format('Y-m-d H:i:s') : '',
+                    $user->updated_at ? $user->updated_at->format('Y-m-d H:i:s') : ''
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     public function store(Request $request)
@@ -56,9 +134,16 @@ class UserController extends Controller
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:tbl_users',
-                'role' => 'required|in:ADMIN,TEACHER,STUDENT',
+                'role' => 'required|in:TEACHER,STUDENT',
+                'sex' => 'nullable|in:MALE,FEMALE',
+                'address' => 'nullable|string|max:500',
+                'contact_no' => 'nullable|string|max:20',
                 'class_id' => 'nullable|required_if:role,STUDENT|exists:tbl_classes,class_id',
                 'section_id' => 'nullable|required_if:role,STUDENT|exists:tbl_sections,section_id',
+                'mother_name' => 'nullable|string|max:255',
+                'mother_contact_no' => 'nullable|string|max:20',
+                'father_name' => 'nullable|string|max:255',
+                'father_contact_no' => 'nullable|string|max:20',
                 'password' => 'required|min:8',
             ]);
 
@@ -67,7 +152,14 @@ class UserController extends Controller
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'role' => $validated['role'],
+                'sex' => $validated['sex'] ?? null,
+                'address' => $validated['address'] ?? null,
+                'contact_no' => $validated['contact_no'] ?? null,
                 'section_id' => $validated['section_id'] ?? null,
+                'mother_name' => $validated['mother_name'] ?? null,
+                'mother_contact_no' => $validated['mother_contact_no'] ?? null,
+                'father_name' => $validated['father_name'] ?? null,
+                'father_contact_no' => $validated['father_contact_no'] ?? null,
                 'password' => Hash::make($validated['password']),
             ]);
 
@@ -101,7 +193,7 @@ class UserController extends Controller
         $header = array_shift($csvData);
 
         // Validate CSV header
-        $expectedHeader = ['name', 'email', 'role', 'password', 'class_id', 'section_id'];
+        $expectedHeader = ['name', 'email', 'role', 'sex', 'address', 'contact_no', 'mother_name', 'mother_contact_no', 'father_name', 'father_contact_no', 'password', 'class_id', 'section_id'];
         if ($header !== $expectedHeader) {
             return redirect()->back()
                 ->withErrors(['users_file' => 'Invalid CSV format. Please use the provided template.']);
@@ -117,7 +209,14 @@ class UserController extends Controller
             $validator = Validator::make($data, [
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:tbl_users,email',
-                'role' => 'required|in:ADMIN,TEACHER,STUDENT',
+                'role' => 'required|in:TEACHER,STUDENT',
+                'sex' => 'nullable|in:MALE,FEMALE',
+                'address' => 'nullable|string|max:500',
+                'contact_no' => 'nullable|string|max:20',
+                'mother_name' => 'nullable|string|max:255',
+                'mother_contact_no' => 'nullable|string|max:20',
+                'father_name' => 'nullable|string|max:255',
+                'father_contact_no' => 'nullable|string|max:20',
                 'password' => 'required|min:8',
                 'class_id' => 'nullable|required_if:role,STUDENT|exists:tbl_classes,class_id',
                 'section_id' => 'nullable|required_if:role,STUDENT|exists:tbl_sections,section_id',
@@ -133,6 +232,13 @@ class UserController extends Controller
                     'name' => $data['name'],
                     'email' => $data['email'],
                     'role' => $data['role'],
+                    'sex' => $data['sex'] ?? null,
+                    'address' => $data['address'] ?? null,
+                    'contact_no' => $data['contact_no'] ?? null,
+                    'mother_name' => $data['mother_name'] ?? null,
+                    'mother_contact_no' => $data['mother_contact_no'] ?? null,
+                    'father_name' => $data['father_name'] ?? null,
+                    'father_contact_no' => $data['father_contact_no'] ?? null,
                     'section_id' => $data['role'] === 'STUDENT' ? $data['section_id'] : null,
                     'password' => Hash::make($data['password']),
                 ]);
@@ -171,7 +277,7 @@ class UserController extends Controller
             // If email or password is being changed, verify admin's password
             $emailChanged = $request->filled('email') && $user->email !== $request->email;
             $passwordChanged = $request->filled('password');
-            
+
             if (($emailChanged || $passwordChanged) && $request->has('admin_password')) {
                 // Verify the admin's password
                 if (!Hash::check($request->admin_password, auth()->user()->password)) {
@@ -181,7 +287,7 @@ class UserController extends Controller
                     ], 401);
                 }
             }
-            
+
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => [
@@ -189,7 +295,14 @@ class UserController extends Controller
                     'email',
                     Rule::unique('tbl_users', 'email')->ignore($user->user_id, 'user_id'),
                 ],
-                'role' => 'required|in:ADMIN,TEACHER,STUDENT',
+                'role' => 'required|in:TEACHER,STUDENT',
+                'sex' => 'nullable|in:MALE,FEMALE',
+                'address' => 'nullable|string|max:500',
+                'contact_no' => 'nullable|string|max:20',
+                'mother_name' => 'nullable|string|max:255',
+                'mother_contact_no' => 'nullable|string|max:20',
+                'father_name' => 'nullable|string|max:255',
+                'father_contact_no' => 'nullable|string|max:20',
                 'class_id' => 'nullable|required_if:role,STUDENT|exists:tbl_classes,class_id',
                 'section_id' => 'nullable|required_if:role,STUDENT|exists:tbl_sections,section_id',
                 'password' => 'nullable|min:8',
@@ -200,6 +313,13 @@ class UserController extends Controller
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'role' => $validated['role'],
+                'sex' => $validated['sex'] ?? null,
+                'address' => $validated['address'] ?? null,
+                'contact_no' => $validated['contact_no'] ?? null,
+                'mother_name' => $validated['mother_name'] ?? null,
+                'mother_contact_no' => $validated['mother_contact_no'] ?? null,
+                'father_name' => $validated['father_name'] ?? null,
+                'father_contact_no' => $validated['father_contact_no'] ?? null,
                 'section_id' => $validated['section_id'] ?? null,
             ];
 
@@ -254,7 +374,7 @@ class UserController extends Controller
             ], 500);
         }
     }
-    
+
     /**
      * Check if a user with the given name or email already exists.
      *
@@ -266,20 +386,20 @@ class UserController extends Controller
         $field = $request->input('field');
         $value = $request->input('value');
         $excludeId = $request->input('exclude');
-        
+
         if (!in_array($field, ['name', 'email'])) {
             return response()->json(['error' => 'Invalid field'], 400);
         }
-        
+
         $query = User::where($field, $value);
-        
+
         // If we're excluding a user (for edit validation), add the condition
         if ($excludeId) {
             $query->where('user_id', '!=', $excludeId);
         }
-        
+
         $exists = $query->exists();
-        
+
         return response()->json(['exists' => $exists]);
     }
 
@@ -300,7 +420,7 @@ class UserController extends Controller
             'posts',
             'organizedEvents'
         ]);
-        
+
         // If the user is a teacher, also load the clubs they advise
         if ($user->role === 'TEACHER') {
             $advisedClubs = Club::where('club_adviser', $user->user_id)

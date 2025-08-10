@@ -1,58 +1,114 @@
 <div id="editUserModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-    <div class="bg-white rounded-lg p-6 w-full max-w-md">
+    <div class="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <h3 class="text-xl font-bold mb-4">Edit User</h3>
         <form id="editUserForm" method="POST">
             @csrf
             @method('PUT')
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1">Name</label>
-                    <input type="text" name="name" id="editName" required
-                        class="w-full px-3 py-2 border rounded-lg">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Email</label>
-                    <input type="email" name="email" id="editEmail" required
-                        class="w-full px-3 py-2 border rounded-lg">
-                    <p id="editEmailError" class="text-red-500 text-xs mt-1 hidden"></p>
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Basic Information -->
+                <div class="space-y-4">
+                    <h4 class="text-lg font-semibold text-gray-700 border-b pb-2">Basic Information</h4>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Name <span class="text-red-500">*</span></label>
+                        <input type="text" name="name" id="editName" required
+                            class="w-full px-3 py-2 border rounded-lg">
+                    </div>
 
-                <div>
-                    <label class="block text-sm font-medium mb-1">Role</label>
-                    <select name="role" id="editRole" required class="w-full px-3 py-2 border rounded-lg"
-                        onchange="toggleEditClassSection()">
-                        <option value="">Select Role</option>
-                        <option value="ADMIN">Admin</option>
-                        <option value="TEACHER">Teacher</option>
-                        <option value="STUDENT">Student</option>
-                    </select>
-                </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Email <span class="text-red-500">*</span></label>
+                        <input type="email" name="email" id="editEmail" required
+                            class="w-full px-3 py-2 border rounded-lg">
+                        <p id="editEmailError" class="text-red-500 text-xs mt-1 hidden"></p>
+                    </div>
 
-                <div id="editClassSection" class="hidden">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Class</label>
-                            <select name="class_id" id="editClassId" class="w-full px-3 py-2 border rounded-lg">
-                                <option value="">Select Class</option>
-                                @foreach ($classes as $class)
-                                    <option value="{{ $class->class_id }}">Grade {{ $class->grade_level }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Role <span class="text-red-500">*</span></label>
+                        <select name="role" id="editRole" required class="w-full px-3 py-2 border rounded-lg"
+                            onchange="toggleEditClassSection()">
+                            <option value="">Select Role</option>
+                            <option value="TEACHER">Teacher</option>
+                            <option value="STUDENT">Student</option>
+                        </select>
+                    </div>
 
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Section</label>
-                            <select name="section_id" id="editSectionId" class="w-full px-3 py-2 border rounded-lg">
-                                <option value="">Select Section</option>
-                            </select>
-                        </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Sex</label>
+                        <select name="sex" id="editSex" class="w-full px-3 py-2 border rounded-lg">
+                            <option value="">Select Sex</option>
+                            <option value="MALE">Male</option>
+                            <option value="FEMALE">Female</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Contact No.</label>
+                        <input type="text" name="contact_no" id="editContactNo"
+                            class="w-full px-3 py-2 border rounded-lg">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Address</label>
+                        <textarea name="address" id="editAddress" rows="3"
+                            class="w-full px-3 py-2 border rounded-lg"></textarea>
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium mb-1">Password</label>
-                    <input type="password" name="password" id="editPassword" class="w-full px-3 py-2 border rounded-lg"
-                        placeholder="Leave blank to keep current">
+                <!-- Parent Information & School Details -->
+                <div class="space-y-4">
+                    <h4 class="text-lg font-semibold text-gray-700 border-b pb-2">Parent Information</h4>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Mother's Name</label>
+                        <input type="text" name="mother_name" id="editMotherName"
+                            class="w-full px-3 py-2 border rounded-lg">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Mother's Contact No.</label>
+                        <input type="text" name="mother_contact_no" id="editMotherContactNo"
+                            class="w-full px-3 py-2 border rounded-lg">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Father's Name</label>
+                        <input type="text" name="father_name" id="editFatherName"
+                            class="w-full px-3 py-2 border rounded-lg">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Father's Contact No.</label>
+                        <input type="text" name="father_contact_no" id="editFatherContactNo"
+                            class="w-full px-3 py-2 border rounded-lg">
+                    </div>
+
+                    <div id="editClassSection" class="hidden">
+                        <h4 class="text-lg font-semibold text-gray-700 border-b pb-2 mt-6">School Information</h4>
+                        <div class="grid grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Class <span class="text-red-500">*</span></label>
+                                <select name="class_id" id="editClassId" class="w-full px-3 py-2 border rounded-lg">
+                                    <option value="">Select Class</option>
+                                    @foreach ($classes as $class)
+                                        <option value="{{ $class->class_id }}">Grade {{ $class->grade_level }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Section <span class="text-red-500">*</span></label>
+                                <select name="section_id" id="editSectionId" class="w-full px-3 py-2 border rounded-lg">
+                                    <option value="">Select Section</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <label class="block text-sm font-medium mb-1">Password</label>
+                        <input type="password" name="password" id="editPassword" class="w-full px-3 py-2 border rounded-lg"
+                            placeholder="Leave blank to keep current">
+                    </div>
                 </div>
             </div>
 
@@ -182,6 +238,47 @@
                 } else {
                     // If no sensitive fields are being changed, submit form normally
                     this.submit();
+                }
+            }
+        });
+
+        // Handle role selection for edit modal
+        const editRoleSelect = document.getElementById('editRole');
+        const editClassSectionDiv = document.getElementById('editClassSection');
+        const editClassSelect = document.getElementById('editClassId');
+        const editSectionSelect = document.getElementById('editSectionId');
+
+        editRoleSelect.addEventListener('change', function() {
+            if (this.value === 'STUDENT') {
+                editClassSectionDiv.classList.remove('hidden');
+                editClassSelect.setAttribute('required', '');
+                editSectionSelect.setAttribute('required', '');
+            } else {
+                editClassSectionDiv.classList.add('hidden');
+                editClassSelect.removeAttribute('required');
+                editSectionSelect.removeAttribute('required');
+                editClassSelect.value = '';
+                editSectionSelect.value = '';
+            }
+        });
+
+        // Handle class selection to populate sections for edit modal
+        editClassSelect.addEventListener('change', function() {
+            const classId = this.value;
+            editSectionSelect.innerHTML = '<option value="">Select Section</option>';
+            
+            if (classId) {
+                // Find the selected class and populate its sections
+                const classes = @json($classes);
+                const selectedClass = classes.find(cls => cls.class_id == classId);
+                
+                if (selectedClass && selectedClass.sections) {
+                    selectedClass.sections.forEach(section => {
+                        const option = document.createElement('option');
+                        option.value = section.section_id;
+                        option.textContent = section.section_name;
+                        editSectionSelect.appendChild(option);
+                    });
                 }
             }
         });
