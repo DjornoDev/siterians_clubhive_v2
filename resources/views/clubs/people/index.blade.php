@@ -275,19 +275,35 @@
                                 </td>
                                 @if (auth()->user()->user_id === $club->club_adviser)
                                     <td class="px-6 py-4 text-right text-sm font-medium space-x-2">
+                                        <a href="{{ route('clubs.members.profile', [$club, $member]) }}"
+                                            class="text-green-600 hover:text-green-900 transition-colors inline-flex items-center gap-1"
+                                            title="View Profile">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                                fill="currentColor">
+                                                <path fill-rule="evenodd"
+                                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                            Profile
+                                        </a>
                                         <button @click="openEditModal(@js($member))"
                                             class="text-blue-600 hover:text-blue-900 transition-colors inline-flex items-center gap-1"
                                             title="Edit Member">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM5 12V7a1 1 0 011-1h9a1 1 0 110 2H7v3a1 1 0 01-1 1H5z" />
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                                fill="currentColor">
+                                                <path
+                                                    d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM5 12V7a1 1 0 011-1h9a1 1 0 110 2H7v3a1 1 0 01-1 1H5z" />
                                             </svg>
                                             Edit
                                         </button>
                                         <button @click="openRemoveModal(@js($member))"
                                             class="text-red-600 hover:text-red-900 transition-colors inline-flex items-center gap-1"
                                             title="Remove Member">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                                fill="currentColor">
+                                                <path fill-rule="evenodd"
+                                                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                                    clip-rule="evenodd" />
                                             </svg>
                                             Remove
                                         </button>
@@ -320,6 +336,105 @@
         </div>
 
         @if (auth()->user()->user_id === $club->club_adviser)
+            <!-- Approval Settings Section -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden mt-6">
+                <div class="p-6 border-b">
+                    <h2 class="text-xl font-semibold text-gray-900">Club Settings</h2>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900">Membership Approval</h3>
+                            <p class="text-sm text-gray-600">Require approval for new members joining this club</p>
+                        </div>
+                        <div class="flex items-center">
+                            <label class="inline-flex relative items-center cursor-pointer">
+                                <input type="checkbox" id="approval-toggle"
+                                    {{ $club->requires_approval ? 'checked' : '' }} class="sr-only peer"
+                                    onchange="toggleApprovalRequirement()">
+                                <div
+                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Join Requests Section -->
+            @if ($joinRequests->count() > 0)
+                <div class="bg-white rounded-xl shadow-md overflow-hidden mt-6">
+                    <div class="p-6 border-b">
+                        <h2 class="text-xl font-semibold text-gray-900">Pending Join Requests</h2>
+                        <p class="text-sm text-gray-600 mt-1">{{ $joinRequests->count() }} pending request(s)</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th
+                                        class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Student</th>
+                                    <th
+                                        class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Class</th>
+                                    <th
+                                        class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Section</th>
+                                    <th
+                                        class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Request Date</th>
+                                    <th
+                                        class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach ($joinRequests as $request)
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center">
+                                                <div
+                                                    class="flex-shrink-0 h-10 w-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+                                                    <span
+                                                        class="font-medium text-lg">{{ substr($request->user->name, 0, 1) }}</span>
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900">
+                                                        {{ $request->user->name }}</div>
+                                                    <div class="text-sm text-gray-500">
+                                                        {{ $request->user->email ?? 'N/A' }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-900">
+                                            Grade
+                                            {{ $request->user->section && $request->user->section->schoolClass ? $request->user->section->schoolClass->grade_level : 'N/A' }}
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-900">
+                                            {{ $request->user->section ? $request->user->section->section_name : 'N/A' }}
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-900">
+                                            {{ $request->created_at->format('M d, Y') }}
+                                        </td>
+                                        <td class="px-6 py-4 text-right space-x-2">
+                                            <button onclick="approveJoinRequest({{ $request->request_id }})"
+                                                class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors">
+                                                Approve
+                                            </button>
+                                            <button onclick="rejectJoinRequest({{ $request->request_id }})"
+                                                class="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors">
+                                                Reject
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endif
+
             @include('clubs.people.partials.edit-member-modal')
 
             {{-- Remove Member Confirmation Modal --}}
@@ -332,18 +447,24 @@
                         @method('DELETE')
                         <div class="p-6">
                             <div class="flex items-center mb-4">
-                                <div class="mr-3 flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:h-10 sm:w-10">
-                                    <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                <div
+                                    class="mr-3 flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:h-10 sm:w-10">
+                                    <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                     </svg>
                                 </div>
                                 <h3 class="text-xl font-semibold text-gray-900">Remove Member</h3>
                             </div>
                             <p class="text-gray-600 mb-2">
-                                Are you sure you want to remove <strong x-text="memberToRemove ? memberToRemove.name : ''"></strong> from {{ $club->club_name }}?
+                                Are you sure you want to remove <strong
+                                    x-text="memberToRemove ? memberToRemove.name : ''"></strong> from
+                                {{ $club->club_name }}?
                             </p>
                             <p class="text-sm text-gray-500">
-                                This action will only remove their membership from this club. Their account, posts, and events will not be deleted. This action cannot be undone.
+                                This action will only remove their membership from this club. Their account, posts, and
+                                events will not be deleted. This action cannot be undone.
                             </p>
                         </div>
                         <div class="bg-gray-50 px-6 py-4 flex justify-end gap-3 rounded-b-xl">
@@ -353,8 +474,11 @@
                             </button>
                             <button type="submit"
                                 class="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                        clip-rule="evenodd" />
                                 </svg>
                                 Remove Member
                             </button>
@@ -449,12 +573,12 @@
                 },
                 formAction: '',
                 isRemoveModalOpen: false, // New state for remove modal
-                memberToRemove: null,    // New state for member to remove
-                removeFormAction: '',    // New state for remove form action
+                memberToRemove: null, // New state for member to remove
+                removeFormAction: '', // New state for remove form action
 
                 openEditModal(member) {
                     // Corrected: member.pivot.club_accessibility is already an object if available
-                    const permissions = member.pivot.club_accessibility || {}; 
+                    const permissions = member.pivot.club_accessibility || {};
                     this.currentMember = {
                         id: member.user_id,
                         name: member.name,
@@ -471,7 +595,8 @@
                             can_customize_club: permissions.can_customize_club || false,
                         }
                     };
-                    this.formAction = `{{ url('clubs/' . $club->club_id . '/members') }}/${member.user_id}`;
+                    this.formAction =
+                        `{{ url('clubs/' . $club->club_id . '/members') }}/${member.user_id}`;
                     this.isEditModalOpen = true;
                 },
 
@@ -479,7 +604,9 @@
                 openRemoveModal(member) {
                     this.memberToRemove = member;
                     // Corrected route name to 'clubs.members.destroy'
-                    this.removeFormAction = `{{ route('clubs.members.destroy', ['club' => $club->club_id, 'user' => ':userId']) }}`.replace(':userId', member.user_id);
+                    this.removeFormAction =
+                        `{{ route('clubs.members.destroy', ['club' => $club->club_id, 'user' => ':userId']) }}`
+                        .replace(':userId', member.user_id);
                     this.isRemoveModalOpen = true;
                 },
 
@@ -487,11 +614,13 @@
                     if (!this.memberToRemove) return;
 
                     const form = this.$el; // Get the form element
-                     try {
+                    try {
                         const response = await fetch(this.removeFormAction, {
                             method: 'DELETE',
                             headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'), // Ensure CSRF token is present
+                                'X-CSRF-TOKEN': document.querySelector(
+                                    'meta[name="csrf-token"]').getAttribute(
+                                    'content'), // Ensure CSRF token is present
                                 'Content-Type': 'application/json',
                                 'Accept': 'application/json',
                             },
@@ -504,12 +633,16 @@
                             window.location.reload(); // Reload to see changes
                         } else {
                             const errorData = await response.json();
-                            console.error('Failed to remove member:', errorData.message || 'Unknown error');
-                            alert('Failed to remove member: ' + (errorData.message || 'Please try again.'));
+                            console.error('Failed to remove member:', errorData.message ||
+                                'Unknown error');
+                            alert('Failed to remove member: ' + (errorData.message ||
+                                'Please try again.'));
                         }
                     } catch (error) {
                         console.error('Error removing member:', error);
-                        alert('An error occurred while removing the member. Please check the console for details.');
+                        alert(
+                            'An error occurred while removing the member. Please check the console for details.'
+                            );
                     }
                 },
 
@@ -529,8 +662,10 @@
                     const formData = new FormData(form);
 
                     // Explicitly set boolean values for permissions
-                    formData.set('manage_posts', this.currentMember.permissions.manage_posts ? '1' : '0');
-                    formData.set('manage_events', this.currentMember.permissions.manage_events ? '1' : '0');
+                    formData.set('manage_posts', this.currentMember.permissions.manage_posts ? '1' :
+                        '0');
+                    formData.set('manage_events', this.currentMember.permissions.manage_events ?
+                        '1' : '0');
 
                     // Remove position if it's empty to avoid sending an empty string 
                     // if the backend expects it to be null or not present
@@ -544,7 +679,8 @@
                         const response = await fetch(form.action, {
                             method: 'POST', // Method is POST, but we use X-HTTP-Method-Override
                             headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'X-CSRF-TOKEN': document.querySelector(
+                                    'meta[name="csrf-token"]').getAttribute('content'),
                                 'X-HTTP-Method-Override': 'PUT', // Laravel uses this to treat POST as PUT
                                 'Accept': 'application/json',
                                 // 'Content-Type': 'application/x-www-form-urlencoded' or 'multipart/form-data' is set by FormData
@@ -574,5 +710,93 @@
                 }
             }));
         });
+
+        // Function to toggle approval requirement
+        async function toggleApprovalRequirement() {
+            try {
+                const response = await fetch(`{{ route('clubs.toggle-approval', $club) }}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content'),
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(data.message);
+                } else {
+                    throw new Error('Failed to update approval requirement');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while updating approval requirement');
+                // Reset the toggle
+                document.getElementById('approval-toggle').checked = !document.getElementById('approval-toggle')
+                    .checked;
+            }
+        }
+
+        // Function to approve join request
+        async function approveJoinRequest(requestId) {
+            try {
+                const response = await fetch(
+                    `{{ route('clubs.join-requests.approve', ['club' => $club, 'joinRequest' => '__REQUEST_ID__']) }}`
+                    .replace('__REQUEST_ID__', requestId), {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                'content'),
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                        },
+                    });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(data.message);
+                    location.reload(); // Refresh to update the requests list
+                } else {
+                    throw new Error('Failed to approve join request');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while approving the request');
+            }
+        }
+
+        // Function to reject join request
+        async function rejectJoinRequest(requestId) {
+            if (!confirm('Are you sure you want to reject this join request?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    `{{ route('clubs.join-requests.reject', ['club' => $club, 'joinRequest' => '__REQUEST_ID__']) }}`
+                    .replace('__REQUEST_ID__', requestId), {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                'content'),
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                        },
+                    });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(data.message);
+                    location.reload(); // Refresh to update the requests list
+                } else {
+                    throw new Error('Failed to reject join request');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while rejecting the request');
+            }
+        }
     </script>
 @endpush

@@ -20,7 +20,8 @@
         </div>
 
         <!-- Loading State -->
-        <div x-show="loading" class="bg-white shadow rounded-lg p-6 flex justify-center items-center py-12">
+        <div x-show="loading || checkingVoteStatus"
+            class="bg-white shadow rounded-lg p-6 flex justify-center items-center py-12">
             <svg class="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
                 viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
@@ -29,7 +30,10 @@
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                 </path>
             </svg>
-            <span class="ml-3 text-gray-700">Loading voting information...</span>
+            <span class="ml-3 text-gray-700">
+                <span x-show="!checkingVoteStatus">Loading voting information...</span>
+                <span x-show="checkingVoteStatus">Checking your voting status...</span>
+            </span>
         </div>
         <!-- Election With No Candidates -->
         <div x-show="election && Object.keys(candidatesByPosition).length === 0 && !loading && !hasVoted"
@@ -70,12 +74,32 @@
                     <h3 class="text-lg font-medium text-gray-800 mb-4">Your Vote Summary:</h3>
                     <ul class="space-y-4">
                         <template x-for="vote in myVoteDetails" :key="vote.vote_detail_id">
-                            <li class="bg-gray-50 rounded p-3 flex justify-between">
-                                <div>
-                                    <div class="font-semibold text-gray-700" x-text="vote.position"></div>
-                                    <div class="text-gray-600" x-text="vote.candidate_name"></div>
+                            <li class="bg-gray-50 rounded p-3">
+                                <div class="flex items-center">
+                                    <!-- Profile Picture -->
+                                    <div class="flex-shrink-0 mr-3">
+                                        <template x-if="vote.profile_picture">
+                                            <img :src="'/storage/profile_pictures/' + vote.profile_picture"
+                                                :alt="vote.candidate_name + ' profile'"
+                                                class="w-10 h-10 rounded-full object-cover border border-gray-200">
+                                        </template>
+                                        <template x-if="!vote.profile_picture">
+                                            <div
+                                                class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium text-sm">
+                                                <span x-text="getInitials(vote.candidate_name)"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <!-- Vote Info -->
+                                    <div class="flex-grow">
+                                        <div class="font-semibold text-gray-700" x-text="vote.position"></div>
+                                        <div class="text-gray-600" x-text="vote.candidate_name"></div>
+                                    </div>
+
+                                    <!-- Party List -->
+                                    <div class="text-sm text-gray-500 text-right" x-text="vote.partylist"></div>
                                 </div>
-                                <div class="text-sm text-gray-500" x-text="vote.partylist"></div>
                             </li>
                         </template>
                     </ul>
@@ -84,7 +108,8 @@
             </div>
         </div>
         <!-- Voting Form -->
-        <div x-show="election && Object.keys(candidatesByPosition).length > 0 && !hasVoted && !loading">
+        <div
+            x-show="election && Object.keys(candidatesByPosition).length > 0 && !hasVoted && !loading && !checkingVoteStatus">
             <div class="bg-white shadow rounded-lg overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-200">
                     <h2 class="text-xl font-bold text-gray-800">
@@ -113,12 +138,28 @@
                                                     required
                                                     class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded">
                                             </div>
-                                            <div class="ml-3 flex justify-between w-full">
+                                            <div class="ml-3 flex items-center w-full">
+                                                <!-- Profile Picture -->
+                                                <div class="flex-shrink-0 mr-3">
+                                                    <template x-if="candidate.profile_picture">
+                                                        <img :src="'/storage/profile_pictures/' + candidate.profile_picture"
+                                                            :alt="candidate.name + ' profile'"
+                                                            class="w-10 h-10 rounded-full object-cover border border-gray-200">
+                                                    </template>
+                                                    <template x-if="!candidate.profile_picture">
+                                                        <div
+                                                            class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium text-sm">
+                                                            <span x-text="getInitials(candidate.name)"></span>
+                                                        </div>
+                                                    </template>
+                                                </div>
+
+                                                <!-- Candidate Info -->
                                                 <label :for="'candidate_' + candidate.candidate_id"
-                                                    class="text-gray-700 block w-full">
-                                                    <span x-text="candidate.name">Candidate Name</span>
-                                                    <span class="text-sm text-blue-600 ml-2"
-                                                        x-text="candidate.partylist">Party List</span>
+                                                    class="text-gray-700 block flex-grow cursor-pointer">
+                                                    <div class="font-medium" x-text="candidate.name">Candidate Name</div>
+                                                    <div class="text-sm text-blue-600" x-text="candidate.partylist">Party
+                                                        List</div>
                                                 </label>
                                             </div>
                                         </div>
@@ -128,9 +169,37 @@
                         </template>
                     </div>
 
+                    <!-- Data Privacy Notice -->
+                    <div class="px-6 py-4 bg-blue-50 border-t border-blue-200">
+                        <div class="mb-4">
+                            <h4 class="text-sm font-semibold text-blue-900 mb-2">Data Privacy Notice</h4>
+                            <p class="text-xs text-blue-800 leading-relaxed">
+                                In compliance with the <strong>Data Privacy Act of 2012 (Republic Act No. 10173)</strong>,
+                                your personal data and voting information will be collected and processed solely for the
+                                purpose of this election.
+                                Your information will be kept confidential and secure, and will not be shared with
+                                unauthorized parties without your consent,
+                                except as required by law. Your vote will remain anonymous, and only aggregated results will
+                                be disclosed.
+                                You have the right to access, correct, or request deletion of your personal data in
+                                accordance with applicable laws.
+                            </p>
+                        </div>
+                        <div class="flex items-start">
+                            <input type="checkbox" id="privacyConsent" x-model="privacyConsent"
+                                class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            <label for="privacyConsent" class="ml-2 text-xs text-blue-900 cursor-pointer leading-relaxed">
+                                I acknowledge the <strong>Data Privacy Notice.</strong>
+                                I consent to the collection and processing of my <strong>personal data</strong> for this
+                                election.
+                            </label>
+                        </div>
+                    </div>
+
                     <div class="px-6 py-4 bg-gray-50 flex justify-end">
-                        <button type="submit"
-                            class="px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <button type="submit" :disabled="!privacyConsent"
+                            :class="privacyConsent ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'"
+                            class="px-4 py-2 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                             Submit Vote
                         </button>
                     </div>
@@ -173,14 +242,51 @@
                                                 <div class="font-medium text-gray-900" x-text="position"></div>
                                                 <template x-for="candidate in getCandidatesByPosition(position)"
                                                     :key="candidate.candidate_id">
-                                                    <div x-show="candidate.candidate_id == candidateId">
-                                                        <span class="text-gray-700" x-text="candidate.name"></span>
-                                                        <span class="text-sm text-blue-600 ml-2"
-                                                            x-text="candidate.partylist"></span>
+                                                    <div x-show="candidate.candidate_id == candidateId"
+                                                        class="flex items-center mt-2">
+                                                        <!-- Profile Picture -->
+                                                        <div class="flex-shrink-0 mr-3">
+                                                            <template x-if="candidate.profile_picture">
+                                                                <img :src="'/storage/profile_pictures/' + candidate.profile_picture"
+                                                                    :alt="candidate.name + ' profile'"
+                                                                    class="w-8 h-8 rounded-full object-cover border border-gray-200">
+                                                            </template>
+                                                            <template x-if="!candidate.profile_picture">
+                                                                <div
+                                                                    class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium text-xs">
+                                                                    <span x-text="getInitials(candidate.name)"></span>
+                                                                </div>
+                                                            </template>
+                                                        </div>
+
+                                                        <!-- Candidate Info -->
+                                                        <div>
+                                                            <span class="text-gray-700 font-medium"
+                                                                x-text="candidate.name"></span>
+                                                            <span class="text-sm text-blue-600 ml-2"
+                                                                x-text="candidate.partylist"></span>
+                                                        </div>
                                                     </div>
                                                 </template>
                                             </div>
                                         </template>
+                                    </div>
+
+                                    <!-- Privacy Notice Reminder -->
+                                    <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                                        <div class="flex items-center">
+                                            <svg class="h-5 w-5 text-blue-500 mr-2" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                                                </path>
+                                            </svg>
+                                            <span class="text-sm font-medium text-blue-800">Data Privacy
+                                                Acknowledged</span>
+                                        </div>
+                                        <p class="text-xs text-blue-700 mt-1">
+                                            You have consented to the Data Privacy Act of 2012 compliance for this election.
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -216,6 +322,7 @@
             return {
                 lastChecksum: '',
                 loading: true,
+                checkingVoteStatus: false,
                 election: null,
                 candidates: [],
                 candidatesByPosition: {},
@@ -225,6 +332,7 @@
                 votedAt: null,
                 showConfirmModal: false,
                 submitting: false,
+                privacyConsent: false,
                 init() {
                     // Initial load of data
                     this.fetchCandidates();
@@ -242,7 +350,7 @@
                     }
 
                     // If we've already voted, still check if there are changes to update vote details
-                    if (this.hasVoted && this.election) {
+                    if (this.hasVoted && this.election && !this.checkingVoteStatus) {
                         this.checkIfVoted();
                         return;
                     }
@@ -290,6 +398,7 @@
                                 this.election = null;
                                 this.candidates = [];
                                 this.candidatesByPosition = {};
+                                this.loading = false; // Set loading to false when no election
                                 console.log('No success in data response');
                             }
                         })
@@ -298,9 +407,10 @@
                             this.election = null;
                             this.candidates = [];
                             this.candidatesByPosition = {};
+                            this.loading = false; // Set loading to false on error
                         })
                         .finally(() => {
-                            this.loading = false;
+                            // Don't set loading to false here, let checkIfVoted handle it
                             console.log('Final state - election:', this.election);
                             console.log('Final state - candidatesByPosition:', this.candidatesByPosition);
                         });
@@ -308,20 +418,9 @@
                 checkIfVoted() {
                     if (!this.election || !this.election.election_id) return;
 
-                    // First check if we have a local record of having voted
-                    try {
-                        const hasVotedLocal = sessionStorage.getItem('hasVoted_' + this.election.election_id) === 'true';
-                        if (hasVotedLocal) {
-                            console.log('Retrieved voted state from session storage');
-                            this.hasVoted = true;
-                            this.getMyVoteDetails();
-                            return; // Skip the server check if we know we've voted
-                        }
-                    } catch (e) {
-                        console.warn('Session storage not available', e);
-                    }
+                    // Set checking status to prevent form from showing briefly
+                    this.checkingVoteStatus = true;
 
-                    this.loading = true;
                     fetch('{{ route('voting.check-voted', ':id') }}'.replace(':id', this.election.election_id))
                         .then(response => response.json())
                         .then(data => {
@@ -329,13 +428,8 @@
                                 this.hasVoted = data.hasVoted;
                                 console.log('Has voted check from server:', this.hasVoted);
 
-                                // If user has voted, store this info and get vote details
+                                // If user has voted, get vote details
                                 if (this.hasVoted) {
-                                    try {
-                                        sessionStorage.setItem('hasVoted_' + this.election.election_id, 'true');
-                                    } catch (e) {
-                                        console.warn('Session storage not available', e);
-                                    }
                                     this.getMyVoteDetails();
                                 }
                             }
@@ -344,6 +438,7 @@
                             console.error('Error checking if voted:', error);
                         })
                         .finally(() => {
+                            this.checkingVoteStatus = false;
                             this.loading = false;
                         });
                 },
@@ -368,6 +463,12 @@
                 },
 
                 openConfirmModal() {
+                    // Check if privacy consent is given
+                    if (!this.privacyConsent) {
+                        alert('Please acknowledge the Data Privacy Notice before submitting your vote.');
+                        return;
+                    }
+
                     // Check if all positions have a selected candidate
                     const allPositionsSelected = Object.keys(this.candidatesByPosition).every(
                         position => !!this.selectedCandidates[position]
@@ -416,13 +517,6 @@
                                 this.votedAt = new Date().toISOString();
                                 // Get the vote details
                                 this.getMyVoteDetails();
-
-                                // Store voted state in session storage to maintain state on page reload
-                                try {
-                                    sessionStorage.setItem('hasVoted_' + this.election.election_id, 'true');
-                                } catch (e) {
-                                    console.warn('Session storage not available', e);
-                                }
                             } else {
                                 alert(data.message || 'There was an error submitting your vote. Please try again.');
                             }
@@ -456,6 +550,14 @@
                         minute: '2-digit'
                     };
                     return new Date(dateString).toLocaleDateString(undefined, options);
+                },
+                getInitials(name) {
+                    if (!name) return '?';
+                    return name
+                        .split(' ')
+                        .map(word => word.charAt(0).toUpperCase())
+                        .slice(0, 2)
+                        .join('');
                 }
             };
         }

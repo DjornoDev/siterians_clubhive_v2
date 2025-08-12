@@ -23,10 +23,12 @@
 
         // Toggle the modal visibility
         modal.classList.toggle('hidden');
-    }    function toggleDeleteClubModal() {
+    }
+
+    function toggleDeleteClubModal() {
         document.getElementById('deleteClubModal').classList.toggle('hidden');
     }
-    
+
     function togglePasswordVerificationModal() {
         document.getElementById('passwordVerificationModal').classList.toggle('hidden');
         // Clear password field and error when toggling
@@ -39,29 +41,38 @@
         // Hide view modal
         toggleViewClubModal();
 
-        // Get club data from the view modal
-        const clubName = document.getElementById('clubNameDisplay').textContent;
-        const clubDescription = document.getElementById('clubDescriptionDisplay').textContent;
-        const clubAdviser = document.getElementById('clubAdviserDisplay').textContent;
-        const clubLogo = document.getElementById('clubLogoImage').src;
-        const clubBanner = document.getElementById('clubBannerImage').src;
+        // Get club data from stored data
+        const data = window.currentClubData;
+        if (!data) return;
 
         // Set data in edit form
-        document.getElementById('editClubId').value = currentClubId;
-        document.getElementById('editClubName').value = clubName;
-        document.getElementById('editClubDescription').value = clubDescription;
+        document.getElementById('editClubId').value = data.id;
+        document.getElementById('editClubName').value = data.name;
+        document.getElementById('editClubDescription').value = data.description;
+
+        // Set category
+        const categorySelect = document.getElementById('editCategory');
+        if (categorySelect) {
+            categorySelect.value = data.category;
+        }
+
+        // Set approval requirement
+        const approvalCheckbox = document.getElementById('editRequiresApproval');
+        if (approvalCheckbox) {
+            approvalCheckbox.checked = data.requiresApproval;
+        }
 
         // Set current images
-        if (clubLogo && clubLogo !== 'http://' && clubLogo !== 'https://' && clubLogo !== window.location.href) {
-            document.getElementById('currentLogoDisplay').src = clubLogo;
+        if (data.logo && data.logo !== 'http://' && data.logo !== 'https://' && data.logo !== window.location.href) {
+            document.getElementById('currentLogoDisplay').src = data.logo;
             document.getElementById('currentLogoContainer').classList.remove('hidden');
         } else {
             document.getElementById('currentLogoContainer').classList.add('hidden');
         }
 
-        if (clubBanner && clubBanner !== 'http://' && clubBanner !== 'https://' && clubBanner !== window.location
+        if (data.banner && data.banner !== 'http://' && data.banner !== 'https://' && data.banner !== window.location
             .href) {
-            document.getElementById('currentBannerDisplay').src = clubBanner;
+            document.getElementById('currentBannerDisplay').src = data.banner;
             document.getElementById('currentBannerContainer').classList.remove('hidden');
         } else {
             document.getElementById('currentBannerContainer').classList.add('hidden');
@@ -71,7 +82,7 @@
         const adviserSelect = document.getElementById('editClubAdviser');
         if (adviserSelect) {
             for (let i = 0; i < adviserSelect.options.length; i++) {
-                if (adviserSelect.options[i].text === clubAdviser) {
+                if (adviserSelect.options[i].text === data.adviser) {
                     adviserSelect.selectedIndex = i;
                     break;
                 }
@@ -99,9 +110,19 @@
     }
 
     // View club details
-    function viewClubDetails(id, name, description, adviser, logo, banner) {
-        // Store the current club ID
+    function viewClubDetails(id, name, description, adviser, logo, banner, category, requiresApproval) {
+        // Store the current club ID and additional data
         currentClubId = id;
+        window.currentClubData = {
+            id: id,
+            name: name,
+            description: description,
+            adviser: adviser,
+            logo: logo,
+            banner: banner,
+            category: category || 'academic',
+            requiresApproval: requiresApproval === '1'
+        };
 
         // Set text content
         document.getElementById('clubNameDisplay').textContent = name;
@@ -177,7 +198,7 @@
 
                 toggleEditClubModal();
             });
-        }        // Delete club form submission
+        } // Delete club form submission
         const deleteForm = document.getElementById('deleteClubForm');
         if (deleteForm) {
             deleteForm.addEventListener('submit', function(e) {
@@ -186,10 +207,10 @@
                 // Get club name and ID
                 const clubId = document.getElementById('deleteClubId').value;
                 const clubName = document.getElementById('deleteClubName').textContent;
-                
+
                 // Set the club name in the verification modal
                 document.getElementById('verifyDeleteClubName').textContent = clubName;
-                
+
                 // Hide delete confirmation modal and show password verification modal
                 toggleDeleteClubModal();
                 togglePasswordVerificationModal();
@@ -207,18 +228,19 @@
             if (e.target === this) {
                 this.classList.add('hidden');
             }
-        });        document.getElementById('deleteClubModal')?.addEventListener('click', function(e) {
+        });
+        document.getElementById('deleteClubModal')?.addEventListener('click', function(e) {
             if (e.target === this) {
                 this.classList.add('hidden');
             }
         });
-        
+
         document.getElementById('passwordVerificationModal')?.addEventListener('click', function(e) {
             if (e.target === this) {
                 this.classList.add('hidden');
             }
         });
-        
+
         // Add Enter key support for password field
         document.getElementById('security-password')?.addEventListener('keyup', function(e) {
             if (e.key === 'Enter') {
@@ -226,57 +248,58 @@
             }
         });
     });
-    
+
     // Function to verify password and proceed with deletion
     function verifyPasswordAndDeleteClub() {
         const password = document.getElementById('security-password').value;
         const clubId = document.getElementById('deleteClubId').value;
         const errorElement = document.getElementById('password-error');
-        
+
         if (!password) {
             errorElement.textContent = 'Password is required';
             errorElement.classList.remove('hidden');
             return;
         }
-          // Create form data for verification
+        // Create form data for verification
         const formData = new FormData();
         formData.append('password', password);
         formData.append('club_id', clubId);
         // Don't need _method: 'DELETE' for a regular POST request
-        formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));        // Make API call to verify password and delete club
+        formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute(
+        'content')); // Make API call to verify password and delete club
         fetch(`/admin/clubs/${clubId}/verify-and-delete`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-            },
-            body: formData
-        })
-        .then(response => {
-            console.log('Response status:', response.status);
-            
-            if (response.ok) {
-                // Success - reload page
-                window.location.reload();
-            } else if (response.status === 401) {
-                // Password verification failed
-                errorElement.textContent = 'Incorrect password. Please try again.';
-                errorElement.classList.remove('hidden');
-                return Promise.reject('Incorrect password');
-            } else {
-                return response.json().then(err => {
-                    console.error('Error response:', err);
-                    throw new Error(err.message || 'Failed to delete club');
-                }).catch(err => {
-                    // Handle case where response isn't JSON
-                    console.error('Response parsing error:', err);
-                    throw new Error('Failed to delete club: ' + response.status);
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert(error.message || 'An error occurred while deleting the club');
-            togglePasswordVerificationModal();
-        });
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                },
+                body: formData
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+
+                if (response.ok) {
+                    // Success - reload page
+                    window.location.reload();
+                } else if (response.status === 401) {
+                    // Password verification failed
+                    errorElement.textContent = 'Incorrect password. Please try again.';
+                    errorElement.classList.remove('hidden');
+                    return Promise.reject('Incorrect password');
+                } else {
+                    return response.json().then(err => {
+                        console.error('Error response:', err);
+                        throw new Error(err.message || 'Failed to delete club');
+                    }).catch(err => {
+                        // Handle case where response isn't JSON
+                        console.error('Response parsing error:', err);
+                        throw new Error('Failed to delete club: ' + response.status);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(error.message || 'An error occurred while deleting the club');
+                togglePasswordVerificationModal();
+            });
     }
 </script>

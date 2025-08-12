@@ -132,4 +132,9 @@ class User extends Authenticatable
         // Combine both lists and remove duplicates
         return array_unique(array_merge($memberClubIds, $adviserClubIds));
     }
+
+    public function clubJoinRequests()
+    {
+        return $this->hasMany(ClubJoinRequest::class, 'user_id');
+    }
 }

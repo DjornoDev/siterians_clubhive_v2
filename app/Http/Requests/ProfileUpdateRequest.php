@@ -25,6 +25,13 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique('tbl_users')->ignore($this->user()->user_id, 'user_id'),
             ],
+            'sex' => ['nullable', 'string', 'in:Male,Female'],
+            'contact_no' => ['nullable', 'string', 'max:20'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'mother_name' => ['nullable', 'string', 'max:255'],
+            'mother_contact_no' => ['nullable', 'string', 'max:20'],
+            'father_name' => ['nullable', 'string', 'max:255'],
+            'father_contact_no' => ['nullable', 'string', 'max:20'],
             'profile_picture' => [
                 'nullable',
                 'image',

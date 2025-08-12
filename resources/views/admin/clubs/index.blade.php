@@ -194,7 +194,9 @@
                                 data-description="{{ $club->club_description }}"
                                 data-adviser="{{ $club->adviser->name ?? 'No Adviser Assigned' }}"
                                 data-logo="{{ $club->club_logo ? asset(Storage::url($club->club_logo)) : '' }}"
-                                data-banner="{{ $club->club_banner ? asset(Storage::url($club->club_banner)) : '' }}">
+                                data-banner="{{ $club->club_banner ? asset(Storage::url($club->club_banner)) : '' }}"
+                                data-category="{{ $club->category ?? 'academic' }}"
+                                data-requires-approval="{{ $club->requires_approval ? '1' : '0' }}">
                                 <span>View Details</span>
                                 <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -236,8 +238,11 @@
                     const adviser = this.getAttribute('data-adviser');
                     const logo = this.getAttribute('data-logo');
                     const banner = this.getAttribute('data-banner');
+                    const category = this.getAttribute('data-category');
+                    const requiresApproval = this.getAttribute('data-requires-approval');
 
-                    viewClubDetails(id, name, description, adviser, logo, banner);
+                    viewClubDetails(id, name, description, adviser, logo, banner, category,
+                        requiresApproval);
                     console.log(id, name);
                 });
             });

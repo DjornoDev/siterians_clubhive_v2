@@ -31,12 +31,55 @@
                 </div>
 
                 <!-- Position -->
-                <div class="mb-6">
+                <div class="mb-6" x-data="{
+                    showDropdown: false,
+                    positions: [
+                        'President',
+                        'Vice President',
+                        'Secretary',
+                        'Treasurer',
+                        'Auditor',
+                        'Public Information Officer (PIO)',
+                        'Protocol Officer',
+                        'Grade 7 Representative',
+                        'Grade 8 Representative',
+                        'Grade 9 Representative',
+                        'Grade 10 Representative',
+                        'Grade 11 Representative',
+                        'Grade 12 Representative'
+                    ],
+                    filteredPositions() {
+                        if (!currentMember.position) return this.positions;
+                        return this.positions.filter(pos =>
+                            pos.toLowerCase().includes(currentMember.position.toLowerCase())
+                        );
+                    }
+                }">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Position</label>
-                    <input type="text" name="club_position" x-model="currentMember.position"
-                        @input="togglePermissions($event.target.value)"
-                        class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter position">
+                    <div class="relative">
+                        <input type="text" name="club_position" x-model="currentMember.position"
+                            @input="togglePermissions($event.target.value); showDropdown = true"
+                            @focus="showDropdown = true" @blur="setTimeout(() => showDropdown = false, 200)"
+                            class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Enter or select position" autocomplete="off">
+
+                        <!-- Dropdown with suggestions -->
+                        <div x-show="showDropdown && filteredPositions().length > 0"
+                            x-transition:enter="transition ease-out duration-100"
+                            x-transition:enter-start="transform opacity-0 scale-95"
+                            x-transition:enter-end="transform opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-75"
+                            x-transition:leave-start="transform opacity-100 scale-100"
+                            x-transition:leave-end="transform opacity-0 scale-95"
+                            class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-auto">
+                            <template x-for="position in filteredPositions()" :key="position">
+                                <div @click="currentMember.position = position; showDropdown = false; togglePermissions(position)"
+                                    class="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm">
+                                    <span x-text="position"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Permissions -->

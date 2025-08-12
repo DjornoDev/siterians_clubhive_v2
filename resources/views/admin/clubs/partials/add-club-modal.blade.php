@@ -6,7 +6,8 @@
             @csrf
             <div class="space-y-4">
                 <div>
-                    <label for="club_name" class="block text-sm font-medium mb-1">Club Name</label>
+                    <label for="club_name" class="block text-sm font-medium mb-1">Club Name <span
+                            class="text-red-500">*</span></label>
                     <input type="text" id="club_name" name="club_name" required
                         class="w-full px-3 py-2 border rounded-lg @error('club_name') border-red-500 @enderror">
                     @error('club_name')
@@ -16,7 +17,8 @@
                 </div>
 
                 <div>
-                    <label for="club_adviser" class="block text-sm font-medium mb-1">Club Adviser</label>
+                    <label for="club_adviser" class="block text-sm font-medium mb-1">Club Adviser <span
+                            class="text-red-500">*</span></label>
                     <select id="club_adviser" name="club_adviser" required
                         class="w-full px-3 py-2 border rounded-lg @error('club_adviser') border-red-500 @enderror">
                         <option value="">Select Adviser</option>
@@ -30,16 +32,47 @@
                 </div>
 
                 <div>
-                    <label for="club_description" class="block text-sm font-medium mb-1">Description (Optional)</label>
-                    <textarea id="club_description" name="club_description"
-                        class="w-full px-3 py-2 border rounded-lg @error('club_description') border-red-500 @enderror"></textarea>
+                    <label for="club_description" class="block text-sm font-medium mb-1">Description <span
+                            class="text-red-500">*</span></label>
+                    <textarea id="club_description" name="club_description" required
+                        class="w-full px-3 py-2 border rounded-lg @error('club_description') border-red-500 @enderror"
+                        placeholder="Enter club description..."></textarea>
                     @error('club_description')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div>
-                    <label for="club_logo" class="block text-sm font-medium mb-1">Club Logo</label>
+                    <label for="category" class="block text-sm font-medium mb-1">Club Category <span
+                            class="text-red-500">*</span></label>
+                    <select id="category" name="category" required
+                        class="w-full px-3 py-2 border rounded-lg @error('category') border-red-500 @enderror">
+                        <option value="">Select Category</option>
+                        <option value="academic">Academic</option>
+                        <option value="sports">Sports</option>
+                        <option value="service">Service</option>
+                    </select>
+                    @error('category')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="flex items-center space-x-3">
+                        <input type="hidden" name="requires_approval" value="0">
+                        <input type="checkbox" id="requires_approval" name="requires_approval" value="1" checked
+                            class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                        <div>
+                            <span class="text-sm font-medium text-gray-700">Require Approval for Members</span>
+                            <p class="text-xs text-gray-500">When enabled, students must request approval to join this
+                                club</p>
+                        </div>
+                    </label>
+                </div>
+
+                <div>
+                    <label for="club_logo" class="block text-sm font-medium mb-1">Club Logo <span
+                            class="text-red-500">*</span></label>
                     <div class="flex items-center space-x-4">
                         <div class="w-full">
                             <label for="club_logo"
@@ -54,7 +87,8 @@
                             <!-- Add custom error for client-side validation -->
                             <div id="club_logo_error" class="text-red-500 text-xs mt-1 hidden">Please select a logo
                                 file.</div>
-                        </div>                        <div id="logoPreviewContainer"
+                        </div>
+                        <div id="logoPreviewContainer"
                             class="hidden h-16 w-16 rounded-full border overflow-hidden bg-gray-100">
                             <img id="logoPreview" src="#" alt="Logo preview" class="h-full w-full object-cover">
                         </div>
@@ -62,7 +96,8 @@
                 </div>
 
                 <div>
-                    <label for="club_banner" class="block text-sm font-medium mb-1">Club Banner</label>
+                    <label for="club_banner" class="block text-sm font-medium mb-1">Club Banner <span
+                            class="text-red-500">*</span></label>
                     <div>
                         <label for="club_banner"
                             class="cursor-pointer flex items-center justify-center w-full px-3 py-2 border border-dashed rounded-lg hover:bg-gray-50">
@@ -79,9 +114,17 @@
                     </div>
                     <div id="bannerPreviewContainer"
                         class="hidden mt-2 h-32 rounded-lg border overflow-hidden bg-gray-100">
-                        <img id="bannerPreview" src="#" alt="Banner preview" class="h-full w-full object-cover">
+                        <img id="bannerPreview" src="#" alt="Banner preview"
+                            class="h-full w-full object-cover">
                     </div>
                 </div>
+            </div>
+
+            <!-- Required fields note -->
+            <div class="mt-4 mb-6">
+                <p class="text-xs text-gray-600">
+                    <span class="text-red-500">*</span> Required fields
+                </p>
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
@@ -103,7 +146,7 @@
         const clubNameInput = document.getElementById('club_name');
         const clubNameError = document.getElementById('club_name_error');
         const addClubForm = document.getElementById('addClubForm');
-        
+
         // Function to check if club name exists
         async function checkClubNameExists(name) {
             try {
@@ -128,7 +171,7 @@
                 };
             }
         }
-        
+
         // Validate club name on blur
         clubNameInput.addEventListener('blur', async function() {
             if (this.value.trim()) {
@@ -152,7 +195,7 @@
         addClubForm.addEventListener('submit', async function(e) {
             // Prevent default form submission first to allow for validation
             e.preventDefault();
-            
+
             let isValid = true;
             const logoInput = document.getElementById('club_logo');
             const bannerInput = document.getElementById('club_banner');
@@ -165,7 +208,7 @@
             logoError.classList.add('hidden');
             bannerError.classList.add('hidden');
             clubNameError.classList.add('hidden');
-            
+
             // Validate club name uniqueness
             if (clubName) {
                 const result = await checkClubNameExists(clubName);

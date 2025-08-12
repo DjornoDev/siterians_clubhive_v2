@@ -290,7 +290,7 @@ class VotingController extends Controller
             // Get candidates grouped by position
             $candidates = Candidate::where('election_id', $election->election_id)
                 ->join('tbl_users', 'tbl_candidates.user_id', '=', 'tbl_users.user_id')
-                ->select('tbl_candidates.*', 'tbl_users.name')
+                ->select('tbl_candidates.*', 'tbl_users.name', 'tbl_users.profile_picture')
                 ->orderBy('position')
                 ->get()
                 ->groupBy('position');
@@ -396,18 +396,119 @@ class VotingController extends Controller
                     ], 422);
                 }
             }            // Create a single vote record in tbl_votes
-            $vote = Vote::create([
-                'election_id' => $validated['election_id'],
-                'voter_id' => Auth::id()
-            ]);
+            try {
+                $vote = Vote::create([
+                    'election_id' => $validated['election_id'],
+                    'voter_id' => Auth::id()
+                ]);
+
+                // Refresh the model to ensure we have the latest data
+                $vote->refresh();
+
+                // Check if vote was created successfully
+                if (!$vote || !$vote->vote_id) {
+                    DB::rollBack();
+                    Log::error('Failed to create vote record', [
+                        'election_id' => $validated['election_id'],
+                        'voter_id' => Auth::id(),
+                        'vote_object' => $vote
+                    ]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Failed to create vote record.'
+                    ], 500);
+                }
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('Exception creating vote record', [
+                    'election_id' => $validated['election_id'],
+                    'voter_id' => Auth::id(),
+                    'error' => $e->getMessage()
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to create vote record: ' . $e->getMessage()
+                ], 500);
+            }
 
             // Record each position choice in tbl_vote_details
             foreach ($validated['votes'] as $voteData) {
-                \App\Models\VoteDetail::create([
+                // Add detailed logging before candidate check
+                Log::info('About to create vote detail', [
                     'vote_id' => $vote->vote_id,
                     'position' => $voteData['position'],
-                    'candidate_id' => $voteData['candidate_id']
+                    'candidate_id' => $voteData['candidate_id'],
+                    'election_id' => $validated['election_id']
                 ]);
+
+                // Double-check that the candidate still exists before creating vote detail
+                $candidateExists = Candidate::where('candidate_id', $voteData['candidate_id'])
+                    ->where('election_id', $validated['election_id'])
+                    ->exists();
+
+                Log::info('Candidate existence check', [
+                    'candidate_id' => $voteData['candidate_id'],
+                    'election_id' => $validated['election_id'],
+                    'exists' => $candidateExists
+                ]);
+
+                if (!$candidateExists) {
+                    DB::rollBack();
+                    Log::error('Candidate not found when creating vote detail', [
+                        'candidate_id' => $voteData['candidate_id'],
+                        'election_id' => $validated['election_id'],
+                        'position' => $voteData['position']
+                    ]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Selected candidate is no longer available.'
+                    ], 422);
+                }
+
+                try {
+                    // Use DB::table instead of model to avoid any Eloquent issues
+                    $voteDetailId = DB::table('tbl_vote_details')->insertGetId([
+                        'vote_id' => $vote->vote_id,
+                        'position' => $voteData['position'],
+                        'candidate_id' => $voteData['candidate_id'],
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+
+                    // Check if vote detail was created successfully
+                    if (!$voteDetailId) {
+                        DB::rollBack();
+                        Log::error('Failed to create vote detail record using DB::table', [
+                            'vote_id' => $vote->vote_id,
+                            'position' => $voteData['position'],
+                            'candidate_id' => $voteData['candidate_id']
+                        ]);
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Failed to record vote details.'
+                        ], 500);
+                    }
+
+                    Log::info('Vote detail created successfully', [
+                        'vote_detail_id' => $voteDetailId,
+                        'vote_id' => $vote->vote_id,
+                        'position' => $voteData['position'],
+                        'candidate_id' => $voteData['candidate_id']
+                    ]);
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    Log::error('Exception creating vote detail record', [
+                        'vote_id' => $vote->vote_id,
+                        'position' => $voteData['position'],
+                        'candidate_id' => $voteData['candidate_id'],
+                        'error' => $e->getMessage(),
+                        'sql_state' => $e->getCode()
+                    ]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Failed to record vote details: ' . $e->getMessage()
+                    ], 500);
+                }
             }
 
             DB::commit();
@@ -490,7 +591,8 @@ class VotingController extends Controller
                     'tbl_vote_details.*',
                     'tbl_candidates.position',
                     'tbl_candidates.partylist',
-                    'tbl_users.name as candidate_name'
+                    'tbl_users.name as candidate_name',
+                    'tbl_users.profile_picture'
                 )
                 ->get();
 
@@ -820,7 +922,7 @@ class VotingController extends Controller
         try {
             // Find the candidate
             $candidate = Candidate::findOrFail($candidateId);
-            
+
             // Check if the election is published
             $election = Election::findOrFail($candidate->election_id);
             if ($election->is_published) {
@@ -878,7 +980,7 @@ class VotingController extends Controller
         try {
             // Find the candidate
             $candidate = Candidate::findOrFail($candidateId);
-            
+
             // Check if the election is published
             $election = Election::findOrFail($candidate->election_id);
             if ($election->is_published) {

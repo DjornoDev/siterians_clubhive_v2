@@ -77,7 +77,7 @@
             $candidates = $election
                 ? App\Models\Candidate::where('election_id', $election->election_id)
                     ->join('tbl_users', 'tbl_candidates.user_id', '=', 'tbl_users.user_id')
-                    ->select('tbl_candidates.*', 'tbl_users.name')
+                    ->select('tbl_candidates.*', 'tbl_users.name', 'tbl_users.profile_picture')
                     ->orderBy('position')
                     ->get()
                     ->groupBy('position')
@@ -133,11 +133,18 @@
                                             <div class="p-4 hover:bg-gray-50 transition-colors duration-150">
                                                 <div class="flex items-center space-x-4">
                                                     <div class="flex-shrink-0">
-                                                        <div
-                                                            class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold text-lg">
-                                                            {{ strtoupper(substr($candidate->name, 0, 1)) }}
-                                                        </div>
-                                                    </div>                                                    <div>
+                                                        @if ($candidate->profile_picture)
+                                                            <img src="{{ asset('storage/profile_pictures/' . $candidate->profile_picture) }}"
+                                                                alt="{{ $candidate->name }} profile"
+                                                                class="w-10 h-10 rounded-full object-cover border border-gray-200">
+                                                        @else
+                                                            <div
+                                                                class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold text-lg">
+                                                                {{ strtoupper(substr($candidate->name, 0, 1)) }}
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                    <div>
                                                         <p class="font-medium text-gray-900">{{ $candidate->name }}</p>
                                                         <div class="flex items-center mt-1">
                                                             <span
@@ -148,18 +155,21 @@
                                                     </div>
                                                     @if (!$election->is_published)
                                                         <div class="ml-auto flex space-x-2">
-                                                            <button type="button" 
-                                                                class="text-blue-600 hover:text-blue-800" 
+                                                            <button type="button" class="text-blue-600 hover:text-blue-800"
                                                                 onclick="editCandidate({{ $candidate->candidate_id }})">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                                                    viewBox="0 0 20 20" fill="currentColor">
+                                                                    <path
+                                                                        d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                                                                 </svg>
                                                             </button>
-                                                            <button type="button" 
-                                                                class="text-red-600 hover:text-red-800" 
+                                                            <button type="button" class="text-red-600 hover:text-red-800"
                                                                 onclick="deleteCandidate({{ $candidate->candidate_id }}, '{{ $candidate->name }}')">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                                                    viewBox="0 0 20 20" fill="currentColor">
+                                                                    <path fill-rule="evenodd"
+                                                                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                                                        clip-rule="evenodd" />
                                                                 </svg>
                                                             </button>
                                                         </div>
@@ -243,7 +253,8 @@
                             <div class="sm:col-span-6">
                                 <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
                                 <div class="mt-1">
-                                    <input type="text" name="title" id="title" value="{{ old('title') }}" required
+                                    <input type="text" name="title" id="title" value="{{ old('title') }}"
+                                        required
                                         class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
                                         placeholder="Enter a descriptive title for the voting">
                                 </div>
@@ -252,7 +263,8 @@
                             </div>
 
                             <div class="sm:col-span-6">
-                                <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                                <label for="description"
+                                    class="block text-sm font-medium text-gray-700">Description</label>
                                 <div class="mt-1">
                                     <textarea name="description" id="description" rows="4" required
                                         class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
@@ -324,10 +336,56 @@
             <div class="p-6">
                 <form id="candidate-form" class="space-y-6">
                     <!-- Position (common for all candidates) -->
-                    <div class="mb-6">
+                    <div class="mb-6" x-data="{
+                        showDropdown: false,
+                        positionValue: '',
+                        positions: [
+                            'President',
+                            'Vice President',
+                            'Secretary',
+                            'Treasurer',
+                            'Auditor',
+                            'Public Information Officer (PIO)',
+                            'Protocol Officer',
+                            'Grade 7 Representative',
+                            'Grade 8 Representative',
+                            'Grade 9 Representative',
+                            'Grade 10 Representative',
+                            'Grade 11 Representative',
+                            'Grade 12 Representative'
+                        ],
+                        filteredPositions() {
+                            if (!this.positionValue) return this.positions;
+                            return this.positions.filter(pos =>
+                                pos.toLowerCase().includes(this.positionValue.toLowerCase())
+                            );
+                        }
+                    }">
                         <label for="position-0" class="block text-sm font-medium text-gray-700">Position</label>
-                        <input type="text" id="position-0" name="position"
-                            class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm" required>
+                        <div class="relative">
+                            <input type="text" id="position-0" name="position" x-model="positionValue"
+                                @input="showDropdown = true" @focus="showDropdown = true"
+                                @blur="setTimeout(() => showDropdown = false, 200)"
+                                class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
+                                placeholder="Enter or select position" autocomplete="off" required>
+
+                            <!-- Dropdown with suggestions -->
+                            <div x-show="showDropdown && filteredPositions().length > 0"
+                                x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="transform opacity-0 scale-95"
+                                x-transition:enter-end="transform opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="transform opacity-100 scale-100"
+                                x-transition:leave-end="transform opacity-0 scale-95"
+                                class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-auto">
+                                <template x-for="position in filteredPositions()" :key="position">
+                                    <div @click="positionValue = position; showDropdown = false"
+                                        class="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm">
+                                        <span x-text="position"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
                         <p class="mt-1 text-xs text-gray-500">Enter the position for which you're adding candidates (e.g.,
                             President, Secretary)</p>
                     </div>
@@ -401,7 +459,7 @@
         <button id="reset-page" class="text-sm text-gray-600 hover:text-gray-900 hover:underline cursor-pointer">
             Reset
         </button>
-    </div>    <!-- Reset Confirmation Modal -->
+    </div> <!-- Reset Confirmation Modal -->
     <div id="resetConfirmModal"
         class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 items-center justify-center hidden overflow-y-auto">
         <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-auto my-8 overflow-hidden">
@@ -470,7 +528,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Edit Candidate Modal -->
     <div id="editCandidateModal"
         class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 items-center justify-center hidden overflow-y-auto">
@@ -488,13 +546,13 @@
                 <form id="edit-candidate-form" class="space-y-6">
                     <input type="hidden" id="edit-candidate-id">
                     <input type="hidden" id="edit-position" name="position">
-                    
+
                     <div class="mb-4 relative">
-                        <label for="edit-candidate-name" class="block text-sm font-medium text-gray-700">Candidate Name</label>
+                        <label for="edit-candidate-name" class="block text-sm font-medium text-gray-700">Candidate
+                            Name</label>
                         <input type="text" id="edit-candidate-name"
                             class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
-                            placeholder="Search for a student" autocomplete="off"
-                            onkeyup="searchStudentsForEdit(event)">
+                            placeholder="Search for a student" autocomplete="off" onkeyup="searchStudentsForEdit(event)">
                         <input type="hidden" id="edit-user-id" name="user_id" required>
                         <div id="edit-search-results"
                             class="absolute z-10 w-full bg-white shadow-md rounded-md mt-1 hidden max-h-48 overflow-y-auto">
@@ -520,7 +578,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Delete Confirmation Modal -->
     <div id="deleteCandidateModal"
         class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 items-center justify-center hidden overflow-y-auto">
@@ -543,7 +601,8 @@
                         </svg>
                         <h4 class="text-lg font-bold">Are you sure?</h4>
                     </div>
-                    <p class="text-gray-700 mb-4">You are about to delete candidate <strong id="delete-candidate-name"></strong>.</p>
+                    <p class="text-gray-700 mb-4">You are about to delete candidate <strong
+                            id="delete-candidate-name"></strong>.</p>
                     <p class="text-gray-700 mb-4">This action cannot be undone.</p>
                 </div>
                 <input type="hidden" id="delete-candidate-id">
@@ -690,89 +749,19 @@
             // Clear previous search results
             document.getElementById('edit-search-results').innerHTML = '';
             document.getElementById('edit-search-results').classList.add('hidden');
-            
+
             // Set loading state
             document.getElementById('edit-candidate-name').value = 'Loading...';
             document.getElementById('edit-partylist').value = '';
             document.getElementById('edit-user-id').value = '';
             document.getElementById('edit-candidate-id').value = candidateId;
-            
+
             // Show the modal
             document.getElementById('editCandidateModal').classList.remove('hidden');
             document.getElementById('editCandidateModal').classList.add('flex');
-            
+
             // Fetch candidate data
             fetch(`/voting/edit-candidate/${candidateId}`, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Populate the form with candidate data
-                    document.getElementById('edit-candidate-name').value = data.candidate.name;
-                    document.getElementById('edit-partylist').value = data.candidate.partylist;
-                    document.getElementById('edit-user-id').value = data.candidate.user_id;
-                    document.getElementById('edit-position').value = data.candidate.position;
-                } else {
-                    // Show error message
-                    alert(data.message || 'Error retrieving candidate data');
-                    closeEditModal();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error retrieving candidate data');
-                closeEditModal();
-            });
-        }
-        
-        function closeEditModal() {
-            document.getElementById('editCandidateModal').classList.add('hidden');
-            document.getElementById('editCandidateModal').classList.remove('flex');
-            document.getElementById('edit-search-results').classList.add('hidden');
-        }
-        
-        function deleteCandidate(candidateId, candidateName) {
-            // Set the candidate ID and name in the delete confirmation modal
-            document.getElementById('delete-candidate-id').value = candidateId;
-            document.getElementById('delete-candidate-name').textContent = candidateName;
-            
-            // Show the delete confirmation modal
-            document.getElementById('deleteCandidateModal').classList.remove('hidden');
-            document.getElementById('deleteCandidateModal').classList.add('flex');
-        }
-        
-        function closeDeleteModal() {
-            document.getElementById('deleteCandidateModal').classList.add('hidden');
-            document.getElementById('deleteCandidateModal').classList.remove('flex');
-        }
-        
-        // Function to search students for the edit form
-        let editSearchTimeout;
-        
-        function searchStudentsForEdit(event) {
-            const searchTerm = event.target.value;
-            const resultsContainer = document.getElementById('edit-search-results');
-            
-            // Clear previous timeout
-            if (editSearchTimeout) {
-                clearTimeout(editSearchTimeout);
-            }
-            
-            // Hide results if search term is empty
-            if (searchTerm.trim() === '') {
-                resultsContainer.innerHTML = '';
-                resultsContainer.classList.add('hidden');
-                return;
-            }
-            
-            // Set new timeout (300ms delay to reduce API calls)
-            editSearchTimeout = setTimeout(() => {
-                // Make API call to search students
-                fetch(`/voting/search-students?query=${encodeURIComponent(searchTerm)}`, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
                         'Accept': 'application/json'
@@ -780,52 +769,125 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    // Clear previous results
-                    resultsContainer.innerHTML = '';
-                    
-                    if (data.length === 0) {
-                        // Show "no results" message
-                        resultsContainer.innerHTML = '<div class="p-3 text-gray-500">No students found</div>';
+                    if (data.success) {
+                        // Populate the form with candidate data
+                        document.getElementById('edit-candidate-name').value = data.candidate.name;
+                        document.getElementById('edit-partylist').value = data.candidate.partylist;
+                        document.getElementById('edit-user-id').value = data.candidate.user_id;
+                        document.getElementById('edit-position').value = data.candidate.position;
                     } else {
-                        // Display each student found
-                        data.forEach(student => {
-                            const item = document.createElement('div');
-                            item.className = 'p-3 hover:bg-gray-100 cursor-pointer';
-                            item.textContent = `${student.name} (${student.email})`;
-                            
-                            // When a student is selected
-                            item.addEventListener('click', function() {
-                                // Set the name in the input field
-                                document.getElementById('edit-candidate-name').value = student.name;
-                                // Set the student ID in the hidden field
-                                document.getElementById('edit-user-id').value = student.user_id;
-                                // Hide the results
-                                resultsContainer.classList.add('hidden');
-                            });
-                            
-                            resultsContainer.appendChild(item);
-                        });
+                        // Show error message
+                        alert(data.message || 'Error retrieving candidate data');
+                        closeEditModal();
                     }
-                    
-                    // Show the results dropdown
-                    resultsContainer.classList.remove('hidden');
                 })
                 .catch(error => {
-                    console.error('Error searching for students:', error);
+                    console.error('Error:', error);
+                    alert('Error retrieving candidate data');
+                    closeEditModal();
                 });
+        }
+
+        function closeEditModal() {
+            document.getElementById('editCandidateModal').classList.add('hidden');
+            document.getElementById('editCandidateModal').classList.remove('flex');
+            document.getElementById('edit-search-results').classList.add('hidden');
+        }
+
+        function deleteCandidate(candidateId, candidateName) {
+            // Set the candidate ID and name in the delete confirmation modal
+            document.getElementById('delete-candidate-id').value = candidateId;
+            document.getElementById('delete-candidate-name').textContent = candidateName;
+
+            // Show the delete confirmation modal
+            document.getElementById('deleteCandidateModal').classList.remove('hidden');
+            document.getElementById('deleteCandidateModal').classList.add('flex');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteCandidateModal').classList.add('hidden');
+            document.getElementById('deleteCandidateModal').classList.remove('flex');
+        }
+
+        // Function to search students for the edit form
+        let editSearchTimeout;
+
+        function searchStudentsForEdit(event) {
+            const searchTerm = event.target.value;
+            const resultsContainer = document.getElementById('edit-search-results');
+
+            // Clear previous timeout
+            if (editSearchTimeout) {
+                clearTimeout(editSearchTimeout);
+            }
+
+            // Hide results if search term is empty
+            if (searchTerm.trim() === '') {
+                resultsContainer.innerHTML = '';
+                resultsContainer.classList.add('hidden');
+                return;
+            }
+
+            // Set new timeout (300ms delay to reduce API calls)
+            editSearchTimeout = setTimeout(() => {
+                // Make API call to search students
+                fetch(`/voting/search-students?query=${encodeURIComponent(searchTerm)}`, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Clear previous results
+                        resultsContainer.innerHTML = '';
+
+                        if (data.length === 0) {
+                            // Show "no results" message
+                            resultsContainer.innerHTML =
+                                '<div class="p-3 text-gray-500">No students found</div>';
+                        } else {
+                            // Display each student found
+                            data.forEach(student => {
+                                const item = document.createElement('div');
+                                item.className = 'p-3 hover:bg-gray-100 cursor-pointer';
+                                item.textContent = `${student.name} (${student.email})`;
+
+                                // When a student is selected
+                                item.addEventListener('click', function() {
+                                    // Set the name in the input field
+                                    document.getElementById('edit-candidate-name').value =
+                                        student.name;
+                                    // Set the student ID in the hidden field
+                                    document.getElementById('edit-user-id').value = student
+                                        .user_id;
+                                    // Hide the results
+                                    resultsContainer.classList.add('hidden');
+                                });
+
+                                resultsContainer.appendChild(item);
+                            });
+                        }
+
+                        // Show the results dropdown
+                        resultsContainer.classList.remove('hidden');
+                    })
+                    .catch(error => {
+                        console.error('Error searching for students:', error);
+                    });
             }, 300);
         }
-        
+
         // Handle edit form submission
         document.getElementById('edit-candidate-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             const candidateId = document.getElementById('edit-candidate-id').value;
-            
+
             // Check for empty required fields
             const requiredFields = this.querySelectorAll('[required]');
             let isValid = true;
-            
+
             requiredFields.forEach(field => {
                 if (!field.value.trim()) {
                     isValid = false;
@@ -834,12 +896,12 @@
                     field.classList.remove('border-red-500');
                 }
             });
-            
+
             if (!isValid) {
                 alert('Please fill in all required fields');
                 return;
             }
-            
+
             // Show loading state
             const submitBtn = this.querySelector('button[type="submit"]');
             const originalBtnText = submitBtn.innerHTML;
@@ -851,55 +913,56 @@
                 </svg>
                 Updating...
             `;
-            
+
             const formData = new FormData(this);
             formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-            
+
             // Submit data to update the candidate
             fetch(`/voting/update-candidate/${candidateId}`, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Close the modal
-                    closeEditModal();
-                    
-                    // Show success message
-                    const successAlert = document.createElement('div');
-                    successAlert.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-up';
-                    successAlert.textContent = 'Candidate updated successfully!';
-                    document.body.appendChild(successAlert);
-                    
-                    // Remove the success message after 3 seconds
-                    setTimeout(() => {
-                        successAlert.remove();
-                    }, 3000);
-                    
-                    // Reload the page to show updated data
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000);
-                } else {
-                    alert(data.message || 'Error updating candidate');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error updating candidate');
-            })
-            .finally(() => {
-                // Restore button state
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
-            });
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Close the modal
+                        closeEditModal();
+
+                        // Show success message
+                        const successAlert = document.createElement('div');
+                        successAlert.className =
+                            'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-up';
+                        successAlert.textContent = 'Candidate updated successfully!';
+                        document.body.appendChild(successAlert);
+
+                        // Remove the success message after 3 seconds
+                        setTimeout(() => {
+                            successAlert.remove();
+                        }, 3000);
+
+                        // Reload the page to show updated data
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        alert(data.message || 'Error updating candidate');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error updating candidate');
+                })
+                .finally(() => {
+                    // Restore button state
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                });
         });
-        
+
         // Handle candidate form submission
         document.getElementById('candidate-form').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -955,65 +1018,66 @@
 
             // Submit data to the server
             fetch('/voting/save-candidate', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Server returned ' + response.status + ' ' + response.statusText);
-                }
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Server returned ' + response.status + ' ' + response.statusText);
+                    }
 
-                // Check if the response is JSON before parsing
-                const contentType = response.headers.get('content-type');
-                if (contentType && contentType.includes('application/json')) {
-                    return response.json();
-                } else {
-                    throw new Error('Expected JSON response but got ' + contentType);
-                }
-            })
-            .then(data => {
-                if (data.success) {
-                    // Close the modal
-                    closeModal();
+                    // Check if the response is JSON before parsing
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        return response.json();
+                    } else {
+                        throw new Error('Expected JSON response but got ' + contentType);
+                    }
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Close the modal
+                        closeModal();
 
-                    // Show success message
-                    const successAlert = document.createElement('div');
-                    successAlert.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-up';
-                    successAlert.textContent = 'Candidates added successfully!';
-                    document.body.appendChild(successAlert);
+                        // Show success message
+                        const successAlert = document.createElement('div');
+                        successAlert.className =
+                            'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-up';
+                        successAlert.textContent = 'Candidates added successfully!';
+                        document.body.appendChild(successAlert);
 
-                    // Remove the success message after 3 seconds
-                    setTimeout(() => {
-                        successAlert.remove();
-                    }, 3000);
+                        // Remove the success message after 3 seconds
+                        setTimeout(() => {
+                            successAlert.remove();
+                        }, 3000);
 
-                    // Reload the page to show updated data
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000);
-                } else {
-                    alert(data.message || 'Error saving candidates');
-                }
-            })
-            .catch(error => {
-                alert('Error saving candidates: ' + error.message);
-                console.error('Error:', error);
-            })
-            .finally(() => {
-                // Restore button state
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
-            });
+                        // Reload the page to show updated data
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        alert(data.message || 'Error saving candidates');
+                    }
+                })
+                .catch(error => {
+                    alert('Error saving candidates: ' + error.message);
+                    console.error('Error:', error);
+                })
+                .finally(() => {
+                    // Restore button state
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                });
         });
 
         // Handle delete confirmation
         document.getElementById('confirm-delete-btn').addEventListener('click', function() {
             const candidateId = document.getElementById('delete-candidate-id').value;
-            
+
             // Show loading state
             const originalBtnText = this.innerHTML;
             this.disabled = true;
@@ -1024,51 +1088,53 @@
                 </svg>
                 Deleting...
             `;
-            
+
             // Submit request to delete the candidate
             fetch(`/voting/delete-candidate/${candidateId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Close the modal
-                    closeDeleteModal();
-                    
-                    // Show success message
-                    const successAlert = document.createElement('div');
-                    successAlert.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-up';
-                    successAlert.textContent = 'Candidate deleted successfully!';
-                    document.body.appendChild(successAlert);
-                    
-                    // Remove the success message after 3 seconds
-                    setTimeout(() => {
-                        successAlert.remove();
-                    }, 3000);
-                    
-                    // Reload the page to show updated data
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000);
-                } else {
-                    alert(data.message || 'Error deleting candidate');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error deleting candidate');
-            })
-            .finally(() => {
-                // Restore button state
-                this.disabled = false;
-                this.innerHTML = originalBtnText;
-            });
+                    method: 'DELETE',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Close the modal
+                        closeDeleteModal();
+
+                        // Show success message
+                        const successAlert = document.createElement('div');
+                        successAlert.className =
+                            'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-up';
+                        successAlert.textContent = 'Candidate deleted successfully!';
+                        document.body.appendChild(successAlert);
+
+                        // Remove the success message after 3 seconds
+                        setTimeout(() => {
+                            successAlert.remove();
+                        }, 3000);
+
+                        // Reload the page to show updated data
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        alert(data.message || 'Error deleting candidate');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error deleting candidate');
+                })
+                .finally(() => {
+                    // Restore button state
+                    this.disabled = false;
+                    this.innerHTML = originalBtnText;
+                });
         });
 
         // Reset button and reset confirmation functionality
@@ -1080,7 +1146,7 @@
                 document.getElementById('resetConfirmModal').classList.add('flex');
             });
         }
-        
+
         // Close reset confirmation modal
         function closeResetModal() {
             document.getElementById('resetConfirmModal').classList.add('hidden');
@@ -1089,7 +1155,7 @@
             document.getElementById('confirm-reset-btn').disabled = true;
             document.getElementById('confirm-reset-btn').classList.add('opacity-50', 'cursor-not-allowed');
         }
-        
+
         // Handle reset confirmation input
         const resetConfirmationInput = document.getElementById('reset-confirmation');
         if (resetConfirmationInput) {
@@ -1104,7 +1170,7 @@
                 }
             });
         }
-        
+
         // Handle reset confirmation button click
         const confirmResetBtn = document.getElementById('confirm-reset-btn');
         if (confirmResetBtn) {
@@ -1119,50 +1185,53 @@
                     </svg>
                     Resetting...
                 `;
-                  // Submit request to reset voting data
+                // Submit request to reset voting data
                 fetch('{{ route('voting.reset') }}', {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Close the modal
-                        closeResetModal();
-                        
-                        // Show success message
-                        const successAlert = document.createElement('div');
-                        successAlert.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-up';
-                        successAlert.textContent = data.message || 'All voting data has been reset successfully.';
-                        document.body.appendChild(successAlert);
-                        
-                        // Remove the success message after 3 seconds
-                        setTimeout(() => {
-                            successAlert.remove();
-                        }, 3000);
-                        
-                        // Reload the page to show updated state
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1000);
-                    } else {
-                        alert(data.message || 'Error resetting voting data');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error resetting voting data');
-                })
-                .finally(() => {
-                    // Restore button state
-                    this.disabled = false;
-                    this.innerHTML = originalBtnText;
-                });
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                'content')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Close the modal
+                            closeResetModal();
+
+                            // Show success message
+                            const successAlert = document.createElement('div');
+                            successAlert.className =
+                                'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-up';
+                            successAlert.textContent = data.message ||
+                                'All voting data has been reset successfully.';
+                            document.body.appendChild(successAlert);
+
+                            // Remove the success message after 3 seconds
+                            setTimeout(() => {
+                                successAlert.remove();
+                            }, 3000);
+
+                            // Reload the page to show updated state
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        } else {
+                            alert(data.message || 'Error resetting voting data');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error resetting voting data');
+                    })
+                    .finally(() => {
+                        // Restore button state
+                        this.disabled = false;
+                        this.innerHTML = originalBtnText;
+                    });
             });
         }
     </script>

@@ -404,8 +404,21 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/clubs/{club}/members/{user}', [ClubController::class, 'removeMember'])
             ->name('clubs.members.destroy'); // Added this line
 
+        Route::get('/clubs/{club}/members/{user}/profile', [ClubController::class, 'showMemberProfile'])
+            ->name('clubs.members.profile');
+
         Route::put('/clubs/{club}/update-settings', [ClubController::class, 'updateSettings'])
             ->name('clubs.update-settings');
+
+        // Join request management routes
+        Route::post('/clubs/{club}/join-requests/{joinRequest}/approve', [ClubController::class, 'approveJoinRequest'])
+            ->name('clubs.join-requests.approve');
+
+        Route::post('/clubs/{club}/join-requests/{joinRequest}/reject', [ClubController::class, 'rejectJoinRequest'])
+            ->name('clubs.join-requests.reject');
+
+        Route::post('/clubs/{club}/toggle-approval', [ClubController::class, 'toggleApprovalRequirement'])
+            ->name('clubs.toggle-approval');
     });
 
     // Add a route that both ADMIN and TEACHER can access for the toggle hunting day feature

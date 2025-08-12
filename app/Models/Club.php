@@ -20,6 +20,8 @@ class Club extends Model
         'club_logo',
         'club_banner',
         'is_club_hunting_day',
+        'category',
+        'requires_approval',
     ];
 
     public function getRouteKey()
@@ -60,5 +62,15 @@ class Club extends Model
     {
         return $this->belongsToMany(User::class, 'tbl_club_membership', 'club_id', 'user_id')
             ->where('user_id', auth()->id());
+    }
+
+    public function joinRequests()
+    {
+        return $this->hasMany(ClubJoinRequest::class, 'club_id');
+    }
+
+    public function pendingJoinRequests()
+    {
+        return $this->hasMany(ClubJoinRequest::class, 'club_id')->where('status', 'pending');
     }
 }

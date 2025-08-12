@@ -21,9 +21,15 @@
                                 Events
                             </a>
                             <a href="{{ route('clubs.people.index', $club) }}"
-                                class="py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200
+                                class="py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center gap-2
                                 {{ request()->routeIs('clubs.people.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                                 People
+                                @if (isset($pendingRequestsCount) && $pendingRequestsCount > 0)
+                                    <span
+                                        class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                                        {{ $pendingRequestsCount }}
+                                    </span>
+                                @endif
                             </a>
                             <a href="{{ route('clubs.about.index', $club) }}"
                                 class="py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200
@@ -104,8 +110,14 @@
                                 Events
                             </a>
                             <a href="{{ route('clubs.people.index', $club) }}"
-                                class="block py-2 px-4 text-base font-medium {{ request()->routeIs('clubs.people.*') ? 'text-blue-600 bg-blue-50' : 'text-gray-500 hover:bg-gray-50' }} rounded-md">
-                                People
+                                class="flex items-center justify-between py-2 px-4 text-base font-medium {{ request()->routeIs('clubs.people.*') ? 'text-blue-600 bg-blue-50' : 'text-gray-500 hover:bg-gray-50' }} rounded-md">
+                                <span>People</span>
+                                @if (isset($pendingRequestsCount) && $pendingRequestsCount > 0)
+                                    <span
+                                        class="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
+                                        {{ $pendingRequestsCount }}
+                                    </span>
+                                @endif
                             </a>
                             <a href="{{ route('clubs.about.index', $club) }}"
                                 class="block py-2 px-4 text-base font-medium {{ request()->routeIs('clubs.about.*') ? 'text-blue-600 bg-blue-50' : 'text-gray-500 hover:bg-gray-50' }} rounded-md">

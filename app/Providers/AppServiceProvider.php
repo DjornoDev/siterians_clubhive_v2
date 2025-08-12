@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Auth;
 use Hashids\Hashids;
 use App\Models\Club;
 use Illuminate\Support\Facades\Route;
@@ -41,6 +43,21 @@ class AppServiceProvider extends ServiceProvider
 
             // If that fails, try as numeric ID (for existing URLs)
             return Club::findOrFail($value);
+        });
+
+        // Share pending join requests count with club navigation views
+        View::composer('clubs.layouts.navigation', function ($view) {
+            $club = $view->getData()['club'] ?? null;
+
+            if ($club instanceof Club && Auth::check() && Auth::user()->user_id === $club->club_adviser) {
+                $pendingRequestsCount = $club->joinRequests()
+                    ->where('status', 'pending')
+                    ->count();
+
+                $view->with('pendingRequestsCount', $pendingRequestsCount);
+            } else {
+                $view->with('pendingRequestsCount', 0);
+            }
         });
     }
 }

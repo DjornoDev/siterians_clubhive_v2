@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Club;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\User;
@@ -14,14 +15,21 @@ use App\Models\Post;
 use App\Models\Election;
 use App\Models\Candidate;
 use App\Models\Vote;
+use App\Models\ClubJoinRequest;
 
 class ClubController extends Controller
 {
     public function index()
     {
-        $clubs = Club::with(['adviser', 'members' => function ($query) {
-            $query->where('tbl_club_membership.user_id', auth()->id()); // Add table prefix
-        }])->get();
+        $clubs = Club::with([
+            'adviser',
+            'members' => function ($query) {
+                $query->where('tbl_club_membership.user_id', auth()->id()); // Add table prefix
+            },
+            'joinRequests' => function ($query) {
+                $query->where('user_id', auth()->id());
+            }
+        ])->get();
 
         return view('clubs.index-all', compact('clubs'));
     }
@@ -30,8 +38,8 @@ class ClubController extends Controller
     {
         // Allow both the club adviser and any admin to toggle hunting day
         abort_if(
-            (auth()->id() !== $club->club_adviser && auth()->user()->role !== 'ADMIN') || 
-            $club->club_id !== 1, 
+            (auth()->id() !== $club->club_adviser && auth()->user()->role !== 'ADMIN') ||
+                $club->club_id !== 1,
             403
         );
 
@@ -46,7 +54,8 @@ class ClubController extends Controller
 
     public function updateSettings(Request $request, Club $club)
     {
-        abort_if(auth()->id() !== $club->club_adviser, 403);            $validated = $request->validate([
+        abort_if(auth()->id() !== $club->club_adviser, 403);
+        $validated = $request->validate([
             'club_name' => 'required|string|max:255',
             'club_description' => 'nullable|string',
             'club_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
@@ -87,7 +96,7 @@ class ClubController extends Controller
     {
         $user = auth()->user();
 
-        // Add table prefix to club_id
+        // Check if user is already a member
         if ($user->joinedClubs()->where('tbl_club_membership.club_id', $club->club_id)->exists()) {
             return response()->json([
                 'success' => false,
@@ -95,14 +104,50 @@ class ClubController extends Controller
             ], 409);
         }
 
-        // Rest of your code remains the same
+        // Check if user already has a pending request
+        $existingRequest = $user->clubJoinRequests()->where('club_id', $club->club_id)->first();
+
+        if ($existingRequest) {
+            if ($existingRequest->status === 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You already have a pending request for this club!',
+                    'has_pending' => true
+                ], 409);
+            } elseif ($existingRequest->status === 'rejected') {
+                // Delete the old rejected request and allow new request
+                $existingRequest->delete();
+            }
+        }
+
+        // If club requires approval, create a join request
+        if ($club->requires_approval) {
+            ClubJoinRequest::create([
+                'club_id' => $club->club_id,
+                'user_id' => $user->user_id,
+                'status' => 'pending',
+                'message' => 'Join request for ' . $club->club_name
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Join request sent! Wait for club adviser approval.',
+                'requires_approval' => true
+            ]);
+        }
+
+        // If no approval required, add directly as member
         $user->joinedClubs()->attach($club->club_id, [
             'club_role' => 'MEMBER',
             'joined_date' => now(),
             'club_accessibility' => null
         ]);
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Successfully joined the club!',
+            'requires_approval' => false
+        ]);
     }
 
     public function getNonMembers(Club $club, Request $request)
@@ -203,7 +248,9 @@ class ClubController extends Controller
             $validated = $request->validate([
                 'club_name' => 'required|string|max:255',
                 'club_adviser' => 'required|exists:tbl_users,user_id',
-                'club_description' => 'nullable|string',
+                'club_description' => 'required|string|max:1000',
+                'category' => 'required|in:academic,sports,service',
+                'requires_approval' => 'boolean',
                 'club_logo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048', // Max 2MB
                 'club_banner' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // Max 5MB
             ]);
@@ -215,6 +262,8 @@ class ClubController extends Controller
                 'club_name' => $validated['club_name'],
                 'club_adviser' => $validated['club_adviser'],
                 'club_description' => $validated['club_description'],
+                'category' => $validated['category'],
+                'requires_approval' => $validated['requires_approval'] ?? true,
                 'club_logo' => $logoPath,
                 'club_banner' => $bannerPath,
             ]);
@@ -233,7 +282,9 @@ class ClubController extends Controller
             $validated = $request->validate([
                 'club_name' => 'required|string|max:255',
                 'club_adviser' => 'required|exists:tbl_users,user_id',
-                'club_description' => 'nullable|string',
+                'club_description' => 'required|string|max:1000',
+                'category' => 'required|in:academic,sports,service',
+                'requires_approval' => 'boolean',
                 'club_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
                 'club_banner' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             ]);
@@ -290,23 +341,23 @@ class ClubController extends Controller
             return back()->with('error', 'Error deleting club: ' . $e->getMessage());
         }
     }
-    
+
     public function verifyAndDelete(Request $request, Club $club)
     {
         // Validate request
         $request->validate([
             'password' => 'required|string',
         ]);
-        
+
         $user = auth()->user();
-        
+
         // Check if password is correct
         if (!password_verify($request->password, $user->password)) {
             return response()->json([
                 'message' => 'Incorrect password'
             ], 401);
         }
-        
+
         // Password verified, now delete the club
         try {
             // Delete associated files
@@ -341,15 +392,15 @@ class ClubController extends Controller
             ->orderBy('event_date')
             ->take(5) // Adjust the number of upcoming events to show
             ->get();
-            
+
         $userId = auth()->id();
         $isClubMember = $club->members()->where('tbl_club_membership.user_id', $userId)->exists();
         $isClubAdviser = $club->club_adviser == $userId;
-        
+
         // If the user is a club member or adviser, show all posts
         // Otherwise, show only PUBLIC posts
         $postsQuery = $club->posts();
-        
+
         if (!$isClubMember && !$isClubAdviser) {
             // If not a member or adviser, only show public posts
             $postsQuery->where('post_visibility', 'PUBLIC');
@@ -368,40 +419,40 @@ class ClubController extends Controller
             'isClubAdviser' => $isClubAdviser,
         ]);
     }
-    
+
     public function checkPostChanges(Request $request, Club $club)
     {
         $currentChecksum = $request->query('checksum', '');
-        
+
         // Get all posts for this club
         $posts = $club->posts()->latest()->get();
-        
+
         // Generate a new checksum that includes post IDs and updated timestamps
         // This will change if posts are added, edited, or deleted
         $newChecksum = md5(json_encode($posts->pluck('post_id')->merge($posts->pluck('updated_at'))));
-        
+
         // Compare the checksums to determine if there are any changes
         $hasChanges = $currentChecksum !== $newChecksum;
-            
+
         return response()->json([
             'hasChanges' => $hasChanges
         ]);
     }
-    
+
     public function checkEventChanges(Request $request, Club $club)
     {
         $currentChecksum = $request->query('checksum', '');
-        
+
         // Get all events for this club
         $events = $club->events()->get();
-        
+
         // Generate a new checksum that includes event IDs and updated timestamps
         // This will change if events are added, edited, or deleted
         $newChecksum = md5(json_encode($events->pluck('event_id')->merge($events->pluck('updated_at'))));
-        
+
         // Compare the checksums to determine if there are any changes
         $hasChanges = $currentChecksum !== $newChecksum;
-            
+
         return response()->json([
             'hasChanges' => $hasChanges
         ]);
@@ -452,7 +503,17 @@ class ClubController extends Controller
             $query->where('class_id', $request->input('class'));
         })->get();
 
-        return view('clubs.people.index', compact('club', 'members', 'classes', 'sections'));
+        // Get pending join requests for club adviser
+        $joinRequests = collect();
+        if (auth()->user()->user_id === $club->club_adviser) {
+            $joinRequests = $club->joinRequests()
+                ->with(['user.section.schoolClass'])
+                ->where('status', 'pending')
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
+        return view('clubs.people.index', compact('club', 'members', 'classes', 'sections', 'joinRequests'));
     }
 
     public function about(Club $club)
@@ -466,16 +527,16 @@ class ClubController extends Controller
     {
         $name = $request->input('value');
         $excludeId = $request->input('exclude');
-        
+
         $query = Club::where('club_name', $name);
-        
+
         // If we're excluding a club (for edit validation), add the condition
         if ($excludeId) {
             $query->where('club_id', '!=', $excludeId);
         }
-        
+
         $exists = $query->exists();
-        
+
         return response()->json(['exists' => $exists]);
     }
 
@@ -492,5 +553,80 @@ class ClubController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error removing member: ' . $e->getMessage()], 500);
         }
+    }
+
+    public function approveJoinRequest(Request $request, Club $club, ClubJoinRequest $joinRequest)
+    {
+        abort_if(auth()->id() !== $club->club_adviser, 403);
+
+        try {
+            // Update request status
+            $joinRequest->update(['status' => 'approved']);
+
+            // Add user as club member
+            $club->members()->attach($joinRequest->user_id, [
+                'club_role' => 'MEMBER',
+                'joined_date' => now(),
+                'club_accessibility' => null
+            ]);
+
+            return response()->json(['message' => 'Join request approved successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error approving request: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function rejectJoinRequest(Request $request, Club $club, ClubJoinRequest $joinRequest)
+    {
+        abort_if(auth()->id() !== $club->club_adviser, 403);
+
+        try {
+            // Update request status
+            $joinRequest->update(['status' => 'rejected']);
+
+            return response()->json(['message' => 'Join request rejected successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error rejecting request: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function toggleApprovalRequirement(Request $request, Club $club)
+    {
+        abort_if(auth()->id() !== $club->club_adviser, 403);
+
+        try {
+            $club->update(['requires_approval' => !$club->requires_approval]);
+
+            return response()->json([
+                'message' => 'Approval requirement updated successfully',
+                'requires_approval' => $club->requires_approval
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error updating approval requirement: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function showMemberProfile(Club $club, User $user)
+    {
+        // Ensure only club adviser can view member profiles
+        abort_if(Auth::id() !== $club->club_adviser, 403);
+
+        // Verify that the user is actually a member of this club
+        abort_if(!$club->members()->where('tbl_club_membership.user_id', $user->user_id)->exists(), 404);
+
+        // Load user with all necessary relationships for the profile
+        $student = User::with([
+            'section.schoolClass',
+            'clubMemberships.club',
+            'clubJoinRequests.club'
+        ])->findOrFail($user->user_id);
+
+        // Get the student's membership details for this specific club
+        $membership = $club->members()
+            ->where('tbl_club_membership.user_id', $user->user_id)
+            ->withPivot(['club_role', 'club_position', 'created_at'])
+            ->first();
+
+        return view('clubs.members.profile', compact('club', 'student', 'membership'));
     }
 }
