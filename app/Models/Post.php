@@ -11,10 +11,14 @@ class Post extends Model
 
     protected $table = 'tbl_posts';
     protected $primaryKey = 'post_id';
-     public $timestamps = true;
+    public $timestamps = true;
 
     protected $fillable = [
         'post_caption',
+        'file_attachment',
+        'file_original_name',
+        'file_mime_type',
+        'file_size',
         'club_id',
         'author_id',
         'post_visibility',
@@ -39,7 +43,7 @@ class Post extends Model
     {
         return $this->hasMany(PostImage::class, 'post_id');
     }
-    
+
     /**
      * Determine if a user can view this post.
      *
@@ -52,16 +56,18 @@ class Post extends Model
         if ($this->post_visibility === 'PUBLIC') {
             return true;
         }
-        
+
         // For CLUB_ONLY posts, check permissions
         // User must be logged in and either the author, club adviser, or club member
-        if ($user &&
+        if (
+            $user &&
             ($user->user_id === $this->author_id ||
-             $user->user_id === $this->club->club_adviser ||
-             $this->club->members()->where('tbl_club_membership.user_id', $user->user_id)->exists())) {
+                $user->user_id === $this->club->club_adviser ||
+                $this->club->members()->where('tbl_club_membership.user_id', $user->user_id)->exists())
+        ) {
             return true;
         }
-        
+
         return false;
     }
 }

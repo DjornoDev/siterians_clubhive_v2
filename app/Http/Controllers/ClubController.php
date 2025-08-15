@@ -479,7 +479,7 @@ class ClubController extends Controller
 
     public function people(Club $club, Request $request)
     {
-        $members = $club->members()
+        $baseQuery = $club->members()
             ->with(['section.schoolClass'])
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->input('search');
@@ -495,8 +495,16 @@ class ClubController extends Controller
             })
             ->when($request->filled('section'), function ($query) use ($request) {
                 $query->where('section_id', $request->input('section'));
-            })
-            ->paginate($request->input('per_page', 20));
+            });
+
+        // Get all members for analytics (for club adviser only)
+        $allMembers = collect();
+        if (Auth::id() === $club->club_adviser) {
+            $allMembers = $club->members()->with(['section.schoolClass'])->get();
+        }
+
+        // Get paginated members for display
+        $members = $baseQuery->paginate($request->input('per_page', 20));
 
         $classes = SchoolClass::all();
         $sections = Section::when($request->filled('class'), function ($query) use ($request) {
@@ -505,7 +513,7 @@ class ClubController extends Controller
 
         // Get pending join requests for club adviser
         $joinRequests = collect();
-        if (auth()->user()->user_id === $club->club_adviser) {
+        if (Auth::id() === $club->club_adviser) {
             $joinRequests = $club->joinRequests()
                 ->with(['user.section.schoolClass'])
                 ->where('status', 'pending')
@@ -513,7 +521,7 @@ class ClubController extends Controller
                 ->get();
         }
 
-        return view('clubs.people.index', compact('club', 'members', 'classes', 'sections', 'joinRequests'));
+        return view('clubs.people.index', compact('club', 'members', 'allMembers', 'classes', 'sections', 'joinRequests'));
     }
 
     public function about(Club $club)
@@ -552,6 +560,30 @@ class ClubController extends Controller
             return response()->json(['message' => 'Member removed successfully'], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error removing member: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function removeBulkMembers(Request $request, Club $club)
+    {
+        abort_if(auth()->id() !== $club->club_adviser, 403);
+
+        $request->validate([
+            'member_ids' => 'required|array',
+            'member_ids.*' => 'exists:tbl_users,user_id'
+        ]);
+
+        try {
+            // Detach the members from the club
+            $club->members()->detach($request->member_ids);
+
+            $count = count($request->member_ids);
+            $message = $count === 1
+                ? 'Member removed successfully'
+                : "{$count} members removed successfully";
+
+            return response()->json(['message' => $message], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error removing members: ' . $e->getMessage()], 500);
         }
     }
 
@@ -628,5 +660,26 @@ class ClubController extends Controller
             ->first();
 
         return view('clubs.members.profile', compact('club', 'student', 'membership'));
+    }
+
+    public function updateMemberStatus(Request $request, Club $club, User $user)
+    {
+        // Check if user is club adviser or officer
+        $currentUser = auth()->user();
+        $isAdviser = $currentUser->user_id === $club->club_adviser;
+        $membershipRecord = $currentUser->joinedClubs()->where('tbl_club_membership.club_id', $club->club_id)->first();
+        $isOfficer = $membershipRecord && $membershipRecord->pivot->club_role === 'Officer';
+
+        if (!$isAdviser && !$isOfficer) {
+            abort(403, 'Only club advisers and officers can update member status.');
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|in:ACTIVE,INACTIVE'
+        ]);
+
+        $user->update(['status' => $validated['status']]);
+
+        return back()->with('success', 'Member status updated successfully!');
     }
 }

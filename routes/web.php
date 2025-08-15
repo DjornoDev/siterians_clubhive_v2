@@ -401,8 +401,14 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/clubs/{club}/members/{user}', [ClubController::class, 'updateMember'])
             ->name('clubs.members.update');
 
+        Route::patch('/clubs/{club}/members/{user}/status', [ClubController::class, 'updateMemberStatus'])
+            ->name('clubs.members.update-status');
+
         Route::delete('/clubs/{club}/members/{user}', [ClubController::class, 'removeMember'])
-            ->name('clubs.members.destroy'); // Added this line
+            ->name('clubs.members.destroy');
+
+        Route::delete('/clubs/{club}/members', [ClubController::class, 'removeBulkMembers'])
+            ->name('clubs.members.bulk-destroy');
 
         Route::get('/clubs/{club}/members/{user}/profile', [ClubController::class, 'showMemberProfile'])
             ->name('clubs.members.profile');
