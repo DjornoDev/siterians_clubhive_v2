@@ -15,7 +15,8 @@
             </div>
 
             <!-- Scrollable Content Area -->
-            <div class="p-6 overflow-y-auto flex-grow">                <form id="edit-post-form"
+            <div class="p-6 overflow-y-auto flex-grow">
+                <form id="edit-post-form"
                     :action="`{{ route('clubs.posts.update', ['club' => 'CLUB_ID', 'post' => 'POST_ID']) }}`
                     .replace('CLUB_ID', currentClubId)
                         .replace('POST_ID', currentPostId)"
@@ -63,11 +64,69 @@
                     <div class="mb-4">
                         <label for="images" class="block text-sm font-medium text-gray-700">Add More Images</label>
                         <input type="file" name="images[]" id="images" multiple accept="image/*"
-                            class="mt-1 block w-full">                        <p class="text-sm text-gray-500 mt-1">You can upload multiple images
+                            class="mt-1 block w-full">
+                        <p class="text-sm text-gray-500 mt-1">You can upload multiple images
                             (max 5MB each).</p>
                         @error('images.*')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
+                    </div>
+
+                    <!-- File Attachment Section -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">File Attachment</label>
+
+                        <!-- Current File Attachment -->
+                        <template x-if="currentPostFileAttachment">
+                            <div class="mb-3 p-3 bg-gray-50 rounded-lg border">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13">
+                                            </path>
+                                        </svg>
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-900"
+                                                x-text="currentPostFileAttachment.original_name"></span>
+                                            <p class="text-xs text-gray-500"
+                                                x-text="formatFileSize(currentPostFileAttachment.size)"></p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <a :href="currentPostFileAttachment.url"
+                                            class="text-blue-600 hover:text-blue-700 text-sm mr-3"
+                                            target="_blank">Download</a>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" name="remove_file_attachment" value="1"
+                                                class="h-4 w-4 text-red-600 border-gray-300 rounded focus:ring-red-500">
+                                            <span class="ml-1 text-sm text-red-600">Remove</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Upload New File -->
+                        <div>
+                            <label for="file_attachment" class="block text-sm font-medium text-gray-600 mb-2">
+                                <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13">
+                                    </path>
+                                </svg>
+                                Upload New File
+                            </label>
+                            <input type="file" name="file_attachment" id="file_attachment"
+                                accept=".pdf,.doc,.docx,.txt,.ppt,.pptx,.xls,.xlsx,.zip,.rar"
+                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                            <p class="text-xs text-gray-500 mt-1">PDF, DOC, TXT, PPT, XLS, ZIP files up to 10MB</p>
+                            @error('file_attachment')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
                 </form>
             </div>

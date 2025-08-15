@@ -28,9 +28,18 @@
         editPostCaption: '',
         editPostVisibility: 'CLUB_ONLY',
         currentPostImages: [],
+        currentPostFileAttachment: null,
         showFullGallery: null,
         currentImageIndex: 0,
         lastChecksum: '{{ md5(json_encode($posts->pluck('post_id')->merge($posts->pluck('updated_at')))) }}',
+    
+        formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        },
         checkForPostChanges() {
             // Skip refresh check if a modal is open (creating, editing, or deleting a post)
             if (this.showEditModal || this.showDeleteModal || this.showFullGallery) return;
@@ -49,23 +58,23 @@
         }
     }" class="max-w-7xl mx-auto px-4 py-6">
         @php
-        // Check if club hunting day is active
-        $isHuntingActive = \App\Models\Club::find(1)?->is_club_hunting_day ?? false;
+            // Check if club hunting day is active
+            $isHuntingActive = \App\Models\Club::find(1)?->is_club_hunting_day ?? false;
 
-        // Check if there's an active election
-        $activeElection = \App\Models\Election::where('club_id', 1)
-            ->where('is_published', true)
-            ->where('start_date', '<=', now())
-            ->where('end_date', '>=', now())
-            ->latest()
-            ->first(); // Determine if user can access clubs page
-        $canAccessClubsPage = auth()->user()->role === 'STUDENT';
+            // Check if there's an active election
+$activeElection = \App\Models\Election::where('club_id', 1)
+    ->where('is_published', true)
+    ->where('start_date', '<=', now())
+    ->where('end_date', '>=', now())
+    ->latest()
+    ->first(); // Determine if user can access clubs page
+$canAccessClubsPage = auth()->user()->role === 'STUDENT';
 
-        // Determine if user can access voting page - only students and the adviser of club ID 1
-        $canAccessVotingPage =
-            auth()->user()->role === 'STUDENT' ||
-            (auth()->user()->role === 'TEACHER' &&
-                            auth()->user()->user_id === \App\Models\Club::find(1)?->club_adviser);
+// Determine if user can access voting page - only students and the adviser of club ID 1
+$canAccessVotingPage =
+    auth()->user()->role === 'STUDENT' ||
+    (auth()->user()->role === 'TEACHER' &&
+                    auth()->user()->user_id === \App\Models\Club::find(1)?->club_adviser);
         @endphp @if ($isHuntingActive || $activeElection)
 
             <!-- Notification Section -->
@@ -133,18 +142,22 @@
                     </div>
                 @endif
             </div>
-        @endif        <!-- Club Header Section -->
+        @endif <!-- Club Header Section -->
         <div class="mb-8">
             <!-- Club Banner -->
             <div class="h-60 sm:h-80 w-full rounded-xl overflow-hidden shadow-lg mb-4">
-                <img src="{{ Storage::url($club->club_banner) }}" alt="Club Banner" class="w-full h-full object-cover cursor-pointer transition-transform duration-500 hover:scale-105" @click="showFullGallery = 'club_banner'; currentImageIndex = 0;">
+                <img src="{{ Storage::url($club->club_banner) }}" alt="Club Banner"
+                    class="w-full h-full object-cover cursor-pointer transition-transform duration-500 hover:scale-105"
+                    @click="showFullGallery = 'club_banner'; currentImageIndex = 0;">
             </div>
 
             <!-- Club Logo and Name -->
             <div class="flex flex-col sm:flex-row items-center sm:space-x-6 text-center sm:text-left">
                 <div
                     class="h-24 w-24 sm:h-32 sm:w-32 rounded-full shadow-lg border-4 border-white -mt-12 overflow-hidden sm:ml-4 mb-4 sm:mb-0">
-                    <img src="{{ Storage::url($club->club_logo) }}" alt="Club Logo" class="w-full h-full object-cover cursor-pointer transition-all duration-300 hover:scale-110" @click="showFullGallery = 'club_logo'; currentImageIndex = 0;">
+                    <img src="{{ Storage::url($club->club_logo) }}" alt="Club Logo"
+                        class="w-full h-full object-cover cursor-pointer transition-all duration-300 hover:scale-110"
+                        @click="showFullGallery = 'club_logo'; currentImageIndex = 0;">
                 </div>
                 <div>
                     <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">{{ $club->club_name }}</h1>
@@ -200,8 +213,8 @@
                             </div>
                         @endforelse
                     </div>
-                </div> 
-                
+                </div>
+
                 <!-- Upcoming Events -->
                 <div class="bg-white rounded-xl shadow-lg overflow-hidden">
                     <div class="bg-gradient-to-r from-purple-500 to-purple-600 px-4 sm:px-5 py-3 sm:py-4">
@@ -243,8 +256,8 @@
                         @endforelse
                     </div>
                 </div>
-            </div> 
-            
+            </div>
+
             <!-- Right Column: Posts -->
             <div id="posts-section" class="lg:col-span-2 order-1 lg:order-2">
                 <!-- Posts Navigation for mobile -->
@@ -361,8 +374,8 @@
                                                 ])</span>
                                         </div>
                                     </div>
-                                </div> 
-                                
+                                </div>
+
                                 @can('update', $post)
                                     <div class="relative" x-data="{ open: false }">
                                         <button @click="open = !open"
@@ -389,6 +402,14 @@
                                                         'url' => Storage::url($img->image_path),
                                                     ],
                                                 )->toJson() }};
+                                            currentPostFileAttachment = {{ $post->file_attachment
+                                                ? json_encode([
+                                                    'url' => Storage::url($post->file_attachment),
+                                                    'original_name' => $post->file_original_name,
+                                                    'mime_type' => $post->file_mime_type,
+                                                    'size' => $post->file_size,
+                                                ])
+                                                : 'null' }};
                                         "
                                                 class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 hover:text-blue-800">
                                                 <div class="flex items-center">
@@ -418,13 +439,52 @@
                                         </div>
                                     </div>
                                 @endcan
-                            </div> 
-                            
+                            </div>
+
                             <!-- Post Content -->
                             <div class="px-4 py-3 sm:p-6 sm:pb-4">
                                 <p class="text-gray-800 text-sm sm:text-base leading-relaxed whitespace-pre-line">
                                     {{ $post->post_caption }}</p>
                             </div>
+
+                            <!-- File Attachment Section -->
+                            @if ($post->file_attachment)
+                                <div class="px-4 pb-4 sm:px-6">
+                                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 sm:p-4">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center">
+                                                <svg class="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 mr-2 sm:mr-3"
+                                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13">
+                                                    </path>
+                                                </svg>
+                                                <div>
+                                                    <p class="text-xs sm:text-sm font-medium text-gray-900">
+                                                        {{ $post->file_original_name ?? 'Attachment' }}</p>
+                                                    <p class="text-xs text-gray-500">
+                                                        {{ $post->file_mime_type ?? 'Unknown type' }}
+                                                        @if ($post->file_size)
+                                                            • {{ number_format($post->file_size / 1024, 1) }} KB
+                                                        @endif
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <a href="{{ Storage::url($post->file_attachment) }}"
+                                                class="inline-flex items-center px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 shadow-sm text-xs sm:text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                                download="{{ $post->file_original_name }}" target="_blank">
+                                                <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none"
+                                                    stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                                    </path>
+                                                </svg>
+                                                Download
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
 
                             @if ($post->images->count() > 0)
                                 <div class="relative">
@@ -536,8 +596,8 @@
                     {{ $posts->links() }}
                 </div>
             </div>
-        </div> 
-        
+        </div>
+
         <!-- Global Image Carousel Modal -->
         <template x-if="showFullGallery !== null">
             <div class="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center"
@@ -569,34 +629,30 @@
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
-                </button>                <!-- Main image container -->
+                </button> <!-- Main image container -->
                 <div class="h-full w-full flex items-center justify-center p-8">
                     <!-- Club banner image -->
                     <div x-show="showFullGallery === 'club_banner'" data-post-gallery="club_banner"
                         class="h-full max-h-full flex items-center justify-center transform transition-opacity"
                         x-transition:enter="transition ease-out duration-300"
-                        x-transition:enter-start="opacity-0 scale-95"
-                        x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                         x-transition:leave="transition ease-in duration-200"
-                        x-transition:leave-start="opacity-100 scale-100"
-                        x-transition:leave-end="opacity-0 scale-95">
+                        x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95">
                         <img src="{{ Storage::url($club->club_banner) }}" alt="Club Banner"
                             class="max-h-full max-w-full object-contain shadow-2xl">
                     </div>
-                    
+
                     <!-- Club logo image -->
                     <div x-show="showFullGallery === 'club_logo'" data-post-gallery="club_logo"
                         class="h-full max-h-full flex items-center justify-center transform transition-opacity"
                         x-transition:enter="transition ease-out duration-300"
-                        x-transition:enter-start="opacity-0 scale-95"
-                        x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                         x-transition:leave="transition ease-in duration-200"
-                        x-transition:leave-start="opacity-100 scale-100"
-                        x-transition:leave-end="opacity-0 scale-95">
+                        x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95">
                         <img src="{{ Storage::url($club->club_logo) }}" alt="Club Logo"
                             class="max-h-full max-w-full object-contain shadow-2xl">
                     </div>
-                    
+
                     <!-- Post images -->
                     @foreach ($posts as $post)
                         @foreach ($post->images as $index => $image)

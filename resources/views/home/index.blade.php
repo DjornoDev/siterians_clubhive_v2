@@ -11,10 +11,19 @@
         editPostCaption: '',
         editPostVisibility: 'CLUB_ONLY',
         currentPostImages: [],
+        currentPostFileAttachment: null,
         showFullGallery: null,
         currentImageIndex: 0,
         postLastChecksum: '{{ md5(json_encode($publicPosts->pluck('post_id')->merge($publicPosts->pluck('updated_at')))) }}',
         eventLastChecksum: '{{ md5(json_encode($todayEvents->pluck('event_id')->merge($todayEvents->pluck('updated_at'))->merge($upcomingEvents->pluck('event_id'))->merge($upcomingEvents->pluck('updated_at')))) }}',
+    
+        formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        },
     
         checkForPostChanges() {
             // Skip refresh check if a modal is open
@@ -178,6 +187,14 @@
                                                     editPostCaption = `{{ $post->post_caption }}`;
                                                     editPostVisibility = '{{ $post->post_visibility }}';
                                                     currentPostImages = {{ $post->images->map(fn($img) => ['id' => $img->image_id, 'url' => Storage::url($img->image_path)])->toJson() }};
+                                                    currentPostFileAttachment = {{ $post->file_attachment
+                                                        ? json_encode([
+                                                            'url' => Storage::url($post->file_attachment),
+                                                            'original_name' => $post->file_original_name,
+                                                            'mime_type' => $post->file_mime_type,
+                                                            'size' => $post->file_size,
+                                                        ])
+                                                        : 'null' }};
                                                 "
                                                 class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 hover:text-blue-800 rounded-t-md">
                                                 <div class="flex items-center">
@@ -215,6 +232,45 @@
                                 <p class="text-gray-800 leading-relaxed whitespace-pre-line text-[15px]">
                                     {{ $post->post_caption }}</p>
                             </div>
+
+                            <!-- File Attachment Section -->
+                            @if ($post->file_attachment)
+                                <div class="px-6 pb-4">
+                                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center">
+                                                <svg class="w-8 h-8 text-gray-400 mr-3" fill="none"
+                                                    stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13">
+                                                    </path>
+                                                </svg>
+                                                <div>
+                                                    <p class="text-sm font-medium text-gray-900">
+                                                        {{ $post->file_original_name ?? 'Attachment' }}</p>
+                                                    <p class="text-xs text-gray-500">
+                                                        {{ $post->file_mime_type ?? 'Unknown type' }}
+                                                        @if ($post->file_size)
+                                                            • {{ number_format($post->file_size / 1024, 1) }} KB
+                                                        @endif
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <a href="{{ Storage::url($post->file_attachment) }}"
+                                                class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                                download="{{ $post->file_original_name }}" target="_blank">
+                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                                    </path>
+                                                </svg>
+                                                Download
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
 
                             @if ($post->images->count() > 0)
                                 <div class="relative">

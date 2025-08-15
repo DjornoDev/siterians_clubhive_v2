@@ -158,36 +158,71 @@
                             </div>
                         </div>
 
+                        <!-- File Upload Section -->
                         <div class="mb-5">
-                            <label for="images" class="block text-sm font-medium text-gray-700 mb-1">Upload
-                                Images</label>
-                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-blue-400 transition-colors"
-                                x-on:dragover.prevent="$el.classList.add('border-blue-400')"
-                                x-on:dragleave.prevent="$el.classList.remove('border-blue-400')"
-                                x-on:drop.prevent="
-                                    $el.classList.remove('border-blue-400');
-                                    const fileInput = document.getElementById('images');
-                                    fileInput.files = $event.dataTransfer.files;
-                                    handleImageFiles($event.dataTransfer.files);
-                                ">
-                                <div class="space-y-1 text-center">
-                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none"
-                                        viewBox="0 0 48 48">
-                                        <path
-                                            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                    <div class="flex text-sm text-gray-600">
-                                        <label for="images"
-                                            class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
-                                            <span>Upload images</span>
-                                            <input id="images" name="images[]" type="file" multiple
-                                                accept="image/*" class="sr-only"
-                                                @change="handleImageFiles($event.target.files)">
-                                        </label>
-                                        <p class="pl-1">or drag and drop</p>
+                            <div class="block text-sm font-medium text-gray-700 mb-3">Attachments</div>
+
+                            <!-- File Upload Options -->
+                            <div class="space-y-4">
+                                <!-- General File Upload -->
+                                <div>
+                                    <label for="file_attachment" class="block text-sm font-medium text-gray-600 mb-2">
+                                        <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13">
+                                            </path>
+                                        </svg>
+                                        Upload File (Documents, PDFs, etc.)
+                                    </label>
+                                    <input id="file_attachment" name="file_attachment" type="file"
+                                        accept=".pdf,.doc,.docx,.txt,.ppt,.pptx,.xls,.xlsx,.zip,.rar"
+                                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                    <p class="text-xs text-gray-500 mt-1">PDF, DOC, TXT, PPT, XLS, ZIP files up to 10MB
+                                    </p>
+                                </div>
+
+                                <!-- Image Upload -->
+                                <div>
+                                    <label for="images" class="block text-sm font-medium text-gray-600 mb-2">
+                                        <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                            </path>
+                                        </svg>
+                                        Upload Images
+                                    </label>
+                                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-blue-400 transition-colors"
+                                        x-on:dragover.prevent="$el.classList.add('border-blue-400')"
+                                        x-on:dragleave.prevent="$el.classList.remove('border-blue-400')"
+                                        x-on:drop.prevent="
+                                            $el.classList.remove('border-blue-400');
+                                            const fileInput = document.getElementById('images');
+                                            fileInput.files = $event.dataTransfer.files;
+                                            handleImageFiles($event.dataTransfer.files);
+                                        ">
+                                        <div class="space-y-1 text-center">
+                                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor"
+                                                fill="none" viewBox="0 0 48 48">
+                                                <path
+                                                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                                    stroke-width="2" stroke-linecap="round"
+                                                    stroke-linejoin="round" />
+                                            </svg>
+                                            <div class="flex text-sm text-gray-600">
+                                                <label for="images"
+                                                    class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
+                                                    <span>Upload images</span>
+                                                    <input id="images" name="images[]" type="file" multiple
+                                                        accept="image/*" class="sr-only"
+                                                        @change="handleImageFiles($event.target.files)">
+                                                </label>
+                                                <p class="pl-1">or drag and drop</p>
+                                            </div>
+                                            <p class="text-xs text-gray-500">PNG, JPG, GIF, WebP up to 5MB each</p>
+                                        </div>
                                     </div>
-                                    <p class="text-xs text-gray-500">PNG, JPG, GIF, WebP up to 5MB each</p>
                                 </div>
                             </div>
 

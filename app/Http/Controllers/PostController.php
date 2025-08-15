@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class PostController extends Controller
@@ -28,6 +29,7 @@ class PostController extends Controller
         $validator = Validator::make($request->all(), [
             'post_caption' => 'required|string',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'file_attachment' => 'nullable|file|mimes:pdf,doc,docx,txt,ppt,pptx,xls,xlsx,zip,rar|max:10240', // Max 10MB
             'visibility' => 'required|in:PUBLIC,CLUB_ONLY',
         ]);
 
@@ -38,12 +40,25 @@ class PostController extends Controller
                 ->with('openCreatePostModal', true);
         }
 
-        $post = $club->posts()->create([
+        $postData = [
             'post_caption' => $request->post_caption,
-            'author_id' => auth()->id(),
+            'author_id' => Auth::id(),
             'post_visibility' => $request->visibility,
             'post_date' => now(),
-        ]);
+        ];
+
+        // Handle file attachment
+        if ($request->hasFile('file_attachment')) {
+            $file = $request->file('file_attachment');
+            $path = $file->store('post-attachments', 'public');
+
+            $postData['file_attachment'] = $path;
+            $postData['file_original_name'] = $file->getClientOriginalName();
+            $postData['file_mime_type'] = $file->getMimeType();
+            $postData['file_size'] = $file->getSize();
+        }
+
+        $post = $club->posts()->create($postData);
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
@@ -69,14 +84,45 @@ class PostController extends Controller
             'post_caption' => 'required|string',
             'visibility' => 'required|in:PUBLIC,CLUB_ONLY',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'file_attachment' => 'nullable|file|mimes:pdf,doc,docx,txt,ppt,pptx,xls,xlsx,zip,rar|max:10240', // Max 10MB
             'delete_images' => 'nullable|array',
             'delete_images.*' => 'exists:tbl_post_images,image_id',
+            'remove_file_attachment' => 'nullable|boolean',
         ]);
 
-        $post->update([
+        $updateData = [
             'post_caption' => $validated['post_caption'],
             'post_visibility' => $validated['visibility'],
-        ]);
+        ];
+
+        // Handle file attachment removal
+        if (!empty($validated['remove_file_attachment'])) {
+            if ($post->file_attachment) {
+                Storage::disk('public')->delete($post->file_attachment);
+            }
+            $updateData['file_attachment'] = null;
+            $updateData['file_original_name'] = null;
+            $updateData['file_mime_type'] = null;
+            $updateData['file_size'] = null;
+        }
+
+        // Handle new file attachment
+        if ($request->hasFile('file_attachment')) {
+            // Delete old file if exists
+            if ($post->file_attachment) {
+                Storage::disk('public')->delete($post->file_attachment);
+            }
+
+            $file = $request->file('file_attachment');
+            $path = $file->store('post-attachments', 'public');
+
+            $updateData['file_attachment'] = $path;
+            $updateData['file_original_name'] = $file->getClientOriginalName();
+            $updateData['file_mime_type'] = $file->getMimeType();
+            $updateData['file_size'] = $file->getSize();
+        }
+
+        $post->update($updateData);
 
         // Delete selected images
         if (!empty($validated['delete_images'])) {
@@ -102,9 +148,15 @@ class PostController extends Controller
     {
         $this->authorize('delete', $post);
 
+        // Delete all images associated with the post
         foreach ($post->images as $image) {
             Storage::disk('public')->delete($image->image_path);
             $image->delete();
+        }
+
+        // Delete file attachment if exists
+        if ($post->file_attachment) {
+            Storage::disk('public')->delete($post->file_attachment);
         }
 
         $post->delete();
