@@ -393,7 +393,7 @@
                         .clubDescription;
                     document.getElementById('modalClubLogo').src = this.dataset.clubLogo;
                     document.getElementById('modalClubBanner').src = this.dataset
-                    .clubBanner; // Handle Join button and already joined message
+                        .clubBanner; // Handle Join button and already joined message
                     const joinButton = document.getElementById('joinClubButton');
                     const alreadyJoinedMessage = document.getElementById('alreadyJoinedMessage');
                     const joinRequestStatus = document.getElementById('joinRequestStatus');
@@ -535,22 +535,56 @@
         }
 
         function handleJoinClub(clubId) {
-            fetch(`/clubs/${clubId}/join`, {
-                    method: 'POST',
+            // First, check if this club has questions
+            fetch(`/clubs/${clubId}/api/questions`, {
+                    method: 'GET',
                     headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Accept': 'application/json',
                     },
                 })
                 .then(response => response.json())
                 .then(data => {
+                    if (data.questions && data.questions.length > 0) {
+                        // Show questions modal
+                        showQuestionsModal(clubId, data.questions);
+                    } else {
+                        // No questions, proceed with regular join
+                        proceedWithJoin(clubId);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking questions:', error);
+                    // Fallback to regular join if there's an error
+                    proceedWithJoin(clubId);
+                });
+        }
+
+        function proceedWithJoin(clubId, answers = null, message = null) {
+            const url = answers ? `/clubs/${clubId}/api/join-with-answers` : `/clubs/${clubId}/join`;
+            const body = answers ? {
+                answers: answers,
+                message: message
+            } : {};
+
+            fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: answers ? JSON.stringify(body) : undefined,
+                })
+                .then(response => response.json())
+                .then(data => {
                     if (data.success) {
                         // Check if the join required approval
-                        if (data.requires_approval) {
+                        if (data.requires_approval !== false) {
                             // Show approval notification popup
                             const clubName = document.getElementById('modalClubName').textContent;
                             showJoinRequestPopup(clubName);
                             closeModal(); // Close the club details modal
+                            closeQuestionsModal(); // Close questions modal if open
                             // Reload page after popup is closed to update status
                             setTimeout(() => {
                                 window.location.reload();
@@ -564,7 +598,8 @@
                         if (data.has_pending) {
                             // User already has a pending request
                             alert(
-                            'You already have a pending request for this club. Please wait for adviser approval.');
+                                'You already have a pending request for this club. Please wait for adviser approval.'
+                                );
                         } else if (data.message && data.message.includes('already a member')) {
                             const joinButton = document.getElementById('joinClubButton');
                             const alreadyJoinedMessage = document.getElementById('alreadyJoinedMessage');
@@ -661,5 +696,166 @@
             // Show the status
             joinRequestStatus.classList.remove('hidden');
         }
+    </script>
+
+    <!-- Questions Modal -->
+    <div id="questionsModal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-75 overflow-y-auto h-full w-full z-50">
+        <div class="flex items-center justify-center min-h-screen px-4 py-6">
+            <div class="relative max-w-2xl w-full bg-white rounded-lg shadow-xl">
+                <!-- Header -->
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-medium text-gray-900">Answer Questions to Join</h3>
+                        <button onclick="closeQuestionsModal()" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="mt-1 text-sm text-gray-600">Please answer the following questions before submitting your join
+                        request.</p>
+                </div>
+
+                <!-- Form -->
+                <form id="questionsForm" class="px-6 py-6">
+                    <div id="questionsContainer" class="space-y-6">
+                        <!-- Questions will be dynamically inserted here -->
+                    </div>
+
+                    <!-- Optional Message -->
+                    <div class="mt-6">
+                        <label for="joinMessage" class="block text-sm font-medium text-gray-700 mb-2">
+                            Additional Message (Optional)
+                        </label>
+                        <textarea id="joinMessage" name="message" rows="3"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Any additional message for the club adviser..."></textarea>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="flex items-center justify-end space-x-3 mt-6 pt-6 border-t border-gray-200">
+                        <button type="button" onclick="closeQuestionsModal()"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Submit Request
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentClubId = null;
+
+        function showQuestionsModal(clubId, questions) {
+            currentClubId = clubId;
+            const modal = document.getElementById('questionsModal');
+            const container = document.getElementById('questionsContainer');
+
+            // Clear previous questions
+            container.innerHTML = '';
+
+            // Generate questions
+            questions.forEach((question, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question-item';
+
+                let questionHtml = `
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        ${question.question}
+                        ${question.is_required ? '<span class="text-red-500">*</span>' : ''}
+                    </label>
+                `;
+
+                const fieldName = `question_${question.id}`;
+
+                if (question.question_type === 'text') {
+                    questionHtml += `
+                        <input type="text" id="${fieldName}" name="${fieldName}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                               ${question.is_required ? 'required' : ''}>
+                    `;
+                } else if (question.question_type === 'textarea') {
+                    questionHtml += `
+                        <textarea id="${fieldName}" name="${fieldName}" rows="4"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                  ${question.is_required ? 'required' : ''}></textarea>
+                    `;
+                } else if (question.question_type === 'select') {
+                    questionHtml += `
+                        <select id="${fieldName}" name="${fieldName}"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                ${question.is_required ? 'required' : ''}>
+                            <option value="">Select an option</option>
+                    `;
+                    question.options.forEach(option => {
+                        questionHtml += `<option value="${option}">${option}</option>`;
+                    });
+                    questionHtml += `</select>`;
+                } else if (question.question_type === 'radio') {
+                    questionHtml += `<div class="space-y-2">`;
+                    question.options.forEach((option, optIndex) => {
+                        questionHtml += `
+                            <label class="flex items-center">
+                                <input type="radio" id="${fieldName}_${optIndex}" name="${fieldName}" value="${option}"
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                       ${question.is_required ? 'required' : ''}>
+                                <span class="ml-2 text-sm text-gray-700">${option}</span>
+                            </label>
+                        `;
+                    });
+                    questionHtml += `</div>`;
+                }
+
+                questionDiv.innerHTML = questionHtml;
+                container.appendChild(questionDiv);
+            });
+
+            // Show modal
+            modal.classList.remove('hidden');
+        }
+
+        function closeQuestionsModal() {
+            const modal = document.getElementById('questionsModal');
+            modal.classList.add('hidden');
+            currentClubId = null;
+        }
+
+        // Handle form submission
+        document.getElementById('questionsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            if (!currentClubId) return;
+
+            const formData = new FormData(this);
+            const answers = {};
+
+            // Collect answers
+            const questions = document.querySelectorAll('.question-item');
+            questions.forEach(questionDiv => {
+                const inputs = questionDiv.querySelectorAll('input, textarea, select');
+                inputs.forEach(input => {
+                    if (input.type === 'radio') {
+                        if (input.checked) {
+                            const questionId = input.name.replace('question_', '');
+                            answers[questionId] = input.value;
+                        }
+                    } else if (input.name.startsWith('question_')) {
+                        const questionId = input.name.replace('question_', '');
+                        answers[questionId] = input.value;
+                    }
+                });
+            });
+
+            const message = document.getElementById('joinMessage').value;
+
+            // Submit with answers
+            proceedWithJoin(currentClubId, answers, message);
+        });
     </script>
 @endpush

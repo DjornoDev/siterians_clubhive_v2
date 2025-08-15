@@ -29,6 +29,18 @@ class Club extends Model
         return app(Hashids::class)->encode($this->getKey());
     }
 
+    public function resolveRouteBinding($value, $field = null)
+    {
+        $hashids = app(Hashids::class);
+        $decodedIds = $hashids->decode($value);
+
+        if (empty($decodedIds)) {
+            return null;
+        }
+
+        return $this->where($this->getKeyName(), $decodedIds[0])->first();
+    }
+
     public function adviser()
     {
         return $this->belongsTo(User::class, 'club_adviser');
@@ -72,5 +84,15 @@ class Club extends Model
     public function pendingJoinRequests()
     {
         return $this->hasMany(ClubJoinRequest::class, 'club_id')->where('status', 'pending');
+    }
+
+    public function questions()
+    {
+        return $this->hasMany(ClubQuestion::class, 'club_id');
+    }
+
+    public function activeQuestions()
+    {
+        return $this->hasMany(ClubQuestion::class, 'club_id')->active()->ordered();
     }
 }

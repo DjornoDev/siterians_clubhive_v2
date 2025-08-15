@@ -647,6 +647,12 @@
                                             {{ $request->created_at->format('M d, Y') }}
                                         </td>
                                         <td class="px-6 py-4 text-right space-x-2">
+                                            @if ($request->questionAnswers->count() > 0)
+                                                <a href="{{ route('clubs.join-requests.answers', [$club, $request->request_id]) }}"
+                                                    class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors inline-block">
+                                                    View Answers
+                                                </a>
+                                            @endif
                                             <button onclick="approveJoinRequest({{ $request->request_id }})"
                                                 class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors">
                                                 Approve

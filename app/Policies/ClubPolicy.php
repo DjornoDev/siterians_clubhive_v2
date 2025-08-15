@@ -42,6 +42,14 @@ class ClubPolicy
     }
 
     /**
+     * Determine whether the user can manage the club (adviser only).
+     */
+    public function manage(User $user, Club $club): bool
+    {
+        return $user->user_id === $club->club_adviser;
+    }
+
+    /**
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, Club $club): bool

@@ -36,6 +36,13 @@
                                 {{ request()->routeIs('clubs.about.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                                 About
                             </a>
+                            @if (auth()->user()->user_id == $club->club_adviser)
+                                <a href="{{ route('clubs.questions.index', $club) }}"
+                                    class="py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200
+                                    {{ request()->routeIs('clubs.questions.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                                    Questions
+                                </a>
+                            @endif
                         </div>
 
                         <!-- Right side controls -->
@@ -123,6 +130,12 @@
                                 class="block py-2 px-4 text-base font-medium {{ request()->routeIs('clubs.about.*') ? 'text-blue-600 bg-blue-50' : 'text-gray-500 hover:bg-gray-50' }} rounded-md">
                                 About
                             </a>
+                            @if (auth()->user()->user_id == $club->club_adviser)
+                                <a href="{{ route('clubs.questions.index', $club) }}"
+                                    class="block py-2 px-4 text-base font-medium {{ request()->routeIs('clubs.questions.*') ? 'text-blue-600 bg-blue-50' : 'text-gray-500 hover:bg-gray-50' }} rounded-md">
+                                    Questions
+                                </a>
+                            @endif
 
                             <!-- Controls for Mobile -->
                             @if ($club->club_id == 1 && auth()->user()->user_id == $club->club_adviser)

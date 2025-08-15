@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\ClubController;
+use App\Http\Controllers\ClubQuestionController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\HomeUpdateController;
 use App\Http\Controllers\EventController;
@@ -31,6 +32,15 @@ Route::get('/clubs/{id}', function ($id) {
     $club = Club::findOrFail($id);
     return redirect()->route('clubs.show', $club, 301);
 })->where('id', '[0-9]+'); // Add this numeric constraint
+
+// Debug route to test club resolution
+Route::get('/debug/club/{club}', function ($club) {
+    return response()->json([
+        'club_id' => $club->club_id,
+        'club_name' => $club->club_name,
+        'resolved' => true
+    ]);
+});
 
 // Remove 'verified' middleware and add role-based routes
 Route::middleware(['auth'])->group(function () {
@@ -387,6 +397,19 @@ Route::middleware(['auth'])->group(function () {
 
             Route::get('/events/{event}', [EventController::class, 'show'])
                 ->name('clubs.events.show');
+
+            // Club Questions Management (for club advisers) - no middleware here, handled in controller
+            Route::get('/questions', [ClubQuestionController::class, 'index'])->name('clubs.questions.index');
+            Route::get('/questions/create', [ClubQuestionController::class, 'create'])->name('clubs.questions.create');
+            Route::post('/questions', [ClubQuestionController::class, 'store'])->name('clubs.questions.store');
+            Route::get('/questions/{question}/edit', [ClubQuestionController::class, 'edit'])->name('clubs.questions.edit');
+            Route::put('/questions/{question}', [ClubQuestionController::class, 'update'])->name('clubs.questions.update');
+            Route::delete('/questions/{question}', [ClubQuestionController::class, 'destroy'])->name('clubs.questions.destroy');
+            Route::get('/join-requests/{request_id}/answers', [ClubQuestionController::class, 'viewAnswers'])->name('clubs.join-requests.answers');
+
+            // API routes for questions (for students joining)
+            Route::get('/api/questions', [ClubQuestionController::class, 'getQuestionsForJoin'])->name('clubs.api.questions');
+            Route::post('/api/join-with-answers', [ClubQuestionController::class, 'submitAnswersAndJoinRequest'])->name('clubs.api.join-with-answers');
         });
     });
 

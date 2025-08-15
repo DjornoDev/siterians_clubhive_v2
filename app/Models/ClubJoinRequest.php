@@ -28,4 +28,9 @@ class ClubJoinRequest extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function questionAnswers()
+    {
+        return $this->hasMany(ClubQuestionAnswer::class, 'club_join_request_id');
+    }
 }
