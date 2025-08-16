@@ -8,7 +8,7 @@
 
     <!-- Modal Container -->
     <div class="flex min-h-screen items-center justify-center p-4">
-        <div class="relative w-full max-w-4xl bg-white rounded-xl shadow-2xl transform transition-all"
+        <div class="relative w-full max-w-4xl bg-white rounded-lg shadow-xl transform transition-all"
             x-transition:enter="ease-out duration-300"
             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200"
@@ -16,10 +16,10 @@
             x-transition:leave-end="opacity-100 translate-y-4 sm:translate-y-0 sm:scale-95">
 
             <!-- Modal Header -->
-            <div class="bg-gradient-to-r from-green-600 to-blue-600 px-6 py-4 rounded-t-xl">
+            <div class="bg-green-600 px-6 py-4 rounded-t-lg">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-xl font-bold text-white flex items-center">
-                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <h3 class="text-xl font-semibold text-white flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
@@ -48,8 +48,7 @@
                         <!-- Left Column - Event Details -->
                         <div class="space-y-4">
                             <h4 class="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">Event
-                                Information
-                            </h4>
+                                Information</h4>
 
                             <!-- Event Title -->
                             <div>
@@ -58,7 +57,7 @@
                                 </label>
                                 <input type="text" name="event_name" id="edit_event_name" required
                                     :value="editingEvent.name"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                     placeholder="Enter event title">
                             </div>
 
@@ -69,27 +68,8 @@
                                     Event Description <span class="text-red-500">*</span>
                                 </label>
                                 <textarea name="event_description" id="edit_event_description" rows="4" required x-text="editingEvent.description"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
                                     placeholder="Describe your event in detail"></textarea>
-                            </div>
-
-                            <!-- Event Type -->
-                            <div>
-                                <label for="edit_event_type" class="block text-sm font-medium text-gray-700 mb-1">
-                                    Event Type <span class="text-red-500">*</span>
-                                </label>
-                                <select name="event_type" id="edit_event_type" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-                                    <option value="">Select event type</option>
-                                    <option value="Meeting">Meeting</option>
-                                    <option value="Workshop">Workshop</option>
-                                    <option value="Seminar">Seminar</option>
-                                    <option value="Social">Social Event</option>
-                                    <option value="Competition">Competition</option>
-                                    <option value="Fundraising">Fundraising</option>
-                                    <option value="Community Service">Community Service</option>
-                                    <option value="Other">Other</option>
-                                </select>
                             </div>
 
                             <!-- Event Visibility -->
@@ -99,7 +79,7 @@
                                 </label>
                                 <select name="event_visibility" id="edit_event_visibility" required
                                     :value="editingEvent.visibility"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                                     <option value="PUBLIC">Public (Visible to all users)</option>
                                     <option value="CLUB_ONLY">Club Only (Visible to club members only)</option>
                                 </select>
@@ -118,7 +98,7 @@
                                 </label>
                                 <input type="date" name="event_date" id="edit_event_date" required
                                     :value="editingEvent.date"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                             </div>
 
                             <!-- Event Time -->
@@ -126,9 +106,10 @@
                                 <label for="edit_event_time" class="block text-sm font-medium text-gray-700 mb-1">
                                     Event Time <span class="text-red-500">*</span>
                                 </label>
-                                <input type="time" name="event_time" id="edit_event_time" required
+                                <input type="text" name="event_time" id="edit_event_time" required
                                     :value="editingEvent.time"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                    placeholder="e.g. 9:00 AM - 5:00 PM">
                             </div>
 
                             <!-- Event Location -->
@@ -138,26 +119,14 @@
                                 </label>
                                 <input type="text" name="event_location" id="edit_event_location" required
                                     :value="editingEvent.location"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                     placeholder="Enter event location">
-                            </div>
-
-                            <!-- Event Status -->
-                            <div>
-                                <label for="edit_event_status" class="block text-sm font-medium text-gray-700 mb-1">
-                                    Event Status <span class="text-red-500">*</span>
-                                </label>
-                                <select name="event_status" id="edit_event_status" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-                                    <option value="active">Active</option>
-                                    <option value="cancelled">Cancelled</option>
-                                    <option value="postponed">Postponed</option>
-                                </select>
                             </div>
 
                             <!-- Current Documents -->
                             <div id="current-documents-section">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="current-documents-list"
+                                    class="block text-sm font-medium text-gray-700 mb-2">
                                     Current Documents
                                 </label>
                                 <div id="current-documents-list" class="space-y-2 mb-3">
@@ -167,10 +136,11 @@
 
                             <!-- File Upload Section -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="edit_event_documents"
+                                    class="block text-sm font-medium text-gray-700 mb-2">
                                     Add New Documents
                                 </label>
-                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors"
+                                <div class="border-2 border-dashed border-gray-300 rounded-md p-4 text-center hover:border-blue-400 transition-colors"
                                     id="editDropZone" ondrop="dropHandlerEdit(event);"
                                     ondragover="dragOverHandlerEdit(event);"
                                     ondragleave="dragLeaveHandlerEdit(event);">
@@ -193,8 +163,7 @@
                                             or drag and drop
                                         </p>
                                         <p class="text-xs text-gray-500 mt-1">PDF, DOC, DOCX, JPG, PNG, GIF, TXT up to
-                                            10MB
-                                            each</p>
+                                            10MB each</p>
                                     </div>
                                 </div>
                                 <div id="editFileList" class="mt-3 space-y-2"></div>
@@ -205,12 +174,12 @@
 
                     <!-- Form Actions -->
                     <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 mt-6">
-                        <button type="button" onclick="closeModal('edit-event-modal')"
-                            class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium">
+                        <button type="button" @click="showEditModal = false"
+                            class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors font-medium">
                             Cancel
                         </button>
                         <button type="submit"
-                            class="px-6 py-2 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg hover:from-green-700 hover:to-blue-700 transition-all duration-200 font-medium shadow-lg">
+                            class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-medium">
                             <span class="flex items-center">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -224,142 +193,138 @@
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        let selectedEditFiles = [];
+<script>
+    let selectedEditFiles = [];
 
-        function validateFileEdit(file) {
-            const allowedTypes = ['application/pdf', 'application/msword',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'text/plain'
-            ];
-            const maxSize = 10 * 1024 * 1024; // 10MB
+    function validateFileEdit(file) {
+        const allowedTypes = ['application/pdf', 'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'text/plain'
+        ];
+        const maxSize = 10 * 1024 * 1024; // 10MB
 
-            if (!allowedTypes.includes(file.type)) {
-                return {
-                    valid: false,
-                    message: `${file.name}: Invalid file type. Allowed: PDF, DOC, DOCX, JPG, PNG, GIF, TXT`
-                };
-            }
-
-            if (file.size > maxSize) {
-                return {
-                    valid: false,
-                    message: `${file.name}: File too large. Maximum size is 10MB`
-                };
-            }
-
+        if (!allowedTypes.includes(file.type)) {
             return {
-                valid: true
+                valid: false,
+                message: `${file.name}: Invalid file type. Allowed: PDF, DOC, DOCX, JPG, PNG, GIF, TXT`
             };
         }
 
-        function handleFileSelectEdit(event) {
-            const files = Array.from(event.target.files);
-            processEditFiles(files);
+        if (file.size > maxSize) {
+            return {
+                valid: false,
+                message: `${file.name}: File too large. Maximum size is 10MB`
+            };
         }
 
-        function processEditFiles(files) {
-            const errorDiv = document.getElementById('editUploadError');
-            const fileListDiv = document.getElementById('editFileList');
+        return {
+            valid: true
+        };
+    }
 
-            errorDiv.classList.add('hidden');
-            errorDiv.innerHTML = '';
+    function handleFileSelectEdit(event) {
+        const files = Array.from(event.target.files);
+        processEditFiles(files);
+    }
 
-            const errors = [];
-            const validFiles = [];
+    function processEditFiles(files) {
+        const errorDiv = document.getElementById('editUploadError');
+        const fileListDiv = document.getElementById('editFileList');
 
-            files.forEach(file => {
-                const validation = validateFileEdit(file);
-                if (validation.valid) {
-                    validFiles.push(file);
-                } else {
-                    errors.push(validation.message);
-                }
-            });
+        errorDiv.classList.add('hidden');
+        errorDiv.innerHTML = '';
 
-            if (errors.length > 0) {
-                errorDiv.innerHTML = errors.join('<br>');
-                errorDiv.classList.remove('hidden');
+        const errors = [];
+        const validFiles = [];
+
+        files.forEach(file => {
+            const validation = validateFileEdit(file);
+            if (validation.valid) {
+                validFiles.push(file);
+            } else {
+                errors.push(validation.message);
             }
+        });
 
-            if (validFiles.length > 0) {
-                selectedEditFiles = [...selectedEditFiles, ...validFiles];
-                updateEditFileList();
-                updateEditFileInput();
-            }
+        if (errors.length > 0) {
+            errorDiv.innerHTML = errors.join('<br>');
+            errorDiv.classList.remove('hidden');
         }
 
-        function updateEditFileList() {
-            const fileListDiv = document.getElementById('editFileList');
-            fileListDiv.innerHTML = '';
-
-            selectedEditFiles.forEach((file, index) => {
-                const fileItem = document.createElement('div');
-                fileItem.className = 'flex items-center justify-between p-2 bg-gray-50 rounded border';
-                fileItem.innerHTML = `
-            <div class="flex items-center">
-                <svg class="w-4 h-4 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                <span class="text-sm text-gray-700">${file.name}</span>
-                <span class="text-xs text-gray-500 ml-2">(${(file.size / (1024 * 1024)).toFixed(2)} MB)</span>
-            </div>
-            <button type="button" onclick="removeEditFile(${index})" class="text-red-500 hover:text-red-700">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
-        `;
-                fileListDiv.appendChild(fileItem);
-            });
-        }
-
-        function updateEditFileInput() {
-            const input = document.getElementById('edit_event_documents');
-            const dt = new DataTransfer();
-
-            selectedEditFiles.forEach(file => {
-                dt.items.add(file);
-            });
-
-            input.files = dt.files;
-        }
-
-        function removeEditFile(index) {
-            selectedEditFiles.splice(index, 1);
+        if (validFiles.length > 0) {
+            selectedEditFiles = [...selectedEditFiles, ...validFiles];
             updateEditFileList();
             updateEditFileInput();
         }
+    }
 
-        function dropHandlerEdit(ev) {
-            ev.preventDefault();
-            const dropZone = document.getElementById('editDropZone');
-            dropZone.classList.remove('border-blue-400', 'bg-blue-50');
+    function updateEditFileList() {
+        const fileListDiv = document.getElementById('editFileList');
+        fileListDiv.innerHTML = '';
 
-            const files = Array.from(ev.dataTransfer.files);
-            processEditFiles(files);
-        }
+        selectedEditFiles.forEach((file, index) => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'flex items-center justify-between p-2 bg-gray-50 rounded border';
+            fileItem.innerHTML = `
+        <div class="flex items-center">
+            <svg class="w-4 h-4 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <span class="text-sm text-gray-700">${file.name}</span>
+            <span class="text-xs text-gray-500 ml-2">(${(file.size / (1024 * 1024)).toFixed(2)} MB)</span>
+        </div>
+        <button type="button" onclick="removeEditFile(${index})" class="text-red-500 hover:text-red-700">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+    `;
+            fileListDiv.appendChild(fileItem);
+        });
+    }
 
-        function dragOverHandlerEdit(ev) {
-            ev.preventDefault();
-            const dropZone = document.getElementById('editDropZone');
-            dropZone.classList.add('border-blue-400', 'bg-blue-50');
-        }
+    function updateEditFileInput() {
+        const input = document.getElementById('edit_event_documents');
+        const dt = new DataTransfer();
 
-        function dragLeaveHandlerEdit(ev) {
-            ev.preventDefault();
-            const dropZone = document.getElementById('editDropZone');
-            dropZone.classList.remove('border-blue-400', 'bg-blue-50');
-        }
+        selectedEditFiles.forEach(file => {
+            dt.items.add(file);
+        });
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
-            // Reset form and file selections
-            if (modalId === 'edit-event-modal') {
-                selectedEditFiles = [];
-                updateEditFileList();
-                updateEditFileInput();
-            }
-        }
-    </script>
+        input.files = dt.files;
+    }
+
+    function removeEditFile(index) {
+        selectedEditFiles.splice(index, 1);
+        updateEditFileList();
+        updateEditFileInput();
+    }
+
+    function dropHandlerEdit(ev) {
+        ev.preventDefault();
+        const dropZone = document.getElementById('editDropZone');
+        dropZone.classList.remove('border-blue-400', 'bg-blue-50');
+
+        const files = Array.from(ev.dataTransfer.files);
+        processEditFiles(files);
+    }
+
+    function dragOverHandlerEdit(ev) {
+        ev.preventDefault();
+        const dropZone = document.getElementById('editDropZone');
+        dropZone.classList.add('border-blue-400', 'bg-blue-50');
+    }
+
+    function dragLeaveHandlerEdit(ev) {
+        ev.preventDefault();
+        const dropZone = document.getElementById('editDropZone');
+        dropZone.classList.remove('border-blue-400', 'bg-blue-50');
+    }
+
+    function closeModal(modalId) {
+        // This function is deprecated - we now use Alpine.js methods
+        console.log('closeModal function called - using Alpine.js instead');
+    }
+</script>

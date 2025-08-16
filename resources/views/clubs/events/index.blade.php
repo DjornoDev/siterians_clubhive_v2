@@ -23,28 +23,33 @@
             });
         },
         openCreateModal() {
+            this.showEditModal = false;
+            this.showDeleteModal = false;
             this.showCreateModal = true;
-            this.$nextTick(() => {
-                this.$refs.createForm?.querySelector('input[type=text]')?.focus();
-            });
         },
         openEditModal(eventData) {
+            this.showCreateModal = false;
+            this.showDeleteModal = false;
             this.editingEvent = eventData;
-            this.showEditModal = true;
             this.$nextTick(() => {
-                this.$refs.editForm?.querySelector('input[type=text]')?.focus();
+                this.showEditModal = true;
             });
         },
         openDeleteModal(eventData) {
+            console.log('openDeleteModal called with:', eventData);
+            this.showCreateModal = false;
+            this.showEditModal = false;
             this.deletingEvent = eventData;
-            this.showDeleteModal = true;
+            this.$nextTick(() => {
+                this.showDeleteModal = true;
+                console.log('Delete modal should be visible now:', this.showDeleteModal);
+            });
         },
         closeAllModals() {
             this.showCreateModal = false;
             this.showEditModal = false;
             this.showDeleteModal = false;
-            this.editingEvent = {};
-            this.deletingEvent = {};
+            // Don't clear event data here to avoid timing issues
         }
     }" class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
 
@@ -58,8 +63,8 @@
 
             @can('create', [App\Models\Event::class, $club])
                 <button type="button" @click="openCreateModal()"
-                    class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200
-                       flex items-center gap-3 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors
+                       flex items-center gap-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd"
                             d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
@@ -160,24 +165,24 @@
             <div class="flex flex-col sm:flex-row gap-4">
                 <div class="flex-1">
                     <input type="text" id="search-events" placeholder="Search events..."
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div class="flex gap-3">
                     <select id="filter-visibility"
-                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        class="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">All Visibility</option>
                         <option value="PUBLIC">Public</option>
                         <option value="CLUB_ONLY">Club Only</option>
                     </select>
                     <select id="filter-status"
-                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        class="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">All Status</option>
                         <option value="approved">Approved</option>
                         <option value="pending">Pending</option>
                         <option value="rejected">Rejected</option>
                     </select>
                     <button type="button" onclick="clearFilters()"
-                        class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        class="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50">
                         Clear
                     </button>
                 </div>
@@ -191,9 +196,9 @@
                 x-transition:enter-start="opacity-0 transform translate-y-4"
                 x-transition:enter-end="opacity-100 transform translate-y-0">
                 @if ($todayEvents->count() > 0)
-                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="events-container-today">
+                    <div class="space-y-4" id="events-container-today">
                         @foreach ($todayEvents as $event)
-                            <div class="event-card bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200"
+                            <div class="event-card bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200"
                                 data-name="{{ strtolower($event->event_name) }}"
                                 data-visibility="{{ $event->event_visibility }}"
                                 data-status="{{ $event->approval_status }}">
@@ -223,9 +228,9 @@
                 x-transition:enter-start="opacity-0 transform translate-y-4"
                 x-transition:enter-end="opacity-100 transform translate-y-0">
                 @if ($upcomingEvents->count() > 0)
-                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="events-container-upcoming">
+                    <div class="space-y-4" id="events-container-upcoming">
                         @foreach ($upcomingEvents as $event)
-                            <div class="event-card bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200"
+                            <div class="event-card bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200"
                                 data-name="{{ strtolower($event->event_name) }}"
                                 data-visibility="{{ $event->event_visibility }}"
                                 data-status="{{ $event->approval_status }}">
@@ -255,9 +260,9 @@
                 x-transition:enter-start="opacity-0 transform translate-y-4"
                 x-transition:enter-end="opacity-100 transform translate-y-0">
                 @if ($pastEvents->count() > 0)
-                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="events-container-past">
+                    <div class="space-y-4" id="events-container-past">
                         @foreach ($pastEvents as $event)
-                            <div class="event-card bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200 opacity-75"
+                            <div class="event-card bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200 opacity-75"
                                 data-name="{{ strtolower($event->event_name) }}"
                                 data-visibility="{{ $event->event_visibility }}"
                                 data-status="{{ $event->approval_status }}">
@@ -530,12 +535,11 @@
             // Close modal on escape key
             document.addEventListener('keydown', function(event) {
                 if (event.key === 'Escape') {
-                    document.querySelectorAll('.modal').forEach(modal => {
-                        if (!modal.classList.contains('hidden')) {
-                            const modalId = modal.id;
-                            closeModal(modalId);
-                        }
-                    });
+                    // Use Alpine.js to close modals
+                    const alpineComponent = document.querySelector('[x-data]').__x?.$data;
+                    if (alpineComponent) {
+                        alpineComponent.closeAllModals();
+                    }
                 }
             });
         </script>
