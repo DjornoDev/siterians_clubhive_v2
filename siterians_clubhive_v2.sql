@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 10, 2025 at 02:06 PM
+-- Generation Time: Aug 15, 2025 at 04:27 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,6 +20,188 @@ SET time_zone = "+00:00";
 --
 -- Database: `siterians_clubhive_v2`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cache`
+--
+
+CREATE TABLE `cache` (
+  `key` varchar(255) NOT NULL,
+  `value` mediumtext NOT NULL,
+  `expiration` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cache_locks`
+--
+
+CREATE TABLE `cache_locks` (
+  `key` varchar(255) NOT NULL,
+  `owner` varchar(255) NOT NULL,
+  `expiration` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `club_questions`
+--
+
+CREATE TABLE `club_questions` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `club_id` bigint(20) UNSIGNED NOT NULL,
+  `question` varchar(255) NOT NULL,
+  `question_type` enum('text','textarea','select','radio') NOT NULL,
+  `options` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`options`)),
+  `is_required` tinyint(1) NOT NULL DEFAULT 1,
+  `order` int(11) NOT NULL DEFAULT 0,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `club_questions`
+--
+
+INSERT INTO `club_questions` (`id`, `club_id`, `question`, `question_type`, `options`, `is_required`, `order`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 9, 'Why do you want to join our club?', 'text', NULL, 1, 0, 1, '2025-08-15 09:12:29', '2025-08-15 09:12:29'),
+(3, 9, 'Why do you want to join our club?', 'select', '[\"QWE\",\"RTY\",\"UIOP\"]', 1, 0, 1, '2025-08-15 09:18:07', '2025-08-15 09:18:21'),
+(4, 9, 'Ba\'t gusto mo dito sa club namin?', 'radio', '[\"EWAN\",\"D FGHJGH\"]', 1, 0, 1, '2025-08-15 09:18:50', '2025-08-15 09:39:10');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `club_question_answers`
+--
+
+CREATE TABLE `club_question_answers` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `club_join_request_id` bigint(20) UNSIGNED NOT NULL,
+  `club_question_id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `answer` text NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `club_question_answers`
+--
+
+INSERT INTO `club_question_answers` (`id`, `club_join_request_id`, `club_question_id`, `user_id`, `answer`, `created_at`, `updated_at`) VALUES
+(1, 7, 1, 58, 'VCBNFGHDFT', '2025-08-15 09:19:52', '2025-08-15 09:19:52'),
+(2, 7, 3, 58, 'UIOP', '2025-08-15 09:19:52', '2025-08-15 09:19:52'),
+(3, 7, 4, 58, 'EWAN', '2025-08-15 09:19:52', '2025-08-15 09:19:52');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `failed_jobs`
+--
+
+CREATE TABLE `failed_jobs` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `uuid` varchar(255) NOT NULL,
+  `connection` text NOT NULL,
+  `queue` text NOT NULL,
+  `payload` longtext NOT NULL,
+  `exception` longtext NOT NULL,
+  `failed_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `jobs`
+--
+
+CREATE TABLE `jobs` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `queue` varchar(255) NOT NULL,
+  `payload` longtext NOT NULL,
+  `attempts` tinyint(3) UNSIGNED NOT NULL,
+  `reserved_at` int(10) UNSIGNED DEFAULT NULL,
+  `available_at` int(10) UNSIGNED NOT NULL,
+  `created_at` int(10) UNSIGNED NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `job_batches`
+--
+
+CREATE TABLE `job_batches` (
+  `id` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `total_jobs` int(11) NOT NULL,
+  `pending_jobs` int(11) NOT NULL,
+  `failed_jobs` int(11) NOT NULL,
+  `failed_job_ids` longtext NOT NULL,
+  `options` mediumtext DEFAULT NULL,
+  `cancelled_at` int(11) DEFAULT NULL,
+  `created_at` int(11) NOT NULL,
+  `finished_at` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `migrations`
+--
+
+CREATE TABLE `migrations` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `migration` varchar(255) NOT NULL,
+  `batch` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `migrations`
+--
+
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
+(1, '0001_01_01_000000_create_users_table', 1),
+(2, '0001_01_01_000001_create_cache_table', 1),
+(3, '0001_01_01_000002_create_jobs_table', 1),
+(4, '2025_03_29_161920_create_class_tables', 1),
+(5, '2025_03_29_161920_create_custom_users_table', 1),
+(6, '2025_03_29_161921_create_club_tables', 1),
+(7, '2025_03_29_161921_create_content_tables', 1),
+(8, '2025_03_29_161925_create_voting_tables', 1),
+(9, '2025_03_30_014844_add_indexes_to_tbl_users', 2),
+(10, '2025_04_11_132837_split_event_date_time_into_separate_columns', 3),
+(11, '2025_04_11_180934_add_event_visibility_to_tbl_events', 4),
+(12, '2025_04_12_143619_add_is_club_hunting_day_to_clubs_table', 5),
+(13, '2025_04_15_143948_add_club_id_to_elections_table', 6),
+(14, '2025_05_15_132753_add_is_published_to_elections_table', 7),
+(15, '2025_05_15_175335_add_partylist_to_tbl_candidates', 8),
+(19, '2025_08_10_184749_add_category_and_approval_to_clubs_table', 9),
+(20, '2025_08_10_184837_create_club_join_requests_table', 10),
+(24, '2025_08_09_115027_add_user_personal_info_columns_to_tbl_users_table', 11),
+(26, '2025_08_10_185634_update_position_fields_to_text', 12),
+(27, '2025_08_10_202412_fix_vote_details_foreign_key_constraint', 13),
+(28, '2025_08_13_052204_add_file_attachment_to_posts_table', 14),
+(29, '2025_08_13_052235_add_status_to_tbl_users_table', 15),
+(30, '2025_08_15_160705_create_club_questions_table', 16),
+(31, '2025_08_15_160713_create_club_question_answers_table', 17);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `password_reset_tokens`
+--
+
+CREATE TABLE `password_reset_tokens` (
+  `email` varchar(255) NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -41,7 +223,9 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('vLSfS7IGNCA38eIMKsYJxByoB9puIDeYxKgLr3kb', 58, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoibXFYa3lEOVZlUGxLVnJvUzNlV3MyY2QzeWRzTVdCc1ZUdkZoZVpXSSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6ODQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC92b3RpbmcvY2hlY2stY2hhbmdlcz9jaGVja3N1bT1mYjUxYTZiOTNmOTM1ZjAzN2EzYTEyYzgwMjNkYmQ5NiI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjU4O30=', 1754827570);
+('GM2BIDSRXpolD8yYJyG1ZpnqCvyatTP1y6emqF84', 4, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoicHlybFdTR3BoMHZ6czhkYWRKR0pzd21DZWpzN1l6Z2pPSElLUjJJUSI7czozOiJ1cmwiO2E6MDp7fXM6OToiX3ByZXZpb3VzIjthOjE6e3M6MzoidXJsIjtzOjI2OiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvaG9tZSI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjQ7fQ==', 1755268025),
+('oLgHegHEuhZRq3o1oafvqz09xdiMm40k56N1Xoap', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoidVNkV2twQTg2V0FNVlBMb040cXg3M3FSZENMMU5GRkpWWnVPQ2V2ZiI7czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czo0NDoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL2NsdWJzL1puUVBZcmpkV1pwRzdOeVYiO31zOjk6Il9wcmV2aW91cyI7YToxOntzOjM6InVybCI7czo0NDoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL2NsdWJzL1puUVBZcmpkV1pwRzdOeVYiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1755267925),
+('oxojENc8GezHoePEX1Kf0NrLubxlhhYvsGBdzub3', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiSmg5YWVVNnJSaXFUWmU0WktUYTNYOHZ3aXVPdDVyMUpQcXllWjdDUCI7czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czoxMDU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9jbHVicy9ablFQWXJqZFdacEc3TnlWL2NoZWNrLXBvc3QtY2hhbmdlcz9jaGVja3N1bT05Y2E1MGU2ZTVmZjcyOTcyMTA3ODIyM2Q1NTFlZTIyMiI7fXM6OToiX3ByZXZpb3VzIjthOjE6e3M6MzoidXJsIjtzOjI3OiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvbG9naW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1755267926);
 
 -- --------------------------------------------------------
 
@@ -73,7 +257,9 @@ INSERT INTO `tbl_candidates` (`candidate_id`, `election_id`, `user_id`, `positio
 (25, 11, 6, 'President', 'NPC', '2025-08-10 11:10:18', '2025-08-10 11:10:18'),
 (26, 11, 23, 'President', 'IND', '2025-08-10 11:10:18', '2025-08-10 11:10:18'),
 (27, 11, 8, 'Testing Text Input POsition', 'NPC', '2025-08-10 11:10:47', '2025-08-10 11:10:47'),
-(28, 11, 34, 'Testing Text Input POsition', 'IND', '2025-08-10 11:10:47', '2025-08-10 11:10:47');
+(28, 11, 34, 'Testing Text Input POsition', 'IND', '2025-08-10 11:10:47', '2025-08-10 11:10:47'),
+(29, 12, 6, 'President', 'pdp', '2025-08-14 09:04:09', '2025-08-14 09:04:09'),
+(30, 12, 8, 'President', 'asd', '2025-08-14 09:04:09', '2025-08-14 09:04:09');
 
 -- --------------------------------------------------------
 
@@ -125,23 +311,22 @@ CREATE TABLE `tbl_clubs` (
 --
 
 INSERT INTO `tbl_clubs` (`club_id`, `club_name`, `club_adviser`, `club_description`, `category`, `requires_approval`, `club_logo`, `club_banner`, `created_at`, `updated_at`, `is_club_hunting_day`) VALUES
-(1, 'Supreme Secondary Learner Government-Sitero Francisco MNHS', 4, 'The Supreme Secondary Learner Government (SSLG) - Sitero Francisco MNHS empowers student leaders to inspire positive change, advocate for the student body, and build a vibrant school community through leadership, service, and unity.', 'academic', 1, 'club-logos/lFkL7res3cHWaPblBAg3VMDjmOROb6WAP5p1KTic.jpg', 'club-banners/9aDbycENE7PPHR3Xy4RMq0c3b8salrOCdLpWPDDs.jpg', '2025-03-29 15:02:34', '2025-08-10 11:46:27', 0),
-(3, 'Sitero SHS GILAS', 12, '\"To elevate integrity and Social Responsibilities of Society.\"', 'academic', 1, 'club-logos/SqqhdRiTn4aZHZRh2hDUriBIf90mrsBrb7h0MySc.jpg', 'club-banners/mGhxzLkmeHiQS8TZx5z8Wxc8Tkl5ddiPt1B2jPUV.jpg', '2025-03-30 06:29:57', '2025-08-10 11:46:27', 0),
-(7, 'Sitero SHS SAMAFIL-Samahan ng mga Mag-aaral sa Filipino', 15, '\"Samahan ng mga Mag-aaral sa Filipino.\"', 'academic', 1, 'club-logos/RSlL7clxjxyRNvoXMo5YHHWrw5JFLuj2vgljrAzn.jpg', 'club-banners/lWgp51Kmmntt3edu50RssCqbf17ObnvGN6t7ckGZ.jpg', '2025-03-30 09:05:03', '2025-08-10 11:46:27', 0),
-(8, 'Sitero Francisco Memorial National High School Guidance Office', 16, 'Mabuhay!\r\n\r\nTara sa Sitero Francisco Memorial National High School Virtual Guidance Center!\r\nDito walang iwanan, lahat tayo magtutulungan-- mag-aaral, guro, at magulang... Ano man ang sa inyong isip ay bumabagabag, sabihin lang, at ating pag-usapan...', 'academic', 1, 'club-logos/lLcROt8zOcdVgL6t4joVTHWIORvhuHDLLeobUZHp.jpg', 'club-banners/QtxTIDuxgMwiJWjSxLw0H4SKFdxPfyd9fV7qTdRH.jpg', '2025-03-30 09:07:21', '2025-08-10 11:46:27', 0),
-(9, 'Altiora Peto/Ang Antipara', 17, 'Altiora Peto/Ang Antipara is the official social media outlet of the student publications in English and Filipino of Sitero Francisco Memorial National High School in Ugong, Valenzuela City.', 'academic', 1, 'club-logos/cuIenPBVJUBS2wL3ZRN5hrEf6hgp1RBUzw5ZOT5a.jpg', 'club-banners/PQRkWYesL6qpuReLr7xtbTF5IK3tJnf66FXVy7R1.png', '2025-03-30 09:12:37', '2025-08-10 11:46:27', 0),
-(10, 'SFMNHS - Boy Scouts of the Philippines', 18, 'We encourage you to join the growing family of Siterian Scouts! Are you interested in fun adventures? Meeting new friends? Exploring the world? Well, you can do all of that when you join the Boy Scouts of the Philippines! \r\nSo what are you waiting for? Come and join our family now!', 'academic', 1, 'club-logos/LODcxMm3p6uUv0PCWENhuA7xswjZfMzyoXEOwwCO.jpg', 'club-banners/vXGOEQ7yol9B3yfVD6DY7MR2voGdkMXcjFKqql2d.jpg', '2025-03-30 09:16:57', '2025-08-10 11:46:27', 0),
-(11, 'Sitero Youth Integrity Fighters', 19, 'Sitero Youth Integrity Fighters is a school-based organization since 2015 of CIC recognized by a sec.', 'academic', 1, 'club-logos/5GDTVMUu1WCPVwyzZHvveNfrTReZQU2FhwfUb2I3.jpg', 'club-banners/MGiZKBsrnbFhi0Kl7tIC98jRqGsv11d9ACb4ZyEy.jpg', '2025-03-30 09:23:05', '2025-08-10 11:46:27', 0),
-(24, 'CLICK - SFMNHS The English Club', 2, 'CLICK – The English Club of Sitero Francisco MNHS is a vibrant community of learners who are passionate about mastering the English language through creative expression, critical thinking, and cultural appreciation. The club aims to enhance students’ communication skills in reading, writing, speaking, and listening while fostering confidence, creativity, and collaboration.', 'academic', 1, 'club-logos/403fMhJyGlf4siqP7LrUjxh7mGv3i54caadj4TYs.png', 'club-banners/7qfCuHbGOGg8KCRuzfWhE51Mr72goPql8cK51flz.jpg', '2025-05-22 07:44:24', '2025-08-10 11:46:27', 0),
-(25, 'Panitikang Siterians', 51, NULL, 'academic', 1, 'club-logos/BStk0AFjV7etyxkTH5zMsFfvjdihaTdPGYqhAkNZ.jpg', 'club-banners/qGNVlNFCsh9LIIu7VvHF9PAE8FXtciJf4HIl7gQL.png', '2025-05-22 08:20:38', '2025-08-10 11:46:27', 0),
-(26, 'Values Education Club', 44, NULL, 'academic', 1, 'club-logos/WyKl80DciaFo1ZIoVcYcAbKhxBWjGj68PfjT4xEG.jpg', 'club-banners/qaQt86UEZNrM2wIumSiHOHO7yVPVpXVPbEcrezXb.jpg', '2025-05-22 08:43:29', '2025-08-10 11:46:27', 0),
-(27, 'SFMNHS-Mental Health & Psycho-Social Support & Services', 49, NULL, 'academic', 1, 'club-logos/LhMbEBcIzkao8R85bEVeYF9efbQ1aUbydaKu03IA.jpg', 'club-banners/4dclVzsgp4qrixiiQXHzs17JVuHHpOwdsjM6RzVy.jpg', '2025-05-22 09:06:06', '2025-08-10 11:46:27', 0),
-(28, 'SFMNHS- GIRL SCOUT UNIT', 52, NULL, 'academic', 1, 'club-logos/9Dy4McUI5jMNqbniNJF4oKlEanmKJduJf9GwtfYy.jpg', 'club-banners/QhFSvRL5jC3UZ8xXYI6IywAskrSyiZO8wVeQCKa6.jpg', '2025-05-22 09:23:27', '2025-08-10 11:46:27', 0),
-(29, 'STAGE-SFMNHS Theater Artists Guild of Enhancement', 50, NULL, 'academic', 1, 'club-logos/2xVITle47b2bQqsSjBoWIQQxtcOrbotrsIvKccdU.jpg', 'club-banners/1xkfjC9Fn5cBxokLvR9JxYfboNjWZ3zfXCZ66xly.png', '2025-05-22 09:36:19', '2025-08-10 11:46:27', 0),
-(30, 'SFMNHS TLE CLUB', 18, 'No description available', 'academic', 1, 'club-logos/ngvKzAWOBAQYiwpgNeU46Db2f5x1JQTxDppYaYSu.jpg', 'club-banners/0ai4CfvoCNmtqLXsAgx9EOizvUUYA7e147TlyJaU.png', '2025-05-22 09:49:20', '2025-08-10 11:46:27', 0),
-(31, 'MAPEH CLUB', 50, 'For Learning and acknowledging the students achievements in MAPEH.', 'academic', 1, 'club-logos/sjaSTCGRFQ9suWJXVqXHhMBldIkvnDEfFw6BJQBz.jpg', 'club-banners/GnnmkMQfO0oLmYqqfHWkfBb9ymtyNKblcMkFcomZ.png', '2025-05-22 10:01:51', '2025-08-10 11:46:27', 0),
-(34, 'VITS', 76, 'This is an IT organization.', 'academic', 1, 'club-logos/8Ezh9jmdOhV2PUtUTkz2F9BNurYIiGnlYp3l1uEe.jpg', 'club-banners/h9dBFjNcWqWKuBV84ChzEkZBqAGr6hE6oforMTxs.jpg', '2025-05-23 02:05:55', '2025-08-10 11:46:27', 0),
-(36, 'TEST CLUB APPROVAL', 80, 'TEST CLUB APPROVLA FEATURES', 'sports', 1, 'club-logos/1LUNzQbPFDZ0PPH815ZquJzTmMo5HOzYdCYW3Sxc.jpg', 'club-banners/pxXHStgCZxyBpZJXbJ9bUulXkrFNiomhI45JJ0IB.jpg', '2025-08-10 11:26:13', '2025-08-10 11:46:27', 0);
+(1, 'Supreme Secondary Learner Government-Sitero Francisco MNHS', 4, 'The Supreme Secondary Learner Government (SSLG) - Sitero Francisco MNHS empowers student leaders to inspire positive change, advocate for the student body, and build a vibrant school community through leadership, service, and unity.', 'academic', 1, 'club-logos/lFkL7res3cHWaPblBAg3VMDjmOROb6WAP5p1KTic.jpg', 'club-banners/9aDbycENE7PPHR3Xy4RMq0c3b8salrOCdLpWPDDs.jpg', '2025-03-29 15:02:34', '2025-08-14 16:02:39', 1),
+(3, 'Sitero SHS GILAS', 12, '\"To elevate integrity and Social Responsibilities of Society.\"', 'academic', 1, 'club-logos/SqqhdRiTn4aZHZRh2hDUriBIf90mrsBrb7h0MySc.jpg', 'club-banners/mGhxzLkmeHiQS8TZx5z8Wxc8Tkl5ddiPt1B2jPUV.jpg', '2025-03-30 06:29:57', '2025-08-10 12:28:36', 1),
+(7, 'Sitero SHS SAMAFIL-Samahan ng mga Mag-aaral sa Filipino', 15, '\"Samahan ng mga Mag-aaral sa Filipino.\"', 'academic', 1, 'club-logos/RSlL7clxjxyRNvoXMo5YHHWrw5JFLuj2vgljrAzn.jpg', 'club-banners/lWgp51Kmmntt3edu50RssCqbf17ObnvGN6t7ckGZ.jpg', '2025-03-30 09:05:03', '2025-08-10 12:28:36', 1),
+(8, 'Sitero Francisco Memorial National High School Guidance Office', 16, 'Mabuhay!\r\n\r\nTara sa Sitero Francisco Memorial National High School Virtual Guidance Center!\r\nDito walang iwanan, lahat tayo magtutulungan-- mag-aaral, guro, at magulang... Ano man ang sa inyong isip ay bumabagabag, sabihin lang, at ating pag-usapan...', 'academic', 1, 'club-logos/lLcROt8zOcdVgL6t4joVTHWIORvhuHDLLeobUZHp.jpg', 'club-banners/QtxTIDuxgMwiJWjSxLw0H4SKFdxPfyd9fV7qTdRH.jpg', '2025-03-30 09:07:21', '2025-08-10 12:28:36', 1),
+(9, 'Altiora Peto/Ang Antipara', 17, 'Altiora Peto/Ang Antipara is the official social media outlet of the student publications in English and Filipino of Sitero Francisco Memorial National High School in Ugong, Valenzuela City.', 'academic', 1, 'club-logos/cuIenPBVJUBS2wL3ZRN5hrEf6hgp1RBUzw5ZOT5a.jpg', 'club-banners/PQRkWYesL6qpuReLr7xtbTF5IK3tJnf66FXVy7R1.png', '2025-03-30 09:12:37', '2025-08-10 12:28:36', 1),
+(10, 'SFMNHS - Boy Scouts of the Philippines', 18, 'We encourage you to join the growing family of Siterian Scouts! Are you interested in fun adventures? Meeting new friends? Exploring the world? Well, you can do all of that when you join the Boy Scouts of the Philippines! \r\nSo what are you waiting for? Come and join our family now!', 'academic', 1, 'club-logos/LODcxMm3p6uUv0PCWENhuA7xswjZfMzyoXEOwwCO.jpg', 'club-banners/vXGOEQ7yol9B3yfVD6DY7MR2voGdkMXcjFKqql2d.jpg', '2025-03-30 09:16:57', '2025-08-10 12:28:36', 1),
+(11, 'Sitero Youth Integrity Fighters', 19, 'Sitero Youth Integrity Fighters is a school-based organization since 2015 of CIC recognized by a sec.', 'academic', 1, 'club-logos/5GDTVMUu1WCPVwyzZHvveNfrTReZQU2FhwfUb2I3.jpg', 'club-banners/MGiZKBsrnbFhi0Kl7tIC98jRqGsv11d9ACb4ZyEy.jpg', '2025-03-30 09:23:05', '2025-08-10 12:28:36', 1),
+(24, 'CLICK - SFMNHS The English Club', 2, 'CLICK – The English Club of Sitero Francisco MNHS is a vibrant community of learners who are passionate about mastering the English language through creative expression, critical thinking, and cultural appreciation. The club aims to enhance students’ communication skills in reading, writing, speaking, and listening while fostering confidence, creativity, and collaboration.', 'academic', 1, 'club-logos/403fMhJyGlf4siqP7LrUjxh7mGv3i54caadj4TYs.png', 'club-banners/7qfCuHbGOGg8KCRuzfWhE51Mr72goPql8cK51flz.jpg', '2025-05-22 07:44:24', '2025-08-10 12:28:36', 1),
+(25, 'Panitikang Siterians', 51, NULL, 'academic', 1, 'club-logos/BStk0AFjV7etyxkTH5zMsFfvjdihaTdPGYqhAkNZ.jpg', 'club-banners/qGNVlNFCsh9LIIu7VvHF9PAE8FXtciJf4HIl7gQL.png', '2025-05-22 08:20:38', '2025-08-10 12:28:36', 1),
+(26, 'Values Education Club', 44, NULL, 'academic', 1, 'club-logos/WyKl80DciaFo1ZIoVcYcAbKhxBWjGj68PfjT4xEG.jpg', 'club-banners/qaQt86UEZNrM2wIumSiHOHO7yVPVpXVPbEcrezXb.jpg', '2025-05-22 08:43:29', '2025-08-10 12:28:36', 1),
+(27, 'SFMNHS-Mental Health & Psycho-Social Support & Services', 49, NULL, 'academic', 1, 'club-logos/LhMbEBcIzkao8R85bEVeYF9efbQ1aUbydaKu03IA.jpg', 'club-banners/4dclVzsgp4qrixiiQXHzs17JVuHHpOwdsjM6RzVy.jpg', '2025-05-22 09:06:06', '2025-08-10 12:28:36', 1),
+(28, 'SFMNHS- GIRL SCOUT UNIT', 52, NULL, 'academic', 1, 'club-logos/9Dy4McUI5jMNqbniNJF4oKlEanmKJduJf9GwtfYy.jpg', 'club-banners/QhFSvRL5jC3UZ8xXYI6IywAskrSyiZO8wVeQCKa6.jpg', '2025-05-22 09:23:27', '2025-08-10 12:28:36', 1),
+(29, 'STAGE-SFMNHS Theater Artists Guild of Enhancement', 50, NULL, 'academic', 1, 'club-logos/2xVITle47b2bQqsSjBoWIQQxtcOrbotrsIvKccdU.jpg', 'club-banners/1xkfjC9Fn5cBxokLvR9JxYfboNjWZ3zfXCZ66xly.png', '2025-05-22 09:36:19', '2025-08-10 12:28:36', 1),
+(30, 'SFMNHS TLE CLUB', 18, 'No description available', 'academic', 1, 'club-logos/ngvKzAWOBAQYiwpgNeU46Db2f5x1JQTxDppYaYSu.jpg', 'club-banners/0ai4CfvoCNmtqLXsAgx9EOizvUUYA7e147TlyJaU.png', '2025-05-22 09:49:20', '2025-08-10 12:28:36', 1),
+(31, 'MAPEH CLUB', 50, 'For Learning and acknowledging the students achievements in MAPEH.', 'academic', 1, 'club-logos/sjaSTCGRFQ9suWJXVqXHhMBldIkvnDEfFw6BJQBz.jpg', 'club-banners/GnnmkMQfO0oLmYqqfHWkfBb9ymtyNKblcMkFcomZ.png', '2025-05-22 10:01:51', '2025-08-10 12:28:36', 1),
+(34, 'VITS', 76, 'This is an IT organization.', 'academic', 1, 'club-logos/8Ezh9jmdOhV2PUtUTkz2F9BNurYIiGnlYp3l1uEe.jpg', 'club-banners/h9dBFjNcWqWKuBV84ChzEkZBqAGr6hE6oforMTxs.jpg', '2025-05-23 02:05:55', '2025-08-10 12:28:36', 1);
 
 -- --------------------------------------------------------
 
@@ -164,7 +349,8 @@ CREATE TABLE `tbl_club_join_requests` (
 --
 
 INSERT INTO `tbl_club_join_requests` (`request_id`, `club_id`, `user_id`, `status`, `message`, `created_at`, `updated_at`) VALUES
-(5, 36, 58, 'approved', 'Join request for TEST CLUB APPROVAL', '2025-08-10 11:44:23', '2025-08-10 11:44:48');
+(6, 7, 58, 'pending', 'Join request for Sitero SHS SAMAFIL-Samahan ng mga Mag-aaral sa Filipino', '2025-08-10 12:28:49', '2025-08-10 12:28:49'),
+(7, 9, 58, 'approved', 'GSFGASDF', '2025-08-15 09:19:52', '2025-08-15 09:39:49');
 
 -- --------------------------------------------------------
 
@@ -232,7 +418,7 @@ INSERT INTO `tbl_club_membership` (`membership_id`, `club_id`, `user_id`, `club_
 (55, 34, 6, 'MEMBER', 'President', '2025-05-23 10:11:11', '{\"manage_posts\":true,\"manage_events\":true}', '2025-05-23 02:11:11', '2025-05-23 02:14:30'),
 (56, 34, 34, 'MEMBER', NULL, '2025-05-23 10:11:11', NULL, '2025-05-23 02:11:11', '2025-05-23 02:11:11'),
 (57, 7, 6, 'MEMBER', NULL, '2025-05-23 10:16:09', NULL, '2025-05-23 02:16:09', '2025-05-23 02:16:09'),
-(59, 36, 58, 'MEMBER', NULL, '2025-08-10 19:44:48', NULL, '2025-08-10 11:44:48', '2025-08-10 11:44:48');
+(60, 9, 58, 'MEMBER', NULL, '2025-08-15 17:39:49', NULL, '2025-08-15 09:39:49', '2025-08-15 09:39:49');
 
 -- --------------------------------------------------------
 
@@ -258,7 +444,8 @@ CREATE TABLE `tbl_elections` (
 
 INSERT INTO `tbl_elections` (`election_id`, `club_id`, `is_published`, `title`, `description`, `start_date`, `end_date`, `created_at`, `updated_at`) VALUES
 (10, 1, 1, 'SSLG 2025 Election', 'The Supreme Secondary Learner Government (SSLG) 2025 Election is a student-led democratic process that empowers learners to choose their next set of student leaders. Through this election, students have the opportunity to practice their right to vote, promote leadership, and uphold the values of responsibility and participation within the school community.\r\n\r\nLet your voice be heard. Vote wisely. Lead the change!', '2025-05-23 05:16:49', '2025-05-30 00:00:00', '2025-05-22 21:16:49', '2025-05-23 02:19:22'),
-(11, 1, 1, 'asdasd', 'asdasd', '2025-08-10 19:09:10', '2025-08-12 00:00:00', '2025-08-10 11:09:10', '2025-08-10 11:11:48');
+(11, 1, 1, 'asdasd', 'asdasd', '2025-08-10 19:09:10', '2025-08-12 00:00:00', '2025-08-10 11:09:10', '2025-08-10 11:11:48'),
+(12, 1, 0, 'qerqewrwer', 'qwerqwerqwer', '2025-08-14 16:47:42', '2025-08-16 00:00:00', '2025-08-14 08:47:42', '2025-08-14 08:47:42');
 
 -- --------------------------------------------------------
 
@@ -311,6 +498,10 @@ INSERT INTO `tbl_events` (`event_id`, `event_name`, `event_description`, `club_i
 CREATE TABLE `tbl_posts` (
   `post_id` bigint(20) UNSIGNED NOT NULL,
   `post_caption` text NOT NULL,
+  `file_attachment` varchar(255) DEFAULT NULL,
+  `file_original_name` varchar(255) DEFAULT NULL,
+  `file_mime_type` varchar(255) DEFAULT NULL,
+  `file_size` bigint(20) UNSIGNED DEFAULT NULL,
   `club_id` bigint(20) UNSIGNED NOT NULL,
   `author_id` bigint(20) UNSIGNED NOT NULL,
   `post_visibility` enum('PUBLIC','CLUB_ONLY') NOT NULL DEFAULT 'CLUB_ONLY',
@@ -323,36 +514,37 @@ CREATE TABLE `tbl_posts` (
 -- Dumping data for table `tbl_posts`
 --
 
-INSERT INTO `tbl_posts` (`post_id`, `post_caption`, `club_id`, `author_id`, `post_visibility`, `post_date`, `created_at`, `updated_at`) VALUES
-(1, '📢 Greetings SSLG family!\r\nI am proud to witness the growth of our young leaders as they take initiative in planning our upcoming community outreach and student empowerment programs. Your passion and leadership truly shape a better school environment. Keep inspiring! 💪\r\n#SFLG #StudentLeaders #ServeAndLead', 1, 4, 'CLUB_ONLY', '2025-05-19 09:41:28', '2025-05-19 01:41:28', '2025-05-19 01:41:28'),
-(2, 'Leading with purpose, serving with heart! 💛\r\nOur team is currently organizing projects that will make a difference in our school and beyond. Being part of the SFLG has taught me the value of service and teamwork. Let’s go, SSLG! 🙌\r\n#YouthLeadership #SSLG2025', 1, 22, 'CLUB_ONLY', '2025-05-19 09:41:49', '2025-05-19 01:41:49', '2025-05-21 04:25:24'),
-(4, '🏀 Shoutout to our GILAS athletes for their unwavering discipline and sportsmanship during training. As your adviser, I’m beyond proud of the determination you show on and off the court. Let\'s keep aiming higher—one game, one goal!\r\n#GILASStrong #TeamWorkMakesTheDreamWork', 3, 12, 'CLUB_ONLY', '2025-05-21 00:18:38', '2025-05-20 16:18:38', '2025-05-20 16:19:07'),
-(5, 'Just finished an intense training session with the GILAS fam! 💪\r\nIt’s not just about basketball—it’s about grit, discipline, and family. Can’t wait to show what we’ve got this season!\r\n#GILASSHS #HardworkPaysOff #StudentAthletes', 3, 21, 'CLUB_ONLY', '2025-05-21 00:26:04', '2025-05-20 16:26:04', '2025-05-20 16:26:04'),
-(6, '📚 Isang pagbati ng pagmamalaki sa ating mga kasapi ng SAMAFIL!\r\nPatuloy ninyong pinagyayaman ang ating kultura at wika sa pamamagitan ng inyong malikhaing proyekto. Nawa’y magpatuloy ang inyong pagyakap sa pagiging makabayan at mapanlikha.\r\n#SAMAFIL #WikangFilipino #SiningAtKultura', 7, 15, 'CLUB_ONLY', '2025-05-21 00:57:56', '2025-05-20 16:57:56', '2025-05-20 16:57:56'),
-(7, '✒️ To all members of Altiora Peto and Ang Antipara, your creative minds and sharp voices are what fuel our campus journalism. Continue to seek truth and write with integrity. Your words matter!\r\n#CampusJournalism #AltioraPeto #AngAntipara #VoiceOfTheYouth', 9, 17, 'CLUB_ONLY', '2025-05-21 01:00:09', '2025-05-20 17:00:09', '2025-05-20 17:00:09'),
-(8, '🏕️ Salute to our Boy Scouts! Your courage, discipline, and commitment during drills and leadership tasks are commendable. You are living examples of preparedness and service. Keep the Scouting spirit alive!\r\n#ScoutingForLife #BSP #PreparedToServe', 10, 18, 'CLUB_ONLY', '2025-05-21 01:00:40', '2025-05-20 17:00:40', '2025-05-20 17:00:40'),
-(9, '💡 Integrity is doing the right thing, even when no one is watching.\r\nTo our Sitero Youth Integrity Fighters, thank you for being role models of honesty and ethical leadership in school. Keep the light of integrity burning.\r\n#IntegrityMatters #YouthWithPurpose #SiteroIntegrityFighters', 11, 19, 'CLUB_ONLY', '2025-05-21 01:01:05', '2025-05-20 17:01:05', '2025-05-20 17:01:05'),
-(18, 'Siterians, get ready to witness the Grade 10 students as they perform a powerful rendition of the piece \"1896\" by Aurelio S. Alvero on the elimination round of Conventional Speech Choir Competition this December 2, Monday, 10:30am at the SFMNHS Activity Center. Let us listen to their voices unite in harmony, bringing drama, rhythm and creativity to life. 🗣️🗣️', 24, 2, 'PUBLIC', '2025-05-22 16:02:59', '2025-05-22 08:02:59', '2025-05-22 08:02:59'),
-(19, '\"𝙈𝙖𝙠𝙖𝙠𝙖𝙢𝙞𝙩 𝙣𝙖𝙩𝙞𝙣 𝙖𝙣𝙜 𝙠𝙖𝙡𝙖𝙮𝙖𝙖𝙣 𝙨𝙖 𝙥𝙖𝙜𝙞𝙜𝙞𝙣𝙜 𝙠𝙖𝙧𝙖𝙥𝙖𝙩-𝙙𝙖𝙥𝙖𝙩 𝙙𝙞𝙩𝙤, 𝙨𝙖 𝙥𝙖𝙜𝙩𝙖𝙖𝙨 𝙣𝙜 𝙠𝙖𝙩𝙪𝙬𝙞𝙧𝙖𝙣 𝙖𝙩 𝙙𝙖𝙣𝙜𝙖𝙡 𝙣𝙜 𝙩𝙖𝙤, 𝙨𝙖 𝙥𝙖𝙜𝙢𝙖𝙢𝙖𝙝𝙖𝙡 𝙨𝙖 𝙢𝙖𝙠𝙖𝙩𝙖𝙧𝙪𝙣𝙜𝙖𝙣, 𝙨𝙖 𝙢𝙖𝙗𝙪𝙩𝙞, 𝙨𝙖 𝙙𝙖𝙠𝙞𝙡𝙖, 𝙠𝙖𝙝𝙞𝙩 𝙢𝙖𝙢𝙖𝙩𝙖𝙮 𝙖𝙡𝙖𝙣𝙜-𝙖𝙡𝙖𝙣𝙜 𝙙𝙞𝙩𝙤.\"\r\n- Padre Tolentino, mula sa El Filibusterismo ni Dr. Jose Rizal \r\n\r\nNgayong buwan ng Agosto ipinagdiriwang ng buong bansa ang National heroes day hindi upang magsaya kundi para gunitahin ang mga bagay na ginawa ng ating bayani para makamtan  ang tunay na kalayaan ng bansa. \r\n\r\nNgayong ika-26 ng Agosto ay ating ipinagdiriwang ang araw ng mga bayani sa ating bansa. Ito ay ating ginugunita upang alalahanin ang mga sakripisyo ng mga bayaning Pilipino sa pagkamit ng kalayaan, hustisya, at pagkakakilanlan ng bansang pilipinas. \r\nMagkaisa tayo sa paaralan sa pag-alala sa kanilang kadakilaan!\r\nMaligayang Araw ng mga Bayani!\r\n\r\n𝙇𝙖𝙮𝙤𝙪𝙩: Amir Yman Corpur | 𝙆𝙖𝙡𝙞𝙝𝙞𝙢\r\n𝘾𝙖𝙥𝙩𝙞𝙤𝙣: Trisha Ramos | 𝙏𝙖𝙜𝙖𝙨𝙪𝙧𝙞 at Amir Yman Corpuz | 𝙆𝙖𝙡𝙞𝙝𝙞𝙢', 25, 58, 'PUBLIC', '2025-05-22 16:31:34', '2025-05-22 08:31:34', '2025-05-22 08:31:34'),
-(20, '𝐏𝐈𝐍𝐀𝐍𝐃𝐀𝐘 𝐒𝐀 𝐀𝐏𝐎𝐘 🔥\r\nNarito ang mga bagong opisyales ng Filipino Club na Pinanday sa apoy para maglingkod. Dumaan man sa maraming pagsubok at paghihirap patuloy kaming magiging instrumento para mapatupad  ang mga programang na sainyo ay dapat ilatag. Kami ay may layunin na ipalaganap na ang Wikang Filipino ay bahagi ng ating pagkakakilanlan bilang mga Pilipino. At ngayong buwan ng Wika na may temang \"Filipino:𝚆𝚒𝚔𝚊𝚗𝚐 𝙼𝚊𝚙𝚊𝚐𝚙𝚊𝚕𝚊𝚢𝚊\"  abangan pa ang mga kapanapanabik na mga programa.\r\nAsahan na patuloy  kaming maglilingkod para sa bayan, sa wika at sa Siterians bilang mga bagong opisiyales ng Filipino Club. \r\nKami ay nag iiwan ng katagang \"𝑊𝑖𝑘𝑎𝑛𝑔 𝐹𝑖𝑙𝑖𝑝𝑖𝑛𝑜, 𝑇𝑖𝑛𝑖𝑔 𝑛𝑔 𝐵𝑎𝑦𝑎𝑛, 𝑇𝑢𝑛𝑔𝑜 𝑠𝑎 𝐾𝑎𝑙𝑎𝑦𝑎𝑎𝑛. \"\r\n\r\n𝙇𝙖𝙮𝙤𝙪𝙩 : Amir Yman Corpuz | 𝙆𝙖𝙡𝙞𝙝𝙞𝙢\r\n𝘾𝙖𝙥𝙩𝙞𝙤𝙣 : Joshua Raymundo | 𝙋𝙧𝙚𝙨𝙞𝙙𝙚𝙣𝙩𝙚', 25, 51, 'PUBLIC', '2025-05-22 16:37:53', '2025-05-22 08:37:53', '2025-05-22 08:38:19'),
-(21, '\"The fear of the Lord doesn’t necessarily mean that you should be afraid of God. What it means is that we should live our lives in awe of Him. We do this first by recognizing who He is. He is the creator and source of all things. He is all-powerful and all-knowledgeable. God’s Word says He holds the power of life and death in His hands. These are certainly attributes that should cause us to be in awe of God.\"\r\n- YouVersion Bible App', 26, 44, 'PUBLIC', '2025-05-22 16:48:42', '2025-05-22 08:48:42', '2025-05-22 08:48:57'),
-(22, '\"We all have moments when we feel like the wandering sheep. Sometimes, we feel like we’re straying off the path. But remember this: you are not forgotten, and you matter to Jesus. He cares for the one who has strayed just as much as He does the ninety-nine who stayed close (Matthew 18:13). So draw near to Him today. \r\nBecause no matter where you are on your spiritual journey, Jesus is seeking after you, calling you by name to not only follow Him but to be with Him.\"\r\n- YouVersion Bible App', 26, 44, 'PUBLIC', '2025-05-22 16:49:41', '2025-05-22 08:49:41', '2025-05-22 08:49:41'),
-(23, '\"Jesus isn\'t just asking us to audibly hear His words and carry on with our personal agenda; He\'s urging us to actively listen and obey, to live by His truth. Listening and obeying are what build our faith in Jesus Christ. Hearing the Word of God should lead to a transformed life marked by fruitfulness.\"\r\n-YouvVersion Bible App', 26, 44, 'PUBLIC', '2025-05-22 16:50:08', '2025-05-22 08:50:08', '2025-05-22 08:50:08'),
-(24, 'TO BE ANNOUNCED\r\nEnrollment for incoming GR 7, GR 11, Transferees & Balik aral\r\nFor more updates, visit the official FB page', 1, 4, 'PUBLIC', '2025-05-22 16:59:47', '2025-05-22 08:59:47', '2025-05-22 08:59:47'),
-(25, 'Think Like A Farmer 🙂', 27, 49, 'PUBLIC', '2025-05-22 17:11:12', '2025-05-22 09:11:12', '2025-05-22 09:11:12'),
-(26, 'Sama sama tayo maglaan ng oras para manalangin.', 27, 49, 'PUBLIC', '2025-05-22 17:12:13', '2025-05-22 09:12:13', '2025-05-22 09:12:13'),
-(27, '☘️GSP Sunrise Parade & \r\nGSP Investiture and Rededication Ceremony☘️\r\nNovember 26, 2024', 28, 52, 'CLUB_ONLY', '2025-05-22 17:26:50', '2025-05-22 09:26:50', '2025-05-22 09:26:50'),
-(28, '☘️GSP Sunrise Parade & \r\nGSP Investiture and Rededication Ceremony☘️\r\nNovember 26, 2024', 28, 52, 'CLUB_ONLY', '2025-05-22 17:27:37', '2025-05-22 09:27:37', '2025-05-22 09:27:37'),
-(29, 'Alay Lakad para sa Kabataan ng Bagong Pilipinas\r\nNovember 24, 2024\r\nQuirino Grandstand, Manila\r\nReflecting the Foundation\'s commitment to empowering the youth and building the brighter future for the nation. \r\nThis Walk-For-A-Cause activity aims to raise fund to help and support the full economic and social well-being of Out-Of- School-Youth nationwide.', 28, 52, 'CLUB_ONLY', '2025-05-22 17:28:26', '2025-05-22 09:28:26', '2025-05-22 09:28:26'),
-(30, '\"Caring for the Environment is in the Heart of Every Girl Scout\"\r\nAs Girl Scouts, we honor our planet by respecting all living things and practicing thriftiness. Let us unite to protect nature, make mindful choices, and lead by example for a sustainable life.', 28, 52, 'CLUB_ONLY', '2025-05-22 17:29:17', '2025-05-22 09:29:17', '2025-05-22 09:29:17'),
-(31, 'Participation of Sitero Francisco MNHS - Senior High Theater Arts Guild of Enhancement (𝗦𝗧𝗔𝗚𝗘) in SFMNHS\' 22nd Founding Anniversary', 29, 50, 'CLUB_ONLY', '2025-05-22 17:42:08', '2025-05-22 09:42:08', '2025-05-22 09:42:08'),
-(32, 'Participation of Sitero Francisco MNHS - Senior High Theater Arts Guild of Enhancement (𝗦𝗧𝗔𝗚𝗘) in SFMNHS\' 22nd Founding Anniversary\r\n𝐒𝐢𝐭𝐞𝐫𝐨 𝐅𝐫𝐚𝐧𝐜𝐢𝐬𝐜𝐨 𝐌𝐞𝐦𝐨𝐫𝐢𝐚𝐥 𝐍𝐚𝐭𝐢𝐨𝐧𝐚𝐥 𝐇𝐢𝐠𝐡 𝐒𝐜𝐡𝐨𝐨𝐥 (𝐒𝐅𝐌𝐍𝐇𝐒) 𝐌𝐚𝐫𝐤𝐬 22 𝐘𝐞𝐚𝐫𝐬 𝐨𝐟 𝐄𝐱𝐜𝐞𝐥𝐥𝐞𝐧𝐜𝐞 𝐚𝐧𝐝 𝐂𝐨𝐦𝐦𝐮𝐧𝐢𝐭𝐲 𝐁𝐮𝐢𝐥𝐝𝐢𝐧𝐠\r\nRecently, Sitero Francisco Memorial National High School celebrated it\'s 22nd Founding Anniversary with the theme \"𝑆𝑖𝑡𝑒𝑟𝑜: 𝐷𝑎𝑙𝑎𝑤𝑎𝑚𝑝𝑢\'𝑡 𝐷𝑎𝑙𝑎𝑤𝑎𝑛𝑔 𝑇𝑎𝑜𝑛 𝑛𝑔 𝑃𝑎𝑔𝑡𝑢𝑡𝑢𝑙𝑢𝑛𝑔𝑎𝑛 𝑎𝑡 𝑇𝑎𝑔𝑢𝑚𝑝𝑎𝑦 𝑇𝑢𝑛𝑔𝑜 𝑠𝑎 𝑃𝑎𝑔-𝑎𝑎𝑙𝑎𝑏 𝑛𝑔 𝑘𝑎ℎ𝑢𝑠𝑎𝑦𝑎𝑛\" highlighting it\'s passion for education and harnessing the talents of the many generations of Siterians.\r\nFor over two decades, the school has stood as a beacon of hope, perseverance, and excellence in education, serving as a nurturing ground for generations of Siterians. Every achievement is a testament to the school\'s resilience, strong foundation, and the collaborative efforts of everyone who has walked its halls.\r\n✍🏻: Mikaela Chloe Valdellon | STAGE president\r\n💻:\r\nMikaela Chloe Valdellon | STAGE president\r\nMheday Chona Jonem | CMAC member\r\nArjune Ray Macaraeg | STAGE member', 29, 50, 'CLUB_ONLY', '2025-05-22 17:42:59', '2025-05-22 09:42:59', '2025-05-22 09:42:59'),
-(36, '🎨✨ Ani ng Sining, Diwa at Damdamin! ✨🎶\r\nIpagdiwang natin ang National Arts Month sa pamamagitan ng pagpapakita ng ating talento at pagkamalikhain! 💡🎭 Sumali sa mga patimpalak na naghihintay sa inyo:\r\n🎨 Pintahusay – Ipakita ang galing sa pagpipinta!\r\n🖌 Poster Making – Ilabas ang sining sa makabuluhang obra!\r\n🎤 Siterian Voice – Ipadama ang diwa ng sining sa pamamagitan ng musika!\r\n🎬 Filmmaking – Ibahagi ang iyong kwento sa sining ng pelikula!\r\nHuwag palampasin ang pagkakataong ito upang ipahayag ang iyong damdamin sa pamamagitan ng sining! ✨🎭🎶', 31, 50, 'PUBLIC', '2025-05-22 18:19:39', '2025-05-22 10:19:39', '2025-05-22 10:19:39'),
-(37, 'Avoid Being Hacked! 🛡️🚫💻\r\nIn today\'s hyper-connected world, our lives are deeply intertwined with technology and social media. This digital landscape, while offering incredible opportunities ✨, also presents significant risks, with hacking incidents on the rise. Do you feel confident that your online accounts are truly secure? 🤔 Let\'s explore some essential tips to safeguard yourself and your digital life! 💪\r\nBy following these tips and staying vigilant, you can significantly reduce your risk of becoming a victim of hacking. Let\'s work together to make the internet a safer place for everyone! Share this information with your friends and family to help spread awareness! 💖\r\n\r\nLayout: Paul Laquinta | Grade 8 P.I.O\r\nCaption: Rhayven Labaja | Vice President', 30, 18, 'CLUB_ONLY', '2025-05-22 18:21:22', '2025-05-22 10:21:22', '2025-05-22 10:21:22'),
-(38, '📢 𝙋𝙍𝙊𝙋𝙀𝙍 𝙐𝙎𝙀 𝙊𝙁 𝘼𝙄 📢\r\nAI is a powerful tool, but it should 𝙚𝙣𝙝𝙖𝙣𝙘𝙚 𝙡𝙚𝙖𝙧𝙣𝙞𝙣𝙜, 𝙣𝙤𝙩 𝙧𝙚𝙥𝙡𝙖𝙘𝙚 𝙚𝙛𝙛𝙤𝙧𝙩! 🚀📖\r\nStudents, let\'s use AI 𝙬𝙞𝙨𝙚𝙡𝙮 𝙖𝙣𝙙 𝙧𝙚𝙨𝙥𝙤𝙣𝙨𝙞𝙗𝙡𝙮, as a guide, not as a shortcut! Keep learning, thinking critically, and putting in the effort to grow. Remember, 𝙩𝙚𝙘𝙝𝙣𝙤𝙡𝙤𝙜𝙮 𝙨𝙝𝙤𝙪𝙡𝙙 𝙨𝙪𝙥𝙥𝙤𝙧𝙩 𝙮𝙤𝙪𝙧 𝙚𝙙𝙪𝙘𝙖𝙩𝙞𝙤𝙣, 𝙣𝙤𝙩 𝙙𝙤 𝙩𝙝𝙚 𝙬𝙤𝙧𝙠 𝙛𝙤𝙧 𝙮𝙤𝙪!\r\nAnd of course, there are 𝙢𝙖𝙣𝙮 𝙤𝙩𝙝𝙚𝙧 𝙥𝙧𝙤𝙥𝙚𝙧 𝙬𝙖𝙮𝙨 𝙩𝙤 𝙪𝙨𝙚 𝘼𝙄! Use it correctly to make learning more effective.\r\n💡 𝘽𝙚 𝙨𝙢𝙖𝙧𝙩, 𝙨𝙩𝙖𝙮 𝙤𝙧𝙞𝙜𝙞𝙣𝙖𝙡, 𝙖𝙣𝙙 𝙢𝙖𝙠𝙚 𝘼𝙄 𝙮𝙤𝙪𝙧 𝙡𝙚𝙖𝙧𝙣𝙞𝙣𝙜 𝙖𝙡𝙡𝙮!\r\n\r\nLAYOUT: Gillianne Mañalac | Secretary\r\nCAPTION: James Acuña | President', 30, 18, 'PUBLIC', '2025-05-22 18:21:49', '2025-05-22 10:21:49', '2025-05-22 10:21:49'),
-(40, '📢 ATTENTION, SFLG MEMBERS!\r\nThis is a reminder to all Supreme Secondary Learner Government officers and members that we will have our general assembly and project planning session this Wednesday, May 26, 2025, at 3:00 PM in Room 203.\r\n\r\nLet’s gather as one team to finalize our upcoming student-led initiatives for English and National Reading Month. Your presence, ideas, and leadership are needed!\r\n\r\n💛 Let’s continue to lead with purpose and serve with heart.', 1, 4, 'CLUB_ONLY', '2025-05-23 00:15:30', '2025-05-22 16:15:30', '2025-05-22 16:15:30'),
-(41, '📣 Hey, Sitero Learners!\r\nThe Supreme Secondary Learner Government (SFLG) is inviting all student leaders and class representatives to join our General Assembly this Wednesday, November 20, 2024, at 3:00 PM in Room 203.\r\n\r\nWe’ll be discussing exciting plans and upcoming projects for English and National Reading Month—and we need your ideas and support! 💡📚\r\n\r\n✅ Come prepared\r\n✅ Bring your creativity\r\n✅ Let your voice be heard!\r\n\r\nTogether, let’s make a difference. ✨\r\n– Your SFLG Officers', 1, 37, 'CLUB_ONLY', '2025-05-23 00:18:43', '2025-05-22 16:18:43', '2025-05-22 16:18:43'),
-(47, 'Hello VITS Family!', 34, 76, 'CLUB_ONLY', '2025-05-23 10:09:02', '2025-05-23 02:09:02', '2025-05-23 02:09:02');
+INSERT INTO `tbl_posts` (`post_id`, `post_caption`, `file_attachment`, `file_original_name`, `file_mime_type`, `file_size`, `club_id`, `author_id`, `post_visibility`, `post_date`, `created_at`, `updated_at`) VALUES
+(1, '📢 Greetings SSLG family!\r\nI am proud to witness the growth of our young leaders as they take initiative in planning our upcoming community outreach and student empowerment programs. Your passion and leadership truly shape a better school environment. Keep inspiring! 💪\r\n#SFLG #StudentLeaders #ServeAndLead', NULL, NULL, NULL, NULL, 1, 4, 'CLUB_ONLY', '2025-05-19 09:41:28', '2025-05-19 01:41:28', '2025-05-19 01:41:28'),
+(2, 'Leading with purpose, serving with heart! 💛\r\nOur team is currently organizing projects that will make a difference in our school and beyond. Being part of the SFLG has taught me the value of service and teamwork. Let’s go, SSLG! 🙌\r\n#YouthLeadership #SSLG2025', NULL, NULL, NULL, NULL, 1, 22, 'CLUB_ONLY', '2025-05-19 09:41:49', '2025-05-19 01:41:49', '2025-05-21 04:25:24'),
+(4, '🏀 Shoutout to our GILAS athletes for their unwavering discipline and sportsmanship during training. As your adviser, I’m beyond proud of the determination you show on and off the court. Let\'s keep aiming higher—one game, one goal!\r\n#GILASStrong #TeamWorkMakesTheDreamWork', NULL, NULL, NULL, NULL, 3, 12, 'CLUB_ONLY', '2025-05-21 00:18:38', '2025-05-20 16:18:38', '2025-05-20 16:19:07'),
+(5, 'Just finished an intense training session with the GILAS fam! 💪\r\nIt’s not just about basketball—it’s about grit, discipline, and family. Can’t wait to show what we’ve got this season!\r\n#GILASSHS #HardworkPaysOff #StudentAthletes', NULL, NULL, NULL, NULL, 3, 21, 'CLUB_ONLY', '2025-05-21 00:26:04', '2025-05-20 16:26:04', '2025-05-20 16:26:04'),
+(6, '📚 Isang pagbati ng pagmamalaki sa ating mga kasapi ng SAMAFIL!\r\nPatuloy ninyong pinagyayaman ang ating kultura at wika sa pamamagitan ng inyong malikhaing proyekto. Nawa’y magpatuloy ang inyong pagyakap sa pagiging makabayan at mapanlikha.\r\n#SAMAFIL #WikangFilipino #SiningAtKultura', NULL, NULL, NULL, NULL, 7, 15, 'CLUB_ONLY', '2025-05-21 00:57:56', '2025-05-20 16:57:56', '2025-05-20 16:57:56'),
+(7, '✒️ To all members of Altiora Peto and Ang Antipara, your creative minds and sharp voices are what fuel our campus journalism. Continue to seek truth and write with integrity. Your words matter!\r\n#CampusJournalism #AltioraPeto #AngAntipara #VoiceOfTheYouth', NULL, NULL, NULL, NULL, 9, 17, 'CLUB_ONLY', '2025-05-21 01:00:09', '2025-05-20 17:00:09', '2025-05-20 17:00:09'),
+(8, '🏕️ Salute to our Boy Scouts! Your courage, discipline, and commitment during drills and leadership tasks are commendable. You are living examples of preparedness and service. Keep the Scouting spirit alive!\r\n#ScoutingForLife #BSP #PreparedToServe', NULL, NULL, NULL, NULL, 10, 18, 'CLUB_ONLY', '2025-05-21 01:00:40', '2025-05-20 17:00:40', '2025-05-20 17:00:40'),
+(9, '💡 Integrity is doing the right thing, even when no one is watching.\r\nTo our Sitero Youth Integrity Fighters, thank you for being role models of honesty and ethical leadership in school. Keep the light of integrity burning.\r\n#IntegrityMatters #YouthWithPurpose #SiteroIntegrityFighters', NULL, NULL, NULL, NULL, 11, 19, 'CLUB_ONLY', '2025-05-21 01:01:05', '2025-05-20 17:01:05', '2025-05-20 17:01:05'),
+(18, 'Siterians, get ready to witness the Grade 10 students as they perform a powerful rendition of the piece \"1896\" by Aurelio S. Alvero on the elimination round of Conventional Speech Choir Competition this December 2, Monday, 10:30am at the SFMNHS Activity Center. Let us listen to their voices unite in harmony, bringing drama, rhythm and creativity to life. 🗣️🗣️', NULL, NULL, NULL, NULL, 24, 2, 'PUBLIC', '2025-05-22 16:02:59', '2025-05-22 08:02:59', '2025-05-22 08:02:59'),
+(19, '\"𝙈𝙖𝙠𝙖𝙠𝙖𝙢𝙞𝙩 𝙣𝙖𝙩𝙞𝙣 𝙖𝙣𝙜 𝙠𝙖𝙡𝙖𝙮𝙖𝙖𝙣 𝙨𝙖 𝙥𝙖𝙜𝙞𝙜𝙞𝙣𝙜 𝙠𝙖𝙧𝙖𝙥𝙖𝙩-𝙙𝙖𝙥𝙖𝙩 𝙙𝙞𝙩𝙤, 𝙨𝙖 𝙥𝙖𝙜𝙩𝙖𝙖𝙨 𝙣𝙜 𝙠𝙖𝙩𝙪𝙬𝙞𝙧𝙖𝙣 𝙖𝙩 𝙙𝙖𝙣𝙜𝙖𝙡 𝙣𝙜 𝙩𝙖𝙤, 𝙨𝙖 𝙥𝙖𝙜𝙢𝙖𝙢𝙖𝙝𝙖𝙡 𝙨𝙖 𝙢𝙖𝙠𝙖𝙩𝙖𝙧𝙪𝙣𝙜𝙖𝙣, 𝙨𝙖 𝙢𝙖𝙗𝙪𝙩𝙞, 𝙨𝙖 𝙙𝙖𝙠𝙞𝙡𝙖, 𝙠𝙖𝙝𝙞𝙩 𝙢𝙖𝙢𝙖𝙩𝙖𝙮 𝙖𝙡𝙖𝙣𝙜-𝙖𝙡𝙖𝙣𝙜 𝙙𝙞𝙩𝙤.\"\r\n- Padre Tolentino, mula sa El Filibusterismo ni Dr. Jose Rizal \r\n\r\nNgayong buwan ng Agosto ipinagdiriwang ng buong bansa ang National heroes day hindi upang magsaya kundi para gunitahin ang mga bagay na ginawa ng ating bayani para makamtan  ang tunay na kalayaan ng bansa. \r\n\r\nNgayong ika-26 ng Agosto ay ating ipinagdiriwang ang araw ng mga bayani sa ating bansa. Ito ay ating ginugunita upang alalahanin ang mga sakripisyo ng mga bayaning Pilipino sa pagkamit ng kalayaan, hustisya, at pagkakakilanlan ng bansang pilipinas. \r\nMagkaisa tayo sa paaralan sa pag-alala sa kanilang kadakilaan!\r\nMaligayang Araw ng mga Bayani!\r\n\r\n𝙇𝙖𝙮𝙤𝙪𝙩: Amir Yman Corpur | 𝙆𝙖𝙡𝙞𝙝𝙞𝙢\r\n𝘾𝙖𝙥𝙩𝙞𝙤𝙣: Trisha Ramos | 𝙏𝙖𝙜𝙖𝙨𝙪𝙧𝙞 at Amir Yman Corpuz | 𝙆𝙖𝙡𝙞𝙝𝙞𝙢', NULL, NULL, NULL, NULL, 25, 58, 'PUBLIC', '2025-05-22 16:31:34', '2025-05-22 08:31:34', '2025-05-22 08:31:34'),
+(20, '𝐏𝐈𝐍𝐀𝐍𝐃𝐀𝐘 𝐒𝐀 𝐀𝐏𝐎𝐘 🔥\r\nNarito ang mga bagong opisyales ng Filipino Club na Pinanday sa apoy para maglingkod. Dumaan man sa maraming pagsubok at paghihirap patuloy kaming magiging instrumento para mapatupad  ang mga programang na sainyo ay dapat ilatag. Kami ay may layunin na ipalaganap na ang Wikang Filipino ay bahagi ng ating pagkakakilanlan bilang mga Pilipino. At ngayong buwan ng Wika na may temang \"Filipino:𝚆𝚒𝚔𝚊𝚗𝚐 𝙼𝚊𝚙𝚊𝚐𝚙𝚊𝚕𝚊𝚢𝚊\"  abangan pa ang mga kapanapanabik na mga programa.\r\nAsahan na patuloy  kaming maglilingkod para sa bayan, sa wika at sa Siterians bilang mga bagong opisiyales ng Filipino Club. \r\nKami ay nag iiwan ng katagang \"𝑊𝑖𝑘𝑎𝑛𝑔 𝐹𝑖𝑙𝑖𝑝𝑖𝑛𝑜, 𝑇𝑖𝑛𝑖𝑔 𝑛𝑔 𝐵𝑎𝑦𝑎𝑛, 𝑇𝑢𝑛𝑔𝑜 𝑠𝑎 𝐾𝑎𝑙𝑎𝑦𝑎𝑎𝑛. \"\r\n\r\n𝙇𝙖𝙮𝙤𝙪𝙩 : Amir Yman Corpuz | 𝙆𝙖𝙡𝙞𝙝𝙞𝙢\r\n𝘾𝙖𝙥𝙩𝙞𝙤𝙣 : Joshua Raymundo | 𝙋𝙧𝙚𝙨𝙞𝙙𝙚𝙣𝙩𝙚', NULL, NULL, NULL, NULL, 25, 51, 'PUBLIC', '2025-05-22 16:37:53', '2025-05-22 08:37:53', '2025-05-22 08:38:19'),
+(21, '\"The fear of the Lord doesn’t necessarily mean that you should be afraid of God. What it means is that we should live our lives in awe of Him. We do this first by recognizing who He is. He is the creator and source of all things. He is all-powerful and all-knowledgeable. God’s Word says He holds the power of life and death in His hands. These are certainly attributes that should cause us to be in awe of God.\"\r\n- YouVersion Bible App', NULL, NULL, NULL, NULL, 26, 44, 'PUBLIC', '2025-05-22 16:48:42', '2025-05-22 08:48:42', '2025-05-22 08:48:57'),
+(22, '\"We all have moments when we feel like the wandering sheep. Sometimes, we feel like we’re straying off the path. But remember this: you are not forgotten, and you matter to Jesus. He cares for the one who has strayed just as much as He does the ninety-nine who stayed close (Matthew 18:13). So draw near to Him today. \r\nBecause no matter where you are on your spiritual journey, Jesus is seeking after you, calling you by name to not only follow Him but to be with Him.\"\r\n- YouVersion Bible App', NULL, NULL, NULL, NULL, 26, 44, 'PUBLIC', '2025-05-22 16:49:41', '2025-05-22 08:49:41', '2025-05-22 08:49:41'),
+(23, '\"Jesus isn\'t just asking us to audibly hear His words and carry on with our personal agenda; He\'s urging us to actively listen and obey, to live by His truth. Listening and obeying are what build our faith in Jesus Christ. Hearing the Word of God should lead to a transformed life marked by fruitfulness.\"\r\n-YouvVersion Bible App', NULL, NULL, NULL, NULL, 26, 44, 'PUBLIC', '2025-05-22 16:50:08', '2025-05-22 08:50:08', '2025-05-22 08:50:08'),
+(24, 'TO BE ANNOUNCED\r\nEnrollment for incoming GR 7, GR 11, Transferees & Balik aral\r\nFor more updates, visit the official FB page', NULL, NULL, NULL, NULL, 1, 4, 'PUBLIC', '2025-05-22 16:59:47', '2025-05-22 08:59:47', '2025-05-22 08:59:47'),
+(25, 'Think Like A Farmer 🙂', NULL, NULL, NULL, NULL, 27, 49, 'PUBLIC', '2025-05-22 17:11:12', '2025-05-22 09:11:12', '2025-05-22 09:11:12'),
+(26, 'Sama sama tayo maglaan ng oras para manalangin.', NULL, NULL, NULL, NULL, 27, 49, 'PUBLIC', '2025-05-22 17:12:13', '2025-05-22 09:12:13', '2025-05-22 09:12:13'),
+(27, '☘️GSP Sunrise Parade & \r\nGSP Investiture and Rededication Ceremony☘️\r\nNovember 26, 2024', NULL, NULL, NULL, NULL, 28, 52, 'CLUB_ONLY', '2025-05-22 17:26:50', '2025-05-22 09:26:50', '2025-05-22 09:26:50'),
+(28, '☘️GSP Sunrise Parade & \r\nGSP Investiture and Rededication Ceremony☘️\r\nNovember 26, 2024', NULL, NULL, NULL, NULL, 28, 52, 'CLUB_ONLY', '2025-05-22 17:27:37', '2025-05-22 09:27:37', '2025-05-22 09:27:37'),
+(29, 'Alay Lakad para sa Kabataan ng Bagong Pilipinas\r\nNovember 24, 2024\r\nQuirino Grandstand, Manila\r\nReflecting the Foundation\'s commitment to empowering the youth and building the brighter future for the nation. \r\nThis Walk-For-A-Cause activity aims to raise fund to help and support the full economic and social well-being of Out-Of- School-Youth nationwide.', NULL, NULL, NULL, NULL, 28, 52, 'CLUB_ONLY', '2025-05-22 17:28:26', '2025-05-22 09:28:26', '2025-05-22 09:28:26'),
+(30, '\"Caring for the Environment is in the Heart of Every Girl Scout\"\r\nAs Girl Scouts, we honor our planet by respecting all living things and practicing thriftiness. Let us unite to protect nature, make mindful choices, and lead by example for a sustainable life.', NULL, NULL, NULL, NULL, 28, 52, 'CLUB_ONLY', '2025-05-22 17:29:17', '2025-05-22 09:29:17', '2025-05-22 09:29:17'),
+(31, 'Participation of Sitero Francisco MNHS - Senior High Theater Arts Guild of Enhancement (𝗦𝗧𝗔𝗚𝗘) in SFMNHS\' 22nd Founding Anniversary', NULL, NULL, NULL, NULL, 29, 50, 'CLUB_ONLY', '2025-05-22 17:42:08', '2025-05-22 09:42:08', '2025-05-22 09:42:08'),
+(32, 'Participation of Sitero Francisco MNHS - Senior High Theater Arts Guild of Enhancement (𝗦𝗧𝗔𝗚𝗘) in SFMNHS\' 22nd Founding Anniversary\r\n𝐒𝐢𝐭𝐞𝐫𝐨 𝐅𝐫𝐚𝐧𝐜𝐢𝐬𝐜𝐨 𝐌𝐞𝐦𝐨𝐫𝐢𝐚𝐥 𝐍𝐚𝐭𝐢𝐨𝐧𝐚𝐥 𝐇𝐢𝐠𝐡 𝐒𝐜𝐡𝐨𝐨𝐥 (𝐒𝐅𝐌𝐍𝐇𝐒) 𝐌𝐚𝐫𝐤𝐬 22 𝐘𝐞𝐚𝐫𝐬 𝐨𝐟 𝐄𝐱𝐜𝐞𝐥𝐥𝐞𝐧𝐜𝐞 𝐚𝐧𝐝 𝐂𝐨𝐦𝐦𝐮𝐧𝐢𝐭𝐲 𝐁𝐮𝐢𝐥𝐝𝐢𝐧𝐠\r\nRecently, Sitero Francisco Memorial National High School celebrated it\'s 22nd Founding Anniversary with the theme \"𝑆𝑖𝑡𝑒𝑟𝑜: 𝐷𝑎𝑙𝑎𝑤𝑎𝑚𝑝𝑢\'𝑡 𝐷𝑎𝑙𝑎𝑤𝑎𝑛𝑔 𝑇𝑎𝑜𝑛 𝑛𝑔 𝑃𝑎𝑔𝑡𝑢𝑡𝑢𝑙𝑢𝑛𝑔𝑎𝑛 𝑎𝑡 𝑇𝑎𝑔𝑢𝑚𝑝𝑎𝑦 𝑇𝑢𝑛𝑔𝑜 𝑠𝑎 𝑃𝑎𝑔-𝑎𝑎𝑙𝑎𝑏 𝑛𝑔 𝑘𝑎ℎ𝑢𝑠𝑎𝑦𝑎𝑛\" highlighting it\'s passion for education and harnessing the talents of the many generations of Siterians.\r\nFor over two decades, the school has stood as a beacon of hope, perseverance, and excellence in education, serving as a nurturing ground for generations of Siterians. Every achievement is a testament to the school\'s resilience, strong foundation, and the collaborative efforts of everyone who has walked its halls.\r\n✍🏻: Mikaela Chloe Valdellon | STAGE president\r\n💻:\r\nMikaela Chloe Valdellon | STAGE president\r\nMheday Chona Jonem | CMAC member\r\nArjune Ray Macaraeg | STAGE member', NULL, NULL, NULL, NULL, 29, 50, 'CLUB_ONLY', '2025-05-22 17:42:59', '2025-05-22 09:42:59', '2025-05-22 09:42:59'),
+(36, '🎨✨ Ani ng Sining, Diwa at Damdamin! ✨🎶\r\nIpagdiwang natin ang National Arts Month sa pamamagitan ng pagpapakita ng ating talento at pagkamalikhain! 💡🎭 Sumali sa mga patimpalak na naghihintay sa inyo:\r\n🎨 Pintahusay – Ipakita ang galing sa pagpipinta!\r\n🖌 Poster Making – Ilabas ang sining sa makabuluhang obra!\r\n🎤 Siterian Voice – Ipadama ang diwa ng sining sa pamamagitan ng musika!\r\n🎬 Filmmaking – Ibahagi ang iyong kwento sa sining ng pelikula!\r\nHuwag palampasin ang pagkakataong ito upang ipahayag ang iyong damdamin sa pamamagitan ng sining! ✨🎭🎶', NULL, NULL, NULL, NULL, 31, 50, 'PUBLIC', '2025-05-22 18:19:39', '2025-05-22 10:19:39', '2025-05-22 10:19:39'),
+(37, 'Avoid Being Hacked! 🛡️🚫💻\r\nIn today\'s hyper-connected world, our lives are deeply intertwined with technology and social media. This digital landscape, while offering incredible opportunities ✨, also presents significant risks, with hacking incidents on the rise. Do you feel confident that your online accounts are truly secure? 🤔 Let\'s explore some essential tips to safeguard yourself and your digital life! 💪\r\nBy following these tips and staying vigilant, you can significantly reduce your risk of becoming a victim of hacking. Let\'s work together to make the internet a safer place for everyone! Share this information with your friends and family to help spread awareness! 💖\r\n\r\nLayout: Paul Laquinta | Grade 8 P.I.O\r\nCaption: Rhayven Labaja | Vice President', NULL, NULL, NULL, NULL, 30, 18, 'CLUB_ONLY', '2025-05-22 18:21:22', '2025-05-22 10:21:22', '2025-05-22 10:21:22'),
+(38, '📢 𝙋𝙍𝙊𝙋𝙀𝙍 𝙐𝙎𝙀 𝙊𝙁 𝘼𝙄 📢\r\nAI is a powerful tool, but it should 𝙚𝙣𝙝𝙖𝙣𝙘𝙚 𝙡𝙚𝙖𝙧𝙣𝙞𝙣𝙜, 𝙣𝙤𝙩 𝙧𝙚𝙥𝙡𝙖𝙘𝙚 𝙚𝙛𝙛𝙤𝙧𝙩! 🚀📖\r\nStudents, let\'s use AI 𝙬𝙞𝙨𝙚𝙡𝙮 𝙖𝙣𝙙 𝙧𝙚𝙨𝙥𝙤𝙣𝙨𝙞𝙗𝙡𝙮, as a guide, not as a shortcut! Keep learning, thinking critically, and putting in the effort to grow. Remember, 𝙩𝙚𝙘𝙝𝙣𝙤𝙡𝙤𝙜𝙮 𝙨𝙝𝙤𝙪𝙡𝙙 𝙨𝙪𝙥𝙥𝙤𝙧𝙩 𝙮𝙤𝙪𝙧 𝙚𝙙𝙪𝙘𝙖𝙩𝙞𝙤𝙣, 𝙣𝙤𝙩 𝙙𝙤 𝙩𝙝𝙚 𝙬𝙤𝙧𝙠 𝙛𝙤𝙧 𝙮𝙤𝙪!\r\nAnd of course, there are 𝙢𝙖𝙣𝙮 𝙤𝙩𝙝𝙚𝙧 𝙥𝙧𝙤𝙥𝙚𝙧 𝙬𝙖𝙮𝙨 𝙩𝙤 𝙪𝙨𝙚 𝘼𝙄! Use it correctly to make learning more effective.\r\n💡 𝘽𝙚 𝙨𝙢𝙖𝙧𝙩, 𝙨𝙩𝙖𝙮 𝙤𝙧𝙞𝙜𝙞𝙣𝙖𝙡, 𝙖𝙣𝙙 𝙢𝙖𝙠𝙚 𝘼𝙄 𝙮𝙤𝙪𝙧 𝙡𝙚𝙖𝙧𝙣𝙞𝙣𝙜 𝙖𝙡𝙡𝙮!\r\n\r\nLAYOUT: Gillianne Mañalac | Secretary\r\nCAPTION: James Acuña | President', NULL, NULL, NULL, NULL, 30, 18, 'PUBLIC', '2025-05-22 18:21:49', '2025-05-22 10:21:49', '2025-05-22 10:21:49'),
+(40, '📢 ATTENTION, SFLG MEMBERS!\r\nThis is a reminder to all Supreme Secondary Learner Government officers and members that we will have our general assembly and project planning session this Wednesday, May 26, 2025, at 3:00 PM in Room 203.\r\n\r\nLet’s gather as one team to finalize our upcoming student-led initiatives for English and National Reading Month. Your presence, ideas, and leadership are needed!\r\n\r\n💛 Let’s continue to lead with purpose and serve with heart.', NULL, NULL, NULL, NULL, 1, 4, 'CLUB_ONLY', '2025-05-23 00:15:30', '2025-05-22 16:15:30', '2025-05-22 16:15:30'),
+(41, '📣 Hey, Sitero Learners!\r\nThe Supreme Secondary Learner Government (SFLG) is inviting all student leaders and class representatives to join our General Assembly this Wednesday, November 20, 2024, at 3:00 PM in Room 203.\r\n\r\nWe’ll be discussing exciting plans and upcoming projects for English and National Reading Month—and we need your ideas and support! 💡📚\r\n\r\n✅ Come prepared\r\n✅ Bring your creativity\r\n✅ Let your voice be heard!\r\n\r\nTogether, let’s make a difference. ✨\r\n– Your SFLG Officers', NULL, NULL, NULL, NULL, 1, 37, 'CLUB_ONLY', '2025-05-23 00:18:43', '2025-05-22 16:18:43', '2025-05-22 16:18:43'),
+(47, 'Hello VITS Family!', NULL, NULL, NULL, NULL, 34, 76, 'CLUB_ONLY', '2025-05-23 10:09:02', '2025-05-23 02:09:02', '2025-05-23 02:09:02'),
+(48, 'asdasdas', 'post-attachments/dib63sL0sBA2abhhtUh9KyQ8q4inGwMNjBtoIdeb.pdf', 'VIA Download Guide.pdf', 'application/pdf', 198342, 1, 4, 'PUBLIC', '2025-08-15 15:35:34', '2025-08-15 07:35:34', '2025-08-15 07:36:39');
 
 -- --------------------------------------------------------
 
@@ -407,7 +599,10 @@ INSERT INTO `tbl_post_images` (`image_id`, `post_id`, `image_path`, `created_at`
 (119, 37, 'post-images/yVKB2GwHhtJxje4uEevCqAmiT6qNqAplZE31cnjN.jpg', '2025-05-22 10:21:22', '2025-05-22 10:21:22'),
 (120, 37, 'post-images/aZYnDdgdzCPKQ5sKx2MvpVKmGjL2cHiNs1VMqPFN.jpg', '2025-05-22 10:21:22', '2025-05-22 10:21:22'),
 (121, 37, 'post-images/hRzyIRykTrHjkt2F30ITETkX09SsJ6C9rzqjquWu.jpg', '2025-05-22 10:21:22', '2025-05-22 10:21:22'),
-(122, 38, 'post-images/zTp983GBtt6vM6UAZc0HriSTV7k9oyAtKB8xbozO.jpg', '2025-05-22 10:21:49', '2025-05-22 10:21:49');
+(122, 38, 'post-images/zTp983GBtt6vM6UAZc0HriSTV7k9oyAtKB8xbozO.jpg', '2025-05-22 10:21:49', '2025-05-22 10:21:49'),
+(138, 48, 'post-images/KKvIuBB8rI78cdqxLvWW42ehIeT2zqzOZdc7WRkA.png', '2025-08-15 07:36:21', '2025-08-15 07:36:21'),
+(139, 48, 'post-images/MgROpZieqQ3ggpUXJVBEaR3MmDWwOCqGhDIhvA0d.png', '2025-08-15 07:36:21', '2025-08-15 07:36:21'),
+(140, 48, 'post-images/NBgtJOwKldCQ4bxRf1QR1SXZiaHDUSnQQMbhjzAt.png', '2025-08-15 07:36:21', '2025-08-15 07:36:21');
 
 -- --------------------------------------------------------
 
@@ -468,6 +663,7 @@ INSERT INTO `tbl_sections` (`section_id`, `class_id`, `section_name`, `created_a
 CREATE TABLE `tbl_users` (
   `user_id` bigint(20) UNSIGNED NOT NULL,
   `role` enum('ADMIN','TEACHER','STUDENT') NOT NULL,
+  `status` enum('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE',
   `name` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   `sex` enum('MALE','FEMALE') DEFAULT NULL,
@@ -489,61 +685,61 @@ CREATE TABLE `tbl_users` (
 -- Dumping data for table `tbl_users`
 --
 
-INSERT INTO `tbl_users` (`user_id`, `role`, `name`, `email`, `sex`, `address`, `contact_no`, `password`, `section_id`, `mother_name`, `mother_contact_no`, `father_name`, `father_contact_no`, `remember_token`, `profile_picture`, `created_at`, `updated_at`) VALUES
-(1, 'ADMIN', 'Admin User', 'admin@gmail.com', NULL, NULL, NULL, '$2y$12$1buyJYGqbYQCS5tC7GcYuuYH7LkTNYUT4lMjamgYpND5X9DGnlvRu', NULL, NULL, NULL, NULL, NULL, 'mdAHcoemYNzUAy18o3FTuPTwlw0tUEfB0OAqj0oDgj5QyNGVqQ1bbeq7Z45J', '1747933871_1.png', '2025-03-29 12:55:49', '2025-05-22 17:11:34'),
-(2, 'TEACHER', 'Jezelle Dalwampu', 'jezelle@gmail.com', NULL, NULL, NULL, '$2y$12$9k9xjICVBCUhXf1d8T77vOXzdkwxIwio5TsJpZmgk5Gg2v9V/J3RK', NULL, NULL, NULL, NULL, NULL, 'nnZ7CzEqvkCHot99bcTVOCxRps565b2oWWv56RXoWg5ryV5ZiPCDySlnxm5H', NULL, '2025-03-29 12:55:49', '2025-05-22 08:10:35'),
-(4, 'TEACHER', 'Melody S. Delos Santos', 'melody@gmail.com', NULL, NULL, NULL, '$2y$12$HwqGpYmNzUEuS4L3Eunng.dkYpLGvZ8kIZd0gilYQQ3xO.4PU5JeC', NULL, NULL, NULL, NULL, NULL, 'v2dW6vz5yNno6sQycrZJYsCHwwlask1qRll19eZwjYI0BfTTQXzC4VdNa3H7', '1743958684_4.jpg', '2025-03-29 15:00:43', '2025-05-22 18:06:14'),
-(6, 'STUDENT', 'Jovince Salic', 'jovincepro@gmail.com', NULL, NULL, NULL, '$2y$12$cof1lJsh.xWn5iXkEUSSP.7GsiMTXhQGLT9SP4D8Ar9XBEWzY5xkS', 1, NULL, NULL, NULL, NULL, NULL, '1754824448_6.jpg', '2025-03-29 17:15:01', '2025-08-10 11:14:08'),
-(8, 'STUDENT', 'Jean Ann Abay', 'jeannnsss@gmail.com', NULL, NULL, NULL, '$2y$12$CVrnFmtj0TgU.SYNnAARg.enYTwmfsJnTeV7VLAUh3oaI.O1WuEnW', 18, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-29 17:28:32', '2025-05-22 10:16:05'),
-(9, 'STUDENT', 'Jasper James Vinluan', 'blazyjasper@gmail.com', NULL, NULL, NULL, '$2y$12$1ZHg5Wz2a0DoKGihVjQmb.GdJUhZeU3TNqvJJZNhihkErhkQoY5ki', 16, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-29 17:28:51', '2025-05-22 10:15:31'),
-(10, 'STUDENT', 'Rain Esteban', 'rain@gmail.com', NULL, NULL, NULL, '$2y$12$8sP2XFqyu0n6FqKHcxjHs.O7Y5XeAinehX8ll5hMhOowLbXLszJhm', 18, NULL, NULL, NULL, NULL, 'EIzVyYCXMXecnQnBQYjks7GrJuX34e5uuG8yihXd7ALqjLXcbMU26zvveisg', NULL, '2025-03-29 17:29:20', '2025-05-22 10:15:42'),
-(12, 'TEACHER', 'Harold Leobrera', 'haroldleobrera@gmail.com', NULL, NULL, NULL, '$2y$12$SIioCA7kAHJzjB2pOr0Frex5Ygphw03Fyolf2d/pPch3L8YK5wZb2', NULL, NULL, NULL, NULL, NULL, NULL, '1744399825_12.jpg', '2025-03-30 01:13:33', '2025-04-11 19:30:25'),
-(14, 'ADMIN', 'Peter Griffin', 'peter@gmail.com', NULL, NULL, NULL, '$2y$12$eKZ09oJHdOa98Lpvmu4g2e0.n2LNHEhm2sOphz45aba.VJNeQWLWW', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-30 08:09:58', '2025-03-30 08:09:58'),
-(15, 'TEACHER', 'SaMaFil Adviser', 'siterosamafil@gmail.com', NULL, NULL, NULL, '$2y$12$HJab9DnAD1hk5sCilvtf1.GgBjcJqfvyoxu13xHlLVb4VV3MrkDmq', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-30 09:03:56', '2025-03-30 09:03:56'),
-(16, 'TEACHER', 'Nico Diwa Bundoc Ocampo', 'nicodiwa.ocampo@deped.gov.ph', NULL, NULL, NULL, '$2y$12$hXfwOrC3FGi2gHay/6An..7Ot9n1byd8.clSlolIK2oPe.vKkMa2u', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-30 09:06:13', '2025-03-30 09:06:13'),
-(17, 'TEACHER', 'Ang Antipara Adviser', 'angantipara@gmail.com', NULL, NULL, NULL, '$2y$12$EAS5YcQyZbIifG.3OvP6W.nm4F9qr.F6MuWyCqGXUkX0bINH2sUAu', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-30 09:09:30', '2025-03-30 09:09:30'),
-(18, 'TEACHER', 'Angelica Gamal', 'sitero.boyscout@gmail.com', NULL, NULL, NULL, '$2y$12$yHpXD.7HHSNu5GSrNET5decnvJBFOrPhCee2XocR4CsgyyfPGn0tu', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-30 09:15:44', '2025-03-30 09:15:44'),
-(19, 'TEACHER', 'John-John B. Galicia', 'siteroyouthintegrityfighters@gmail.com', NULL, NULL, NULL, '$2y$12$Up7p2RIdF6RYwpMyudg04O.f.efweEqfc9iSfxp3aGJIx8G7gt4HG', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-30 09:21:19', '2025-03-30 09:21:19'),
-(21, 'STUDENT', 'Mariajasmin Porta', 'jasmin@gmail.com', NULL, NULL, NULL, '$2y$12$iKa6BQsPddOavmy5U6Q5fuC6wLqViB10w2hB.tZQvfMHBq9S0e1qC', 7, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-30 18:29:09', '2025-03-30 18:29:09'),
-(22, 'STUDENT', 'Krayssanta F. Lapuz', 'sslglapuz@gmail.com', NULL, NULL, NULL, '$2y$12$t3NH0rMDE6qeKJxiTnQXsOeN93X4vT4q4ewTTIdu9gBq7v5Hi6o7S', 10, NULL, NULL, NULL, NULL, NULL, '1743959456_22.jpg', '2025-03-30 18:30:28', '2025-04-06 17:10:56'),
-(23, 'STUDENT', 'Darlyn M. Abucion', 'darlyn@gmail.com', NULL, NULL, NULL, '$2y$12$5Uj/PiCsRY6R4VPw6Prd6u3h/BqHVFwAM197ySL3ixeMhgjp1cFkC', 12, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-30 19:04:07', '2025-03-30 19:04:07'),
-(24, 'STUDENT', 'Alliyah Jade Bracero', 'braceroalliyahjade@gmail.com', NULL, NULL, NULL, '$2y$12$yB2vJySYUMMH.Fur19SMl.4T8BF9x35dXPZuwhCRNNcypD1fKAu56', 22, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-31 02:28:49', '2025-03-31 02:28:49'),
-(34, 'STUDENT', 'First SSLG Member Test', 'sslg1test@gmail.com', NULL, NULL, NULL, '$2y$12$L234EVnR0egoRe9Dc040XO6cb5iIA4lyYwjYGuspxvzt3lURsxuXe', 26, NULL, NULL, NULL, NULL, 'hWsgcM85rjEJKHRHP1nX2GtksAOT8B17CemiajJU96khyumTdAJYLOrXx6dt', NULL, '2025-04-05 05:27:48', '2025-04-05 05:27:48'),
-(35, 'STUDENT', 'Second SSLG Member', 'sslg2test@gmail.com', NULL, NULL, NULL, '$2y$12$O/Oan7E87PSGP6SB8JfMm.tUx9Gha1mFGLVN/.g7V66Cxz8VchKme', 28, NULL, NULL, NULL, NULL, NULL, NULL, '2025-04-05 15:15:08', '2025-04-05 15:15:08'),
-(36, 'ADMIN', 'Daron Mangaoang', 'mangaoang.daron27@gmail.com', NULL, NULL, NULL, '$2y$12$l.aN9vvFx.zBtxMctk7W0u6b9jVWmT6wZjf/r/Vu84nqlujFMuaSu', NULL, NULL, NULL, NULL, NULL, 'EpjxTzSgUudrjgnwruPMtUEZNw7NeqAjZowe5sd3pIZx0BP8PlnskDa2p3y6', NULL, '2025-04-07 00:34:41', '2025-05-22 07:02:24'),
-(37, 'STUDENT', 'Kristine Kyle M. Penaso', 'sslgkristine@gmail.com', NULL, NULL, NULL, '$2y$12$UFINVRoYqEEvbJx4bw.Ow.Mdngs1RPGg4prtrvz1eDTXnTMlTN3da', 5, NULL, NULL, NULL, NULL, NULL, NULL, '2025-04-07 06:48:02', '2025-04-07 06:48:02'),
-(43, 'STUDENT', 'Ryan Trayhan', 'ryantrayhan@gmail.com', NULL, NULL, NULL, '$2y$12$rc3RwWmViUjvYuPw5.PBHuoIYekRdtZCOcNCwt26EBAPpUdLX6zcu', 2, NULL, NULL, NULL, NULL, NULL, NULL, '2025-04-13 18:34:08', '2025-04-13 18:34:08'),
-(44, 'TEACHER', 'Joshua Martin', 'joshuamartin@example.com', NULL, NULL, NULL, '$2y$12$wyBJ48lkz7dtmuiyP.pDX.pVeaL6z..4ycPe5gxD8E87FTyOtqxn.', NULL, NULL, NULL, NULL, NULL, 'u0PMX6sXoww93026FhF7AoAlnjjeHodyAezScJr77llA5gpr8IcBWHCBuTpR', NULL, '2025-04-13 18:34:08', '2025-05-22 08:53:07'),
-(45, 'STUDENT', 'Jasmine Patel', 'jpatel@example.com', NULL, NULL, NULL, '$2y$12$wPDmbpLffAKgpiW5l3B62.qgc3qLG8Zs4/4b8kHJ1nDBUFovv2S86', 22, NULL, NULL, NULL, NULL, NULL, NULL, '2025-04-13 19:04:36', '2025-04-13 19:04:36'),
-(46, 'STUDENT', 'Tyler Johnson', 'tjohnson@example.com', NULL, NULL, NULL, '$2y$12$cqCgfORy7VtItn3VPoGQPedTGh4ZMtIPpqbW7eQbAAa.J.miyDcB2', 20, NULL, NULL, NULL, NULL, NULL, NULL, '2025-04-13 19:04:36', '2025-04-13 19:04:36'),
-(47, 'STUDENT', 'Madison Clark', 'mclark@example.com', NULL, NULL, NULL, '$2y$12$hxTa30Zt40WguWwJtahsKuxZry0Ag/6QKJP2aFfQ8wg9p34aY7duS', 12, NULL, NULL, NULL, NULL, NULL, NULL, '2025-04-13 19:04:36', '2025-04-13 19:04:36'),
-(48, 'TEACHER', 'Rebecca Wilson', 'rwilson@example.com', NULL, NULL, NULL, '$2y$12$NM4CO5mcafcrYptzR5BRXOPpE2BhjEGsYlbmwRLF.ig03NMUurXo.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-04-13 19:04:36', '2025-04-13 19:04:36'),
-(49, 'TEACHER', 'Marcus Davis', 'mdavis@example.com', NULL, NULL, NULL, '$2y$12$aVgziziRFEmJglyF0rm.r.28b48VoHhk5N0gs566U03ahmejgoqfO', NULL, NULL, NULL, NULL, NULL, 'yEi24q0Kn7xpCWXdHFWNqVuXrAtu7u5SQ9SqCSRiQuW63SsNKtysd7rEdsGI', NULL, '2025-04-13 19:04:37', '2025-05-22 09:08:42'),
-(50, 'TEACHER', 'Emma Rodriguez', 'erodriguez@example.com', NULL, NULL, NULL, '$2y$12$XXm1u7Zz5ArnY0PhJ59h9.aka3uQsnuZYKH5Kjn2ko7qLnv7qgUrO', NULL, NULL, NULL, NULL, NULL, 'qHO3gDi4DOM7OYrDQhkhfyrs5YCUo6K226JqaqpZ5HLaUyhhKwfPOn3uOsKm', NULL, '2025-04-13 19:04:37', '2025-05-22 09:38:59'),
-(51, 'TEACHER', 'Roberto Celeste', 'roberto@example.com', NULL, NULL, NULL, '$2y$12$1Q704YX6Y7W9jLxN0laK1O14iX.71.N3S6IS957dj6R/vbPRE7LSG', NULL, NULL, NULL, NULL, NULL, 'qkCLSa7zxclaC8HHUlGOYJQKAikHQJdmoJqEmDgKFwx9JDFCrL95A7huRmUL', '1747902125_51.jpg', '2025-04-13 19:04:37', '2025-05-22 08:22:05'),
-(52, 'TEACHER', 'Olivia Murphy', 'omurphy@example.com', NULL, NULL, NULL, '$2y$12$wbIGdspOUHMz98rM77GAougK0EJtgWXZFwUfrcQsJB9BokXseeyci', NULL, NULL, NULL, NULL, NULL, 'IpPBbAKLlEwgk1lvqPkF81lbjLS5ibq8JiQ5zMVs11XTwN153OOkjlIexj8n', NULL, '2025-04-13 19:04:37', '2025-05-22 09:24:58'),
-(53, 'STUDENT', 'Zoe Robinson', 'zrobinson@gmail.com', NULL, NULL, NULL, '$2y$12$SqZGly0tHRXO2Ur/2IO7I.gbY5.eesuJ55wChK7JcR56lz23Ms3Ty', 19, NULL, NULL, NULL, NULL, NULL, NULL, '2025-04-13 19:06:34', '2025-04-13 19:06:34'),
-(55, 'ADMIN', 'Sitero Admin', 'adminsitero@gmail.com', NULL, NULL, NULL, '$2y$12$X7yxy4wLR8Ipf0pv8wHA5egM0DR4LVHw87OnZbAEfISLoN3/hVlJO', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-06 15:03:33', '2025-05-06 15:03:33'),
-(57, 'ADMIN', 'Sitero Admin 2', 'siteroadmin2@gmail.com', NULL, NULL, NULL, '$2y$12$q8g8G.q9KaOYr/8FsXnfQ.CIQZRtfFnoV5Jn5ixwzDamOX1P3l2na', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-22 03:14:56', '2025-05-22 03:14:56'),
-(58, 'STUDENT', 'Amir Yman Corpur', 'amiryman@gmail.com', NULL, NULL, NULL, '$2y$12$UvOu1BQI.1cjV34eObKxWeOIpzvRL4aftRtKfgETtldBoVIZW5Gqq', 16, NULL, NULL, NULL, NULL, NULL, '1747903147_58.jpg', '2025-05-22 08:25:21', '2025-05-22 08:39:07'),
-(59, 'STUDENT', 'Trisha Ramos', 'trisharamos@gmail.com', NULL, NULL, NULL, '$2y$12$1nSE9lgALDUcrPqaFRXAb.OJ6sSKt8gzwyeqIPhjH0D8e6gYIsjEa', 13, NULL, NULL, NULL, NULL, NULL, '1747903211_59.jpg', '2025-05-22 08:28:57', '2025-05-22 08:40:11'),
-(60, 'STUDENT', 'Kristine Caasi', 'kristinecaasi@example.com', NULL, NULL, NULL, '$2y$12$ACmqSIzd5YZ1lp4yrir53OJoTcHTbVjiFp8ty2D.PeSMbQ88kjB1q', 29, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-22 08:44:07', '2025-05-22 08:44:07'),
-(61, 'STUDENT', 'Cristina Francisco', 'cristinafrancisco@example.com', NULL, NULL, NULL, '$2y$12$PEslHFVh5pvd/TRvhUJTjeB1mlxZ3hP5XvbpeLohORa7RLc4q5ID6', 12, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-22 08:44:40', '2025-05-22 08:44:40'),
-(62, 'STUDENT', 'Mira Dela Cruz', 'miradelacruz09@gmail.com', NULL, NULL, NULL, '$2y$12$QNhQSRBg.0pwNn2BnEiKeuZlOnnJhZbrCq4xtdAXC4UbYYIS9URDu', 28, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-22 17:50:37', '2025-05-22 17:50:37'),
-(64, 'STUDENT', 'Alex Rivera', 'arivera@example.com', NULL, NULL, NULL, '$2y$12$CMBbei2TmH/wqTj.vOZDAeJRGwNjYjNkdKt/jJqi4ViDDeinpAdc6', 2, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:35', '2025-05-23 02:02:35'),
-(65, 'STUDENT', 'Morgan Lee', 'mlee@example.com', NULL, NULL, NULL, '$2y$12$rFXrVnAxQP5CqxmNOY28AubBOwRYJ7RzNaokMul3my1/iWD.0nk9m', 1, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:35', '2025-05-23 02:02:35'),
-(66, 'STUDENT', 'Samantha Taylor', 'staylor@example.com', NULL, NULL, NULL, '$2y$12$IC6wDNv94Y9ET7d5W8zmBedY.K17eWhdKwhAXfQw68oBNbj0mnEsC', 4, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:35', '2025-05-23 02:02:35'),
-(67, 'STUDENT', 'Ethan Brown', 'ebrown@example.com', NULL, NULL, NULL, '$2y$12$H8ijKaDSOqq3pDBsoEUqs.Hv/eTsQBVRByR6IEB56w5/VJQsfCsS6', 3, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:35', '2025-05-23 02:02:35'),
-(68, 'STUDENT', 'Daniel Park', 'dpark@example.com', NULL, NULL, NULL, '$2y$12$Adzg/91gDpBMLQXvmrKZXeFOGDghruTteWEnrOU3gYXLnMoxfG6fW', 2, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:35', '2025-05-23 02:02:35'),
-(69, 'STUDENT', 'Ryan Martinez', 'rmartinez@example.com', NULL, NULL, NULL, '$2y$12$iWRszygXzbxz7/VIEAKBDOsH9MSruxSe6/IIVqa6ig9eMxp9.7MtG', 1, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:36', '2025-05-23 02:02:36'),
-(70, 'TEACHER', 'Hannah Kim', 'hkim@example.com', NULL, NULL, NULL, '$2y$12$JZhPCBAxf8vmTCrs73LCT.ejiTtOlWSK4twotowK90bGnQgoxhbju', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:36', '2025-05-23 02:02:36'),
-(71, 'TEACHER', 'David Thompson', 'dthompson@example.com', NULL, NULL, NULL, '$2y$12$AEzeON8QZPhNAKE3uYB/3ePtNhMZL3RHS9nixeXfGarZPrCPvl28S', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:36', '2025-05-23 02:02:36'),
-(72, 'TEACHER', 'Olivia Jackson', 'ojackson@example.com', NULL, NULL, NULL, '$2y$12$v88y9WGho/U6vb8hhmBSC.lWT7dSQnY1dQ1WaLDyY8JhCj8m7QShG', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:36', '2025-05-23 02:02:36'),
-(73, 'TEACHER', 'Nathan Singh', 'nsingh@example.com', NULL, NULL, NULL, '$2y$12$IVPeihvqLrSAVu17PJktcuHtpZW6qktATNEUWYoA/X0xdqWgRQHg.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:36', '2025-05-23 02:02:36'),
-(74, 'TEACHER', 'Sophia Williams', 'swilliams@example.com', NULL, NULL, NULL, '$2y$12$vSuJ6WWmMz3kwbz8gUi34OjS/Xjea7ePEHe59ymo0fpckols7n/R2', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:37', '2025-05-23 02:02:37'),
-(75, 'TEACHER', 'Carlos Mendez', 'cmendez@example.com', NULL, NULL, NULL, 'password', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:37', '2025-05-23 02:02:37'),
-(76, 'TEACHER', 'VITS Adviser', 'vits@gmail.com', NULL, NULL, NULL, '$2y$12$OLvWfqLdkrSHL3OzKgyZaeY10JL9jo3IDNUtEWP2VL3laBUxIj2qi', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:04:49', '2025-05-23 02:04:49'),
-(80, 'TEACHER', 'user1', 'user1@gmail.com', 'MALE', 'asdasdasdasd', '09781487615', '$2y$12$8oqLiuEiKqC4Fpik5EpTr.GDBs9X8u0px128VnqCef33eYYF/9k36', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-10 11:25:43', '2025-08-10 11:25:43');
+INSERT INTO `tbl_users` (`user_id`, `role`, `status`, `name`, `email`, `sex`, `address`, `contact_no`, `password`, `section_id`, `mother_name`, `mother_contact_no`, `father_name`, `father_contact_no`, `remember_token`, `profile_picture`, `created_at`, `updated_at`) VALUES
+(1, 'ADMIN', 'ACTIVE', 'Admin User', 'admin@gmail.com', NULL, NULL, NULL, '$2y$12$1buyJYGqbYQCS5tC7GcYuuYH7LkTNYUT4lMjamgYpND5X9DGnlvRu', NULL, NULL, NULL, NULL, NULL, 'CaKBGJMZ3laj0dRQcHWiUM31QRpZE8YvDynAUQIIcFov3nQkZhqwj4WjmcMr', '1747933871_1.png', '2025-03-29 12:55:49', '2025-05-22 17:11:34'),
+(2, 'TEACHER', 'ACTIVE', 'Jezelle Dalwampu', 'jezelle@gmail.com', NULL, NULL, NULL, '$2y$12$9k9xjICVBCUhXf1d8T77vOXzdkwxIwio5TsJpZmgk5Gg2v9V/J3RK', NULL, NULL, NULL, NULL, NULL, 'nnZ7CzEqvkCHot99bcTVOCxRps565b2oWWv56RXoWg5ryV5ZiPCDySlnxm5H', NULL, '2025-03-29 12:55:49', '2025-05-22 08:10:35'),
+(4, 'TEACHER', 'ACTIVE', 'Melody S. Delos Santos', 'melody@gmail.com', NULL, NULL, NULL, '$2y$12$HwqGpYmNzUEuS4L3Eunng.dkYpLGvZ8kIZd0gilYQQ3xO.4PU5JeC', NULL, NULL, NULL, NULL, NULL, 'dESfNSM2wOR6mbj3iNczKDGFrPlcVxeOuTYKVY2DKUIclJ9ZTZecCpIofMOm', '1743958684_4.jpg', '2025-03-29 15:00:43', '2025-05-22 18:06:14'),
+(6, 'STUDENT', 'ACTIVE', 'Jovince Salic', 'jovincepro@gmail.com', NULL, NULL, NULL, '$2y$12$cof1lJsh.xWn5iXkEUSSP.7GsiMTXhQGLT9SP4D8Ar9XBEWzY5xkS', 1, NULL, NULL, NULL, NULL, NULL, '1754824448_6.jpg', '2025-03-29 17:15:01', '2025-08-12 21:28:50'),
+(8, 'STUDENT', 'ACTIVE', 'Jean Ann Abay', 'jeannnsss@gmail.com', 'FEMALE', 'taga ugong sa bonbon po', '0912 123 1234', '$2y$12$CVrnFmtj0TgU.SYNnAARg.enYTwmfsJnTeV7VLAUh3oaI.O1WuEnW', 18, 'mama niya', '0987654321', 'papa niya', '0987654321', NULL, NULL, '2025-03-29 17:28:32', '2025-08-10 14:39:11'),
+(9, 'STUDENT', 'ACTIVE', 'Jasper James Vinluan', 'blazyjasper@gmail.com', NULL, NULL, NULL, '$2y$12$1ZHg5Wz2a0DoKGihVjQmb.GdJUhZeU3TNqvJJZNhihkErhkQoY5ki', 16, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-29 17:28:51', '2025-05-22 10:15:31'),
+(10, 'STUDENT', 'ACTIVE', 'Rain Esteban', 'rain@gmail.com', NULL, NULL, NULL, '$2y$12$8sP2XFqyu0n6FqKHcxjHs.O7Y5XeAinehX8ll5hMhOowLbXLszJhm', 18, NULL, NULL, NULL, NULL, 'EIzVyYCXMXecnQnBQYjks7GrJuX34e5uuG8yihXd7ALqjLXcbMU26zvveisg', NULL, '2025-03-29 17:29:20', '2025-05-22 10:15:42'),
+(12, 'TEACHER', 'ACTIVE', 'Harold Leobrera', 'haroldleobrera@gmail.com', NULL, NULL, NULL, '$2y$12$SIioCA7kAHJzjB2pOr0Frex5Ygphw03Fyolf2d/pPch3L8YK5wZb2', NULL, NULL, NULL, NULL, NULL, NULL, '1744399825_12.jpg', '2025-03-30 01:13:33', '2025-04-11 19:30:25'),
+(14, 'ADMIN', 'ACTIVE', 'Peter Griffin', 'peter@gmail.com', NULL, NULL, NULL, '$2y$12$eKZ09oJHdOa98Lpvmu4g2e0.n2LNHEhm2sOphz45aba.VJNeQWLWW', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-30 08:09:58', '2025-03-30 08:09:58'),
+(15, 'TEACHER', 'ACTIVE', 'SaMaFil Adviser', 'siterosamafil@gmail.com', NULL, NULL, NULL, '$2y$12$HJab9DnAD1hk5sCilvtf1.GgBjcJqfvyoxu13xHlLVb4VV3MrkDmq', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-30 09:03:56', '2025-03-30 09:03:56'),
+(16, 'TEACHER', 'ACTIVE', 'Nico Diwa Bundoc Ocampo', 'nicodiwa.ocampo@deped.gov.ph', NULL, NULL, NULL, '$2y$12$hXfwOrC3FGi2gHay/6An..7Ot9n1byd8.clSlolIK2oPe.vKkMa2u', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-30 09:06:13', '2025-03-30 09:06:13'),
+(17, 'TEACHER', 'ACTIVE', 'Ang Antipara Adviser', 'angantipara@gmail.com', NULL, NULL, NULL, '$2y$12$EAS5YcQyZbIifG.3OvP6W.nm4F9qr.F6MuWyCqGXUkX0bINH2sUAu', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-30 09:09:30', '2025-03-30 09:09:30'),
+(18, 'TEACHER', 'ACTIVE', 'Angelica Gamal', 'sitero.boyscout@gmail.com', NULL, NULL, NULL, '$2y$12$yHpXD.7HHSNu5GSrNET5decnvJBFOrPhCee2XocR4CsgyyfPGn0tu', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-30 09:15:44', '2025-03-30 09:15:44'),
+(19, 'TEACHER', 'ACTIVE', 'John-John B. Galicia', 'siteroyouthintegrityfighters@gmail.com', NULL, NULL, NULL, '$2y$12$Up7p2RIdF6RYwpMyudg04O.f.efweEqfc9iSfxp3aGJIx8G7gt4HG', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-30 09:21:19', '2025-03-30 09:21:19'),
+(21, 'STUDENT', 'ACTIVE', 'Mariajasmin Porta', 'jasmin@gmail.com', NULL, NULL, NULL, '$2y$12$iKa6BQsPddOavmy5U6Q5fuC6wLqViB10w2hB.tZQvfMHBq9S0e1qC', 7, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-30 18:29:09', '2025-03-30 18:29:09'),
+(22, 'STUDENT', 'ACTIVE', 'Krayssanta F. Lapuz', 'sslglapuz@gmail.com', NULL, NULL, NULL, '$2y$12$t3NH0rMDE6qeKJxiTnQXsOeN93X4vT4q4ewTTIdu9gBq7v5Hi6o7S', 10, NULL, NULL, NULL, NULL, NULL, '1743959456_22.jpg', '2025-03-30 18:30:28', '2025-04-06 17:10:56'),
+(23, 'STUDENT', 'ACTIVE', 'Darlyn M. Abucion', 'darlyn@gmail.com', NULL, NULL, NULL, '$2y$12$5Uj/PiCsRY6R4VPw6Prd6u3h/BqHVFwAM197ySL3ixeMhgjp1cFkC', 12, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-30 19:04:07', '2025-03-30 19:04:07'),
+(24, 'STUDENT', 'ACTIVE', 'Alliyah Jade Bracero', 'braceroalliyahjade@gmail.com', NULL, NULL, NULL, '$2y$12$yB2vJySYUMMH.Fur19SMl.4T8BF9x35dXPZuwhCRNNcypD1fKAu56', 22, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-31 02:28:49', '2025-03-31 02:28:49'),
+(34, 'STUDENT', 'ACTIVE', 'First SSLG Member Test', 'sslg1test@gmail.com', NULL, NULL, NULL, '$2y$12$L234EVnR0egoRe9Dc040XO6cb5iIA4lyYwjYGuspxvzt3lURsxuXe', 26, NULL, NULL, NULL, NULL, 'hWsgcM85rjEJKHRHP1nX2GtksAOT8B17CemiajJU96khyumTdAJYLOrXx6dt', NULL, '2025-04-05 05:27:48', '2025-04-05 05:27:48'),
+(35, 'STUDENT', 'ACTIVE', 'Second SSLG Member', 'sslg2test@gmail.com', NULL, NULL, NULL, '$2y$12$O/Oan7E87PSGP6SB8JfMm.tUx9Gha1mFGLVN/.g7V66Cxz8VchKme', 28, NULL, NULL, NULL, NULL, NULL, NULL, '2025-04-05 15:15:08', '2025-04-05 15:15:08'),
+(36, 'ADMIN', 'ACTIVE', 'Daron Mangaoang', 'mangaoang.daron27@gmail.com', NULL, NULL, NULL, '$2y$12$l.aN9vvFx.zBtxMctk7W0u6b9jVWmT6wZjf/r/Vu84nqlujFMuaSu', NULL, NULL, NULL, NULL, NULL, 'EpjxTzSgUudrjgnwruPMtUEZNw7NeqAjZowe5sd3pIZx0BP8PlnskDa2p3y6', NULL, '2025-04-07 00:34:41', '2025-05-22 07:02:24'),
+(37, 'STUDENT', 'ACTIVE', 'Kristine Kyle M. Penaso', 'sslgkristine@gmail.com', NULL, NULL, NULL, '$2y$12$UFINVRoYqEEvbJx4bw.Ow.Mdngs1RPGg4prtrvz1eDTXnTMlTN3da', 5, NULL, NULL, NULL, NULL, NULL, NULL, '2025-04-07 06:48:02', '2025-04-07 06:48:02'),
+(43, 'STUDENT', 'ACTIVE', 'Ryan Trayhan', 'ryantrayhan@gmail.com', NULL, NULL, NULL, '$2y$12$rc3RwWmViUjvYuPw5.PBHuoIYekRdtZCOcNCwt26EBAPpUdLX6zcu', 2, NULL, NULL, NULL, NULL, NULL, NULL, '2025-04-13 18:34:08', '2025-04-13 18:34:08'),
+(44, 'TEACHER', 'ACTIVE', 'Joshua Martin', 'joshuamartin@example.com', NULL, NULL, NULL, '$2y$12$wyBJ48lkz7dtmuiyP.pDX.pVeaL6z..4ycPe5gxD8E87FTyOtqxn.', NULL, NULL, NULL, NULL, NULL, 'u0PMX6sXoww93026FhF7AoAlnjjeHodyAezScJr77llA5gpr8IcBWHCBuTpR', NULL, '2025-04-13 18:34:08', '2025-05-22 08:53:07'),
+(45, 'STUDENT', 'ACTIVE', 'Jasmine Patel', 'jpatel@example.com', NULL, NULL, NULL, '$2y$12$wPDmbpLffAKgpiW5l3B62.qgc3qLG8Zs4/4b8kHJ1nDBUFovv2S86', 22, NULL, NULL, NULL, NULL, NULL, NULL, '2025-04-13 19:04:36', '2025-04-13 19:04:36'),
+(46, 'STUDENT', 'ACTIVE', 'Tyler Johnson', 'tjohnson@example.com', NULL, NULL, NULL, '$2y$12$cqCgfORy7VtItn3VPoGQPedTGh4ZMtIPpqbW7eQbAAa.J.miyDcB2', 20, NULL, NULL, NULL, NULL, NULL, NULL, '2025-04-13 19:04:36', '2025-04-13 19:04:36'),
+(47, 'STUDENT', 'ACTIVE', 'Madison Clark', 'mclark@example.com', NULL, NULL, NULL, '$2y$12$hxTa30Zt40WguWwJtahsKuxZry0Ag/6QKJP2aFfQ8wg9p34aY7duS', 12, NULL, NULL, NULL, NULL, NULL, NULL, '2025-04-13 19:04:36', '2025-04-13 19:04:36'),
+(48, 'TEACHER', 'ACTIVE', 'Rebecca Wilson', 'rwilson@example.com', NULL, NULL, NULL, '$2y$12$NM4CO5mcafcrYptzR5BRXOPpE2BhjEGsYlbmwRLF.ig03NMUurXo.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-04-13 19:04:36', '2025-04-13 19:04:36'),
+(49, 'TEACHER', 'ACTIVE', 'Marcus Davis', 'mdavis@example.com', NULL, NULL, NULL, '$2y$12$aVgziziRFEmJglyF0rm.r.28b48VoHhk5N0gs566U03ahmejgoqfO', NULL, NULL, NULL, NULL, NULL, 'yEi24q0Kn7xpCWXdHFWNqVuXrAtu7u5SQ9SqCSRiQuW63SsNKtysd7rEdsGI', NULL, '2025-04-13 19:04:37', '2025-05-22 09:08:42'),
+(50, 'TEACHER', 'ACTIVE', 'Emma Rodriguez', 'erodriguez@example.com', NULL, NULL, NULL, '$2y$12$XXm1u7Zz5ArnY0PhJ59h9.aka3uQsnuZYKH5Kjn2ko7qLnv7qgUrO', NULL, NULL, NULL, NULL, NULL, 'qHO3gDi4DOM7OYrDQhkhfyrs5YCUo6K226JqaqpZ5HLaUyhhKwfPOn3uOsKm', NULL, '2025-04-13 19:04:37', '2025-05-22 09:38:59'),
+(51, 'TEACHER', 'ACTIVE', 'Roberto Celeste', 'roberto@example.com', NULL, NULL, NULL, '$2y$12$1Q704YX6Y7W9jLxN0laK1O14iX.71.N3S6IS957dj6R/vbPRE7LSG', NULL, NULL, NULL, NULL, NULL, 'qkCLSa7zxclaC8HHUlGOYJQKAikHQJdmoJqEmDgKFwx9JDFCrL95A7huRmUL', '1747902125_51.jpg', '2025-04-13 19:04:37', '2025-05-22 08:22:05'),
+(52, 'TEACHER', 'ACTIVE', 'Olivia Murphy', 'omurphy@example.com', NULL, NULL, NULL, '$2y$12$wbIGdspOUHMz98rM77GAougK0EJtgWXZFwUfrcQsJB9BokXseeyci', NULL, NULL, NULL, NULL, NULL, 'IpPBbAKLlEwgk1lvqPkF81lbjLS5ibq8JiQ5zMVs11XTwN153OOkjlIexj8n', NULL, '2025-04-13 19:04:37', '2025-05-22 09:24:58'),
+(53, 'STUDENT', 'ACTIVE', 'Zoe Robinson', 'zrobinson@gmail.com', NULL, NULL, NULL, '$2y$12$SqZGly0tHRXO2Ur/2IO7I.gbY5.eesuJ55wChK7JcR56lz23Ms3Ty', 19, NULL, NULL, NULL, NULL, NULL, NULL, '2025-04-13 19:06:34', '2025-04-13 19:06:34'),
+(55, 'ADMIN', 'ACTIVE', 'Sitero Admin', 'adminsitero@gmail.com', NULL, NULL, NULL, '$2y$12$X7yxy4wLR8Ipf0pv8wHA5egM0DR4LVHw87OnZbAEfISLoN3/hVlJO', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-06 15:03:33', '2025-05-06 15:03:33'),
+(57, 'ADMIN', 'ACTIVE', 'Sitero Admin 2', 'siteroadmin2@gmail.com', NULL, NULL, NULL, '$2y$12$q8g8G.q9KaOYr/8FsXnfQ.CIQZRtfFnoV5Jn5ixwzDamOX1P3l2na', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-22 03:14:56', '2025-05-22 03:14:56'),
+(58, 'STUDENT', 'ACTIVE', 'Amir Yman Corpur', 'amiryman@gmail.com', NULL, NULL, NULL, '$2y$12$UvOu1BQI.1cjV34eObKxWeOIpzvRL4aftRtKfgETtldBoVIZW5Gqq', 16, NULL, NULL, NULL, NULL, NULL, '1747903147_58.jpg', '2025-05-22 08:25:21', '2025-05-22 08:39:07'),
+(59, 'STUDENT', 'ACTIVE', 'Trisha Ramos', 'trisharamos@gmail.com', NULL, NULL, NULL, '$2y$12$1nSE9lgALDUcrPqaFRXAb.OJ6sSKt8gzwyeqIPhjH0D8e6gYIsjEa', 13, NULL, NULL, NULL, NULL, NULL, '1747903211_59.jpg', '2025-05-22 08:28:57', '2025-05-22 08:40:11'),
+(60, 'STUDENT', 'ACTIVE', 'Kristine Caasi', 'kristinecaasi@example.com', NULL, NULL, NULL, '$2y$12$ACmqSIzd5YZ1lp4yrir53OJoTcHTbVjiFp8ty2D.PeSMbQ88kjB1q', 29, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-22 08:44:07', '2025-05-22 08:44:07'),
+(61, 'STUDENT', 'ACTIVE', 'Cristina Francisco', 'cristinafrancisco@example.com', NULL, NULL, NULL, '$2y$12$PEslHFVh5pvd/TRvhUJTjeB1mlxZ3hP5XvbpeLohORa7RLc4q5ID6', 12, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-22 08:44:40', '2025-05-22 08:44:40'),
+(62, 'STUDENT', 'ACTIVE', 'Mira Dela Cruz', 'miradelacruz09@gmail.com', NULL, NULL, NULL, '$2y$12$QNhQSRBg.0pwNn2BnEiKeuZlOnnJhZbrCq4xtdAXC4UbYYIS9URDu', 28, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-22 17:50:37', '2025-05-22 17:50:37'),
+(64, 'STUDENT', 'ACTIVE', 'Alex Rivera', 'arivera@example.com', NULL, NULL, NULL, '$2y$12$CMBbei2TmH/wqTj.vOZDAeJRGwNjYjNkdKt/jJqi4ViDDeinpAdc6', 2, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:35', '2025-05-23 02:02:35'),
+(65, 'STUDENT', 'ACTIVE', 'Morgan Lee', 'mlee@example.com', NULL, NULL, NULL, '$2y$12$rFXrVnAxQP5CqxmNOY28AubBOwRYJ7RzNaokMul3my1/iWD.0nk9m', 1, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:35', '2025-05-23 02:02:35'),
+(66, 'STUDENT', 'ACTIVE', 'Samantha Taylor', 'staylor@example.com', NULL, NULL, NULL, '$2y$12$IC6wDNv94Y9ET7d5W8zmBedY.K17eWhdKwhAXfQw68oBNbj0mnEsC', 4, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:35', '2025-05-23 02:02:35'),
+(67, 'STUDENT', 'ACTIVE', 'Ethan Brown', 'ebrown@example.com', NULL, NULL, NULL, '$2y$12$H8ijKaDSOqq3pDBsoEUqs.Hv/eTsQBVRByR6IEB56w5/VJQsfCsS6', 3, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:35', '2025-05-23 02:02:35'),
+(68, 'STUDENT', 'ACTIVE', 'Daniel Park', 'dpark@example.com', NULL, NULL, NULL, '$2y$12$Adzg/91gDpBMLQXvmrKZXeFOGDghruTteWEnrOU3gYXLnMoxfG6fW', 2, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:35', '2025-05-23 02:02:35'),
+(69, 'STUDENT', 'ACTIVE', 'Ryan Martinez', 'rmartinez@example.com', NULL, NULL, NULL, '$2y$12$iWRszygXzbxz7/VIEAKBDOsH9MSruxSe6/IIVqa6ig9eMxp9.7MtG', 1, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:36', '2025-05-23 02:02:36'),
+(70, 'TEACHER', 'ACTIVE', 'Hannah Kim', 'hkim@example.com', NULL, NULL, NULL, '$2y$12$JZhPCBAxf8vmTCrs73LCT.ejiTtOlWSK4twotowK90bGnQgoxhbju', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:36', '2025-05-23 02:02:36'),
+(71, 'TEACHER', 'ACTIVE', 'David Thompson', 'dthompson@example.com', NULL, NULL, NULL, '$2y$12$AEzeON8QZPhNAKE3uYB/3ePtNhMZL3RHS9nixeXfGarZPrCPvl28S', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:36', '2025-05-23 02:02:36'),
+(72, 'TEACHER', 'ACTIVE', 'Olivia Jackson', 'ojackson@example.com', NULL, NULL, NULL, '$2y$12$v88y9WGho/U6vb8hhmBSC.lWT7dSQnY1dQ1WaLDyY8JhCj8m7QShG', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:36', '2025-05-23 02:02:36'),
+(73, 'TEACHER', 'ACTIVE', 'Nathan Singh', 'nsingh@example.com', NULL, NULL, NULL, '$2y$12$IVPeihvqLrSAVu17PJktcuHtpZW6qktATNEUWYoA/X0xdqWgRQHg.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:36', '2025-05-23 02:02:36'),
+(74, 'TEACHER', 'ACTIVE', 'Sophia Williams', 'swilliams@example.com', NULL, NULL, NULL, '$2y$12$vSuJ6WWmMz3kwbz8gUi34OjS/Xjea7ePEHe59ymo0fpckols7n/R2', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:37', '2025-05-23 02:02:37'),
+(75, 'TEACHER', 'ACTIVE', 'Carlos Mendez', 'cmendez@example.com', NULL, NULL, NULL, 'password', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:02:37', '2025-05-23 02:02:37'),
+(76, 'TEACHER', 'ACTIVE', 'VITS Adviser', 'vits@gmail.com', NULL, NULL, NULL, '$2y$12$OLvWfqLdkrSHL3OzKgyZaeY10JL9jo3IDNUtEWP2VL3laBUxIj2qi', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-23 02:04:49', '2025-05-23 02:04:49'),
+(80, 'TEACHER', 'ACTIVE', 'user1', 'user1@gmail.com', 'MALE', 'asdasdasdasd', '09781487615', '$2y$12$8oqLiuEiKqC4Fpik5EpTr.GDBs9X8u0px128VnqCef33eYYF/9k36', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-10 11:25:43', '2025-08-10 11:25:43');
 
 -- --------------------------------------------------------
 
@@ -567,7 +763,10 @@ INSERT INTO `tbl_votes` (`vote_id`, `election_id`, `voter_id`, `created_at`, `up
 (3, 10, 62, '2025-05-22 21:22:42', '2025-05-22 21:22:42'),
 (4, 10, 22, '2025-05-22 21:23:35', '2025-05-22 21:23:35'),
 (5, 10, 37, '2025-05-22 21:24:03', '2025-05-22 21:24:03'),
-(6, 10, 6, '2025-05-23 02:16:45', '2025-05-23 02:16:45');
+(6, 10, 6, '2025-05-23 02:16:45', '2025-05-23 02:16:45'),
+(14, 11, 1, '2025-08-10 12:19:04', '2025-08-10 12:19:04'),
+(20, 11, 58, '2025-08-10 12:25:49', '2025-08-10 12:25:49'),
+(21, 11, 9, '2025-08-10 12:50:07', '2025-08-10 12:50:07');
 
 -- --------------------------------------------------------
 
@@ -600,11 +799,75 @@ INSERT INTO `tbl_vote_details` (`vote_detail_id`, `vote_id`, `position`, `candid
 (11, 5, 'Vice President', 20, '2025-05-22 21:24:03', '2025-05-22 21:24:03'),
 (12, 6, 'President', 18, '2025-05-23 02:16:45', '2025-05-23 02:16:45'),
 (13, 6, 'Treasurer', 22, '2025-05-23 02:16:45', '2025-05-23 02:16:45'),
-(14, 6, 'Vice President', 20, '2025-05-23 02:16:45', '2025-05-23 02:16:45');
+(14, 6, 'Vice President', 20, '2025-05-23 02:16:45', '2025-05-23 02:16:45'),
+(33, 20, 'President', 25, '2025-08-10 12:25:49', '2025-08-10 12:25:49'),
+(34, 20, 'Testing Text Input POsition', 28, '2025-08-10 12:25:49', '2025-08-10 12:25:49'),
+(35, 21, 'President', 25, '2025-08-10 12:50:08', '2025-08-10 12:50:08'),
+(36, 21, 'Testing Text Input POsition', 27, '2025-08-10 12:50:08', '2025-08-10 12:50:08');
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `cache`
+--
+ALTER TABLE `cache`
+  ADD PRIMARY KEY (`key`);
+
+--
+-- Indexes for table `cache_locks`
+--
+ALTER TABLE `cache_locks`
+  ADD PRIMARY KEY (`key`);
+
+--
+-- Indexes for table `club_questions`
+--
+ALTER TABLE `club_questions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `club_questions_club_id_foreign` (`club_id`);
+
+--
+-- Indexes for table `club_question_answers`
+--
+ALTER TABLE `club_question_answers`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `club_question_answers_club_join_request_id_foreign` (`club_join_request_id`),
+  ADD KEY `club_question_answers_club_question_id_foreign` (`club_question_id`),
+  ADD KEY `club_question_answers_user_id_foreign` (`user_id`);
+
+--
+-- Indexes for table `failed_jobs`
+--
+ALTER TABLE `failed_jobs`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `failed_jobs_uuid_unique` (`uuid`);
+
+--
+-- Indexes for table `jobs`
+--
+ALTER TABLE `jobs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `jobs_queue_index` (`queue`);
+
+--
+-- Indexes for table `job_batches`
+--
+ALTER TABLE `job_batches`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `migrations`
+--
+ALTER TABLE `migrations`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `password_reset_tokens`
+--
+ALTER TABLE `password_reset_tokens`
+  ADD PRIMARY KEY (`email`);
 
 --
 -- Indexes for table `sessions`
@@ -711,17 +974,47 @@ ALTER TABLE `tbl_votes`
 ALTER TABLE `tbl_vote_details`
   ADD PRIMARY KEY (`vote_detail_id`),
   ADD KEY `vote_id` (`vote_id`),
-  ADD KEY `candidate_id` (`candidate_id`);
+  ADD KEY `tbl_vote_details_candidate_id_foreign` (`candidate_id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
 --
 
 --
+-- AUTO_INCREMENT for table `club_questions`
+--
+ALTER TABLE `club_questions`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `club_question_answers`
+--
+ALTER TABLE `club_question_answers`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `failed_jobs`
+--
+ALTER TABLE `failed_jobs`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `jobs`
+--
+ALTER TABLE `jobs`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `migrations`
+--
+ALTER TABLE `migrations`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+
+--
 -- AUTO_INCREMENT for table `tbl_candidates`
 --
 ALTER TABLE `tbl_candidates`
-  MODIFY `candidate_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `candidate_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT for table `tbl_classes`
@@ -739,19 +1032,19 @@ ALTER TABLE `tbl_clubs`
 -- AUTO_INCREMENT for table `tbl_club_join_requests`
 --
 ALTER TABLE `tbl_club_join_requests`
-  MODIFY `request_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `request_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `tbl_club_membership`
 --
 ALTER TABLE `tbl_club_membership`
-  MODIFY `membership_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
+  MODIFY `membership_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
 
 --
 -- AUTO_INCREMENT for table `tbl_elections`
 --
 ALTER TABLE `tbl_elections`
-  MODIFY `election_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `election_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `tbl_events`
@@ -763,13 +1056,13 @@ ALTER TABLE `tbl_events`
 -- AUTO_INCREMENT for table `tbl_posts`
 --
 ALTER TABLE `tbl_posts`
-  MODIFY `post_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
+  MODIFY `post_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT for table `tbl_post_images`
 --
 ALTER TABLE `tbl_post_images`
-  MODIFY `image_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=138;
+  MODIFY `image_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=141;
 
 --
 -- AUTO_INCREMENT for table `tbl_sections`
@@ -787,17 +1080,38 @@ ALTER TABLE `tbl_users`
 -- AUTO_INCREMENT for table `tbl_votes`
 --
 ALTER TABLE `tbl_votes`
-  MODIFY `vote_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `vote_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `tbl_vote_details`
 --
 ALTER TABLE `tbl_vote_details`
-  MODIFY `vote_detail_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `vote_detail_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `club_questions`
+--
+ALTER TABLE `club_questions`
+  ADD CONSTRAINT `club_questions_club_id_foreign` FOREIGN KEY (`club_id`) REFERENCES `tbl_clubs` (`club_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `club_question_answers`
+--
+ALTER TABLE `club_question_answers`
+  ADD CONSTRAINT `club_question_answers_club_join_request_id_foreign` FOREIGN KEY (`club_join_request_id`) REFERENCES `tbl_club_join_requests` (`request_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `club_question_answers_club_question_id_foreign` FOREIGN KEY (`club_question_id`) REFERENCES `club_questions` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `club_question_answers_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `tbl_users` (`user_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `tbl_candidates`
+--
+ALTER TABLE `tbl_candidates`
+  ADD CONSTRAINT `tbl_candidates_election_id_foreign` FOREIGN KEY (`election_id`) REFERENCES `tbl_elections` (`election_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `tbl_candidates_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `tbl_users` (`user_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `tbl_clubs`
@@ -868,8 +1182,8 @@ ALTER TABLE `tbl_votes`
 -- Constraints for table `tbl_vote_details`
 --
 ALTER TABLE `tbl_vote_details`
-  ADD CONSTRAINT `tbl_vote_details_ibfk_1` FOREIGN KEY (`vote_id`) REFERENCES `tbl_votes` (`vote_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `tbl_vote_details_ibfk_2` FOREIGN KEY (`candidate_id`) REFERENCES `tbl_candidates` (`candidate_id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `tbl_vote_details_candidate_id_foreign` FOREIGN KEY (`candidate_id`) REFERENCES `tbl_candidates` (`candidate_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `tbl_vote_details_ibfk_1` FOREIGN KEY (`vote_id`) REFERENCES `tbl_votes` (`vote_id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'ClubHive Dashboard')</title>
-    
+
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('images/school_logo.png') }}">
-    
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -196,6 +196,12 @@
                         <i class="fas fa-calendar-alt w-6 text-center text-lg"></i>
                         <span class="nav-text ml-3 truncate">Events</span>
                     </a>
+
+                    <a href="{{ route('events.my-events') }}"
+                        class="block py-3 px-4 rounded-lg transition duration-200 text-white mb-1 flex items-center {{ request()->routeIs('events.my-events') ? 'bg-blue-600 hover:bg-blue-700' : 'hover:bg-blue-600' }}">
+                        <i class="fas fa-calendar-plus w-6 text-center text-lg"></i>
+                        <span class="nav-text ml-3 truncate">My Events</span>
+                    </a>
                     @if (auth()->user()->role === 'TEACHER') {{-- Clubs Dropdown for TEACHER --}} <div
                             x-data="{
                                 isClubDropdownOpen: false,
@@ -268,6 +274,13 @@
                                 class="block py-3 px-4 rounded-lg transition duration-200 text-white mb-1 flex items-center {{ request()->routeIs('voting.*') ? 'bg-blue-600 hover:bg-blue-700' : 'hover:bg-blue-600' }}">
                                 <i class="fas fa-poll w-6 text-center text-lg"></i>
                                 <span class="nav-text ml-3 truncate">Voting</span>
+                            </a>
+
+                            {{-- Pending Events link for SSLG Adviser --}}
+                            <a href="{{ route('events.pending') }}"
+                                class="block py-3 px-4 rounded-lg transition duration-200 text-white mb-1 flex items-center {{ request()->routeIs('events.pending') || request()->routeIs('events.approval.*') ? 'bg-blue-600 hover:bg-blue-700' : 'hover:bg-blue-600' }}">
+                                <i class="fas fa-calendar-check w-6 text-center text-lg"></i>
+                                <span class="nav-text ml-3 truncate">Event Approvals</span>
                             </a>
                         @endif
                     @else

@@ -6,6 +6,9 @@ use App\Models\Club;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\User;
@@ -458,23 +461,166 @@ class ClubController extends Controller
         ]);
     }
 
-    public function events(Club $club)
+    public function events(Club $club, Request $request)
     {
-        $todayEvents = $club->events()
-            ->whereDate('event_date', today())
-            ->orderBy('event_time')
-            ->get();
-
-        $upcomingEvents = $club->events()
-            ->where('event_date', '>', today())
-            ->orderBy('event_date')
-            ->paginate(10);
-
-        return view('clubs.events.index', [
-            'club' => $club,
-            'todayEvents' => $todayEvents,
-            'upcomingEvents' => $upcomingEvents
+        Log::info('ClubController events called', [
+            'club_id' => $club->club_id ?? null,
+            'user_id' => Auth::id()
         ]);
+
+        // Initialize default values first to ensure they're always available
+        $todayCount = 0;
+        $upcomingCount = 0;
+        $pastCount = 0;
+
+        // Create empty paginated collections using Laravel's paginator
+        $emptyPaginator = new LengthAwarePaginator(
+            [], // items
+            0,  // total
+            9,  // perPage
+            1,  // currentPage
+            ['path' => request()->url(), 'pageName' => 'page']
+        );
+
+        $todayEvents = clone $emptyPaginator;
+        $upcomingEvents = clone $emptyPaginator;
+        $pastEvents = clone $emptyPaginator;
+        $events = clone $emptyPaginator;
+        $eventTypes = collect();
+
+        try {
+            $userId = Auth::id();
+            $isClubMember = $club->members()->where('tbl_club_membership.user_id', $userId)->exists();
+            $isClubAdviser = $club->club_adviser == $userId;
+
+            // Base query for events
+            $baseQuery = $club->events()->where('approval_status', 'approved');
+
+            if (!$isClubMember && !$isClubAdviser) {
+                $baseQuery->where('event_visibility', 'PUBLIC');
+            }
+
+            // Get tab parameter or default to 'today'
+            $tab = $request->get('tab', 'today');
+            $search = $request->get('search');
+            $eventType = $request->get('event_type');
+            $status = $request->get('status');
+
+            // Get current time for filtering
+            $today = now()->startOfDay();
+            $endOfDay = now()->endOfDay();
+
+            Log::info('Count variables initialized', [
+                'todayCount' => $todayCount,
+                'upcomingCount' => $upcomingCount,
+                'pastCount' => $pastCount
+            ]);
+
+            // Get total counts for tab badges (without search/filters applied)
+            try {
+                $todayCount = (clone $baseQuery)->whereBetween('event_date', [$today, $endOfDay])->count();
+                $upcomingCount = (clone $baseQuery)->where('event_date', '>', $endOfDay)->count();
+                $pastCount = (clone $baseQuery)->where('event_date', '<', $today)->count();
+
+                Log::info('Counts calculated', [
+                    'todayCount' => $todayCount,
+                    'upcomingCount' => $upcomingCount,
+                    'pastCount' => $pastCount
+                ]);
+            } catch (\Exception $e) {
+                // Log error and use defaults
+                Log::error('Error calculating event counts: ' . $e->getMessage());
+                $todayCount = 0;
+                $upcomingCount = 0;
+                $pastCount = 0;
+            }
+
+            // Create separate queries for each tab
+            $todayQuery = clone $baseQuery;
+            $todayQuery->whereBetween('event_date', [$today, $endOfDay]);
+
+            $upcomingQuery = clone $baseQuery;
+            $upcomingQuery->where('event_date', '>', $endOfDay);
+
+            $pastQuery = clone $baseQuery;
+            $pastQuery->where('event_date', '<', $today);
+
+            // Apply search and filters to all queries
+            $queries = [$todayQuery, $upcomingQuery, $pastQuery];
+            foreach ($queries as $query) {
+                if ($search) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('event_name', 'LIKE', "%{$search}%")
+                            ->orWhere('event_description', 'LIKE', "%{$search}%")
+                            ->orWhere('event_location', 'LIKE', "%{$search}%");
+                    });
+                }
+
+                if ($status) {
+                    $query->where('approval_status', $status);
+                }
+            }
+
+            // Get paginated results for each tab
+            $todayEvents = $todayQuery->orderBy('event_date', 'asc')->paginate(9, ['*'], 'today_page');
+            $upcomingEvents = $upcomingQuery->orderBy('event_date', 'asc')->paginate(9, ['*'], 'upcoming_page');
+            $pastEvents = $pastQuery->orderBy('event_date', 'desc')->paginate(9, ['*'], 'past_page');
+
+            // Get the main events collection based on current tab
+            switch ($tab) {
+                case 'upcoming':
+                    $events = $upcomingEvents;
+                    break;
+                case 'past':
+                    $events = $pastEvents;
+                    break;
+                default:
+                    $events = $todayEvents;
+                    break;
+            }
+
+            // Get event types for filter - empty for now since event_type column doesn't exist
+            $eventTypes = collect();
+
+            // Final log before returning view
+            Log::info('About to return view with variables', [
+                'todayCount' => $todayCount,
+                'upcomingCount' => $upcomingCount,
+                'pastCount' => $pastCount
+            ]);
+        } catch (\Exception $e) {
+            Log::error('ClubController events error: ' . $e->getMessage(), [
+                'club_id' => $club->club_id ?? null,
+                'user_id' => Auth::id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // Use defaults that were already initialized
+            $tab = 'today';
+            $search = null;
+            $eventType = null;
+            $status = null;
+            $isClubMember = false;
+            $isClubAdviser = false;
+        }
+
+        return view('clubs.events.index', compact(
+            'club',
+            'events',
+            'isClubMember',
+            'isClubAdviser',
+            'tab',
+            'search',
+            'eventType',
+            'status',
+            'todayEvents',
+            'upcomingEvents',
+            'pastEvents',
+            'todayCount',
+            'upcomingCount',
+            'pastCount',
+            'eventTypes'
+        ));
     }
 
     public function people(Club $club, Request $request)

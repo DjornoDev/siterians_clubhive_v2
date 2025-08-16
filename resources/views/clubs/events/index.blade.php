@@ -1,43 +1,65 @@
 @section('title', $club->club_name . ' - Events')
 @extends('clubs.layouts.navigation')
 
-@section('club_content') <div tabindex="-1" x-data="{
-    lastChecksum: '{{ md5(json_encode($todayEvents->pluck('event_id')->merge($todayEvents->pluck('updated_at'))->merge($upcomingEvents->pluck('event_id'))->merge($upcomingEvents->pluck('updated_at')))) }}',
-    modalOpen: false,
-    checkForEventChanges() {
-        // Skip refresh check if a modal is open
-        if (this.modalOpen) return;
-
-        // Check if any event modals are visible
-        const createModalOpen = document.getElementById('create-event-modal') &&
-            !document.getElementById('create-event-modal').classList.contains('hidden');
-        const editModalOpen = document.getElementById('edit-event-modal') &&
-            !document.getElementById('edit-event-modal').classList.contains('hidden');
-        const deleteModalOpen = document.getElementById('delete-event-modal') &&
-            !document.getElementById('delete-event-modal').classList.contains('hidden');
-
-        if (createModalOpen || editModalOpen || deleteModalOpen) return;
-
-        fetch('{{ route('clubs.check-event-changes', $club) }}?checksum=' + this.lastChecksum)
-            .then(response => response.json())
-            .then(data => {
-                if (data.hasChanges) {
-                    window.location.reload();
-                }
+@section('club_content')
+    <div tabindex="-1" x-data="{
+        activeTab: '{{ request()->get('tab', 'today') }}',
+        showCreateModal: false,
+        showEditModal: false,
+        showDeleteModal: false,
+        editingEvent: {},
+        deletingEvent: {},
+        init() {
+            // Update URL when tab changes
+            this.$watch('activeTab', (value) => {
+                const url = new URL(window.location);
+                url.searchParams.set('tab', value);
+                window.history.pushState({}, '', url);
             });
-    },
-    init() {
-        // Check for event changes every 10 seconds
-        setInterval(() => this.checkForEventChanges(), 10000);
-    }
-}" class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    
+            // Listen for modal events
+            window.addEventListener('open-create-modal', () => {
+                this.openCreateModal();
+            });
+        },
+        openCreateModal() {
+            this.showCreateModal = true;
+            this.$nextTick(() => {
+                this.$refs.createForm?.querySelector('input[type=text]')?.focus();
+            });
+        },
+        openEditModal(eventData) {
+            this.editingEvent = eventData;
+            this.showEditModal = true;
+            this.$nextTick(() => {
+                this.$refs.editForm?.querySelector('input[type=text]')?.focus();
+            });
+        },
+        openDeleteModal(eventData) {
+            this.deletingEvent = eventData;
+            this.showDeleteModal = true;
+        },
+        closeAllModals() {
+            this.showCreateModal = false;
+            this.showEditModal = false;
+            this.showDeleteModal = false;
+            this.editingEvent = {};
+            this.deletingEvent = {};
+        }
+    }" class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
 
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Club Events</h1>
+
+        {{-- Header Section --}}
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Club Events</h1>
+                <p class="text-gray-600 mt-2">Manage and view all {{ $club->club_name }} events</p>
+            </div>
+
             @can('create', [App\Models\Event::class, $club])
-                <button type="button" onclick="openCreateModal()"
-                    class="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors duration-200 
-                           flex items-center gap-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                <button type="button" @click="openCreateModal()"
+                    class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200
+                       flex items-center gap-3 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd"
                             d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
@@ -48,224 +70,464 @@
             @endcan
         </div>
 
+        {{-- Success/Error Messages --}}
+        @if (session('success'))
+            <div class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
+                    </div>
+                    <div class="ml-auto pl-3">
+                        <button type="button" onclick="this.parentElement.parentElement.parentElement.style.display='none'"
+                            class="inline-flex bg-green-50 rounded-md p-1.5 text-green-400 hover:bg-green-100">
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-red-800">{{ session('error') }}</p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        {{-- Tab Navigation --}}
+        <div class="border-b border-gray-200 mb-8">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <button type="button" @click="activeTab = 'today'"
+                    :class="activeTab === 'today' ? 'border-blue-500 text-blue-600' :
+                        'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                    class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors">
+                    Today's Events
+                    <span :class="activeTab === 'today' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-900'"
+                        class="ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium">
+                        {{ $todayCount }}
+                    </span>
+                </button>
+
+                <button type="button" @click="activeTab = 'upcoming'"
+                    :class="activeTab === 'upcoming' ? 'border-blue-500 text-blue-600' :
+                        'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                    class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors">
+                    Upcoming Events
+                    <span :class="activeTab === 'upcoming' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-900'"
+                        class="ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium">
+                        {{ $upcomingCount }}
+                    </span>
+                </button>
+
+                <button type="button" @click="activeTab = 'past'"
+                    :class="activeTab === 'past' ? 'border-blue-500 text-blue-600' :
+                        'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                    class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors">
+                    Past Events
+                    <span :class="activeTab === 'past' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-900'"
+                        class="ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium">
+                        {{ $pastCount }}
+                    </span>
+                </button>
+            </nav>
+        </div>
+
+        {{-- Filters and Search --}}
+        <div class="mb-6 bg-white rounded-lg border border-gray-200 p-4">
+            <div class="flex flex-col sm:flex-row gap-4">
+                <div class="flex-1">
+                    <input type="text" id="search-events" placeholder="Search events..."
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="flex gap-3">
+                    <select id="filter-visibility"
+                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">All Visibility</option>
+                        <option value="PUBLIC">Public</option>
+                        <option value="CLUB_ONLY">Club Only</option>
+                    </select>
+                    <select id="filter-status"
+                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">All Status</option>
+                        <option value="approved">Approved</option>
+                        <option value="pending">Pending</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                    <button type="button" onclick="clearFilters()"
+                        class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        Clear
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {{-- Events Content --}}
+        <div class="space-y-8">
+            {{-- Today's Events --}}
+            <div x-show="activeTab === 'today'" x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 transform translate-y-4"
+                x-transition:enter-end="opacity-100 transform translate-y-0">
+                @if ($todayEvents->count() > 0)
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="events-container-today">
+                        @foreach ($todayEvents as $event)
+                            <div class="event-card bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200"
+                                data-name="{{ strtolower($event->event_name) }}"
+                                data-visibility="{{ $event->event_visibility }}"
+                                data-status="{{ $event->approval_status }}">
+                                @include('clubs.events.partials.event-card-content', ['event' => $event])
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <div class="mt-6">
+                        {{ $todayEvents->appends(request()->query())->links() }}
+                    </div>
+                @else
+                    <div class="text-center py-12 bg-gray-50 rounded-lg">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">No events today</h3>
+                        <p class="mt-1 text-sm text-gray-500">Check back tomorrow or view upcoming events.</p>
+                    </div>
+                @endif
+            </div>
+
+            {{-- Upcoming Events --}}
+            <div x-show="activeTab === 'upcoming'" x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 transform translate-y-4"
+                x-transition:enter-end="opacity-100 transform translate-y-0">
+                @if ($upcomingEvents->count() > 0)
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="events-container-upcoming">
+                        @foreach ($upcomingEvents as $event)
+                            <div class="event-card bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200"
+                                data-name="{{ strtolower($event->event_name) }}"
+                                data-visibility="{{ $event->event_visibility }}"
+                                data-status="{{ $event->approval_status }}">
+                                @include('clubs.events.partials.event-card-content', ['event' => $event])
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <div class="mt-6">
+                        {{ $upcomingEvents->appends(request()->query())->links() }}
+                    </div>
+                @else
+                    <div class="text-center py-12 bg-gray-50 rounded-lg">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">No upcoming events</h3>
+                        <p class="mt-1 text-sm text-gray-500">Create an event to get started.</p>
+                    </div>
+                @endif
+            </div>
+
+            {{-- Past Events --}}
+            <div x-show="activeTab === 'past'" x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 transform translate-y-4"
+                x-transition:enter-end="opacity-100 transform translate-y-0">
+                @if ($pastEvents->count() > 0)
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="events-container-past">
+                        @foreach ($pastEvents as $event)
+                            <div class="event-card bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200 opacity-75"
+                                data-name="{{ strtolower($event->event_name) }}"
+                                data-visibility="{{ $event->event_visibility }}"
+                                data-status="{{ $event->approval_status }}">
+                                @include('clubs.events.partials.event-card-content', ['event' => $event])
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <div class="mt-6">
+                        {{ $pastEvents->appends(request()->query())->links() }}
+                    </div>
+                @else
+                    <div class="text-center py-12 bg-gray-50 rounded-lg">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">No past events</h3>
+                        <p class="mt-1 text-sm text-gray-500">Past events will appear here after they're completed.</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        {{-- Modals --}}
         @include('clubs.events.partials.create-event-modal')
         @include('clubs.events.partials.edit-event-modal')
         @include('clubs.events.partials.delete-event-modal')
 
-        @if ($todayEvents->isEmpty() && $upcomingEvents->isEmpty())
-            @can('create', [App\Models\Event::class, $club])
-                <div class="bg-white rounded-xl shadow-md p-8 text-center border border-dashed border-gray-300">
-                    <div class="flex flex-col items-center justify-center gap-4">
-                        <div class="bg-gray-100 text-gray-500 p-4 rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-medium text-gray-900 mb-1">No events yet</h3>
-                            <p class="text-gray-500 mb-4">Create your first event for this club!</p>
-                            <button type="button" onclick="openCreateModal()"
-                                class="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors duration-200 
-                                      shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                                Create an Event
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            @endcan
-        @else
-            {{-- Today's Events Section --}}
-            @if ($todayEvents->isNotEmpty())
-                <div class="mb-12">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-200 pb-2">Today's Events</h2>
-                    <div class="grid gap-6">
-                        @foreach ($todayEvents as $event)
-                            <div
-                                class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden border border-gray-100">
-                                <div class="p-6">
-                                    <div class="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
-                                        {{-- Event Content --}}
-                                        @include('clubs.events.partials.event-card-content', [
-                                            'event' => $event,
-                                        ])
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
-
-            {{-- Upcoming Events Section --}}
-            @if ($upcomingEvents->isNotEmpty())
-                <div class="mb-12">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-200 pb-2">Upcoming Events</h2>
-                    <div class="grid gap-6">
-                        @foreach ($upcomingEvents as $event)
-                            <div
-                                class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden border border-gray-100">
-                                <div class="p-6">
-                                    <div class="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
-                                        {{-- Event Content --}}
-                                        @include('clubs.events.partials.event-card-content', [
-                                            'event' => $event,
-                                        ])
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                    <div class="mt-6">
-                        {{ $upcomingEvents->links() }}
-                    </div>
-                </div>
-            @endif
-        @endif
-
-        <!-- JavaScript for modals -->
+        {{-- JavaScript --}}
         <script>
-            function openCreateModal() {
-                const modal = document.getElementById('create-event-modal');
-                modal.classList.remove('hidden');
-                modal.setAttribute('aria-hidden', 'false');
+            // Auto-show create modal if there are validation errors
+            @if ($errors->any())
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Use Alpine.js to open the modal
+                    window.dispatchEvent(new CustomEvent('open-create-modal'));
+                });
+            @endif
 
-                // Set minimum date to today
-                const dateInput = modal.querySelector('#event_date');
-                const today = new Date().toISOString().split('T')[0];
-                dateInput.min = today;
+            // Search and filter functionality
+            function filterEvents() {
+                const searchTerm = document.getElementById('search-events').value.toLowerCase();
+                const visibilityFilter = document.getElementById('filter-visibility').value;
+                const statusFilter = document.getElementById('filter-status').value;
 
-                // Try to set modalOpen to true in Alpine.js data (as backup)
-                try {
-                    const eventsContainer = document.querySelector('[x-data]');
-                    if (eventsContainer && window.Alpine) {
-                        window.Alpine.evaluate(eventsContainer, 'modalOpen = true');
-                    }
-                } catch (e) {
-                    console.log('Could not set Alpine modalOpen state, using fallback');
+                // Get all event containers
+                const containers = ['today', 'upcoming', 'past'];
+
+                containers.forEach(container => {
+                    const events = document.querySelectorAll(`#events-container-${container} .event-card`);
+
+                    events.forEach(event => {
+                        const name = event.getAttribute('data-name');
+                        const visibility = event.getAttribute('data-visibility');
+                        const status = event.getAttribute('data-status');
+
+                        const matchesSearch = !searchTerm || name.includes(searchTerm);
+                        const matchesVisibility = !visibilityFilter || visibility === visibilityFilter;
+                        const matchesStatus = !statusFilter || status === statusFilter;
+
+                        if (matchesSearch && matchesVisibility && matchesStatus) {
+                            event.style.display = 'block';
+                        } else {
+                            event.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            function clearFilters() {
+                document.getElementById('search-events').value = '';
+                document.getElementById('filter-visibility').value = '';
+                document.getElementById('filter-status').value = '';
+                filterEvents();
+            }
+
+            // Add event listeners for real-time filtering
+            document.getElementById('search-events').addEventListener('input', filterEvents);
+            document.getElementById('filter-visibility').addEventListener('change', filterEvents);
+            document.getElementById('filter-status').addEventListener('change', filterEvents);
+
+            // Form submission handler
+            function handleFormSubmit(event) {
+                console.log('Form submission started');
+
+                const form = event.target;
+                const formData = new FormData(form);
+
+                // Validate required fields
+                const eventName = form.querySelector('#event_name').value.trim();
+                const eventDate = form.querySelector('#event_date').value;
+                const eventVisibility = form.querySelector('#event_visibility').value;
+
+                if (!eventName || !eventDate || !eventVisibility) {
+                    alert('Please fill in all required fields.');
+                    return false;
                 }
 
-                // Focus on first input when modal opens
+                // Check file validation
+                const fileInput = form.querySelector('#supporting_documents');
+                if (fileInput && fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    console.log(`File selected: ${file.name} (${file.size} bytes)`);
+
+                    if (file.size > 10485760) {
+                        alert('File is too large. Maximum size is 10MB.');
+                        return false;
+                    }
+
+                    if (!confirm(
+                            `Are you sure you want to upload "${file.name}" (${(file.size / 1024 / 1024).toFixed(2)} MB)?`)) {
+                        return false;
+                    }
+                }
+
+                // Show loading state
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Creating Event...
+            `;
+
+                // Reset button after timeout
                 setTimeout(() => {
-                    modal.querySelector('input[type="text"]').focus();
-                }, 100);
+                    if (submitBtn.disabled) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                    }
+                }, 30000);
 
-                // Prevent body scroll
-                document.body.style.overflow = 'hidden';
+                return true;
             }
 
-            function openEditModal(button) {
-                const modal = document.getElementById('edit-event-modal');
-                const eventId = button.dataset.eventId;
+            // File validation functions
+            function validateFile(input) {
+                const file = input.files[0];
+                const errorDiv = document.getElementById('file-error');
+                const successDiv = document.getElementById('file-success');
+                const errorMessage = document.getElementById('file-error-message');
+                const successMessage = document.getElementById('file-success-message');
+                const submitBtn = document.querySelector('button[type="submit"]');
 
-                // Set form action
-                const form = modal.querySelector('form');
-                form.action = `/clubs/{{ $club->club_id }}/events/${eventId}`;
+                errorDiv.classList.add('hidden');
+                successDiv.classList.add('hidden');
 
-                // Populate fields
-                modal.querySelector('#event_id').value = eventId;
-                modal.querySelector('#event_name').value = button.dataset.eventName;
-                modal.querySelector('#event_description').value = button.dataset.eventDescription;
-
-                // Set minimum date to today
-                const dateInput = modal.querySelector('#event_date');
-                const today = new Date().toISOString().split('T')[0];
-                dateInput.min = today;
-                dateInput.value = button.dataset.eventDate;
-
-                modal.querySelector('#event_time').value = button.dataset.eventTime;
-                modal.querySelector('#event_location').value = button.dataset.eventLocation;
-
-                // Set the correct visibility option
-                const visibilitySelect = modal.querySelector('#event_visibility');
-                const eventVisibility = button.dataset.eventVisibility;
-
-                for (let i = 0; i < visibilitySelect.options.length; i++) {
-                    if (visibilitySelect.options[i].value === eventVisibility) {
-                        visibilitySelect.selectedIndex = i;
-                        break;
-                    }
+                if (!file) {
+                    submitBtn.disabled = false;
+                    return;
                 }
 
-                modal.classList.remove('hidden');
-                modal.setAttribute('aria-hidden', 'false');
+                const maxSize = 10485760; // 10MB
+                const allowedTypes = [
+                    'application/pdf', 'application/msword',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'image/jpeg', 'image/jpg', 'image/png', 'text/plain',
+                    'application/vnd.ms-powerpoint',
+                    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                    'application/vnd.ms-excel',
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'application/zip', 'application/x-rar-compressed'
+                ];
 
-                // Try to set modalOpen to true in Alpine.js data (as backup)
-                try {
-                    const eventsContainer = document.querySelector('[x-data]');
-                    if (eventsContainer && window.Alpine) {
-                        window.Alpine.evaluate(eventsContainer, 'modalOpen = true');
-                    }
-                } catch (e) {
-                    console.log('Could not set Alpine modalOpen state, using fallback');
+                const allowedExtensions = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.txt', '.ppt', '.pptx', '.xls',
+                    '.xlsx', '.zip', '.rar'
+                ];
+                const fileName = file.name.toLowerCase();
+                const hasValidExtension = allowedExtensions.some(ext => fileName.endsWith(ext));
+
+                if (file.size > maxSize) {
+                    errorMessage.textContent =
+                        `File is too large. Maximum size is 10MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)} MB.`;
+                    errorDiv.classList.remove('hidden');
+                    submitBtn.disabled = true;
+                    return false;
                 }
 
-                // Focus on first input when modal opens
-                setTimeout(() => {
-                    modal.querySelector('input[type="text"]').focus();
-                }, 100);
+                if (!hasValidExtension && !allowedTypes.includes(file.type)) {
+                    errorMessage.textContent =
+                        `Invalid file type. Only PDF, DOC, DOCX, JPG, PNG, TXT, PPT, PPTX, XLS, XLSX, ZIP, and RAR files are allowed.`;
+                    errorDiv.classList.remove('hidden');
+                    submitBtn.disabled = true;
+                    return false;
+                }
 
-                // Prevent body scroll
-                document.body.style.overflow = 'hidden';
+                successMessage.textContent =
+                    `✓ File "${file.name}" (${(file.size / 1024 / 1024).toFixed(2)} MB) is ready to upload.`;
+                successDiv.classList.remove('hidden');
+                submitBtn.disabled = false;
+                return true;
             }
 
-            function openDeleteModal(button) {
-                const modal = document.getElementById('delete-event-modal');
-                const eventId = button.dataset.eventId;
+            function validateFileEdit(input) {
+                const file = input.files[0];
+                const errorDiv = document.getElementById('file-error-edit');
+                const successDiv = document.getElementById('file-success-edit');
+                const errorMessage = document.getElementById('file-error-message-edit');
+                const successMessage = document.getElementById('file-success-message-edit');
+                const submitBtn = document.querySelector('#edit-event-modal button[type="submit"]');
 
-                // Set form action
-                const form = modal.querySelector('form');
-                form.action = `/clubs/{{ $club->club_id }}/events/${eventId}`;
+                errorDiv.classList.add('hidden');
+                successDiv.classList.add('hidden');
 
-                modal.classList.remove('hidden');
-                modal.setAttribute('aria-hidden', 'false');
-
-                // Try to set modalOpen to true in Alpine.js data (as backup)
-                try {
-                    const eventsContainer = document.querySelector('[x-data]');
-                    if (eventsContainer && window.Alpine) {
-                        window.Alpine.evaluate(eventsContainer, 'modalOpen = true');
-                    }
-                } catch (e) {
-                    console.log('Could not set Alpine modalOpen state, using fallback');
+                if (!file) {
+                    submitBtn.disabled = false;
+                    return;
                 }
 
-                // Focus on confirm button
-                setTimeout(() => {
-                    modal.querySelector('button[type="submit"]').focus();
-                }, 100);
+                const maxSize = 10485760; // 10MB
+                const allowedTypes = [
+                    'application/pdf', 'application/msword',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'image/jpeg', 'image/jpg', 'image/png', 'text/plain',
+                    'application/vnd.ms-powerpoint',
+                    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                    'application/vnd.ms-excel',
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'application/zip', 'application/x-rar-compressed'
+                ];
 
-                // Prevent body scroll
-                document.body.style.overflow = 'hidden';
-            }
+                const allowedExtensions = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.txt', '.ppt', '.pptx', '.xls',
+                    '.xlsx', '.zip', '.rar'
+                ];
+                const fileName = file.name.toLowerCase();
+                const hasValidExtension = allowedExtensions.some(ext => fileName.endsWith(ext));
 
-            function closeModal(modalId) {
-                const modal = document.getElementById(modalId);
-
-                // Move focus to a safe element before hiding the modal
-                // The main container is a good choice
-                document.querySelector('.max-w-7xl').focus();
-
-                // Then hide the modal
-                modal.classList.add('hidden');
-                modal.setAttribute('aria-hidden', 'true');
-
-                // Try to set modalOpen to false in Alpine.js data (as backup)
-                try {
-                    const eventsContainer = document.querySelector('[x-data]');
-                    if (eventsContainer && window.Alpine) {
-                        window.Alpine.evaluate(eventsContainer, 'modalOpen = false');
-                    }
-                } catch (e) {
-                    console.log('Could not set Alpine modalOpen state, using fallback');
+                if (file.size > maxSize) {
+                    errorMessage.textContent =
+                        `File is too large. Maximum size is 10MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)} MB.`;
+                    errorDiv.classList.remove('hidden');
+                    submitBtn.disabled = true;
+                    return false;
                 }
 
-                // Re-enable body scroll
-                document.body.style.overflow = 'auto';
+                if (!hasValidExtension && !allowedTypes.includes(file.type)) {
+                    errorMessage.textContent =
+                        `Invalid file type. Only PDF, DOC, DOCX, JPG, PNG, TXT, PPT, PPTX, XLS, XLSX, ZIP, and RAR files are allowed.`;
+                    errorDiv.classList.remove('hidden');
+                    submitBtn.disabled = true;
+                    return false;
+                }
+
+                successMessage.textContent =
+                    `✓ File "${file.name}" (${(file.size / 1024 / 1024).toFixed(2)} MB) is ready to upload.`;
+                successDiv.classList.remove('hidden');
+                submitBtn.disabled = false;
+                return true;
             }
 
-            // Close modal on escape key press
+            // File validation helper (still needed for file uploads)
+            function resetFileValidation() {
+                const elements = [
+                    'file-error', 'file-success', 'file-error-edit', 'file-success-edit'
+                ];
+
+                elements.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.add('hidden');
+                });
+
+                const buttons = document.querySelectorAll('button[type="submit"]');
+                buttons.forEach(btn => btn.disabled = false);
+            }
+
+            // Close modal on escape key
             document.addEventListener('keydown', function(event) {
                 if (event.key === 'Escape') {
                     document.querySelectorAll('.modal').forEach(modal => {
@@ -275,19 +537,6 @@
                         }
                     });
                 }
-            });
-
-            // Close modal when clicking outside content
-            document.addEventListener('click', function(event) {
-                document.querySelectorAll('.modal').forEach(modal => {
-                    if (!modal.classList.contains('hidden')) {
-                        const modalContent = modal.querySelector('.modal-content');
-                        if (!modalContent.contains(event.target) && modal.contains(event.target)) {
-                            const modalId = modal.id;
-                            closeModal(modalId);
-                        }
-                    }
-                });
             });
         </script>
     </div>

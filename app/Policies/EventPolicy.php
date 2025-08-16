@@ -41,6 +41,12 @@ class EventPolicy
      */
     public function update(User $user, Event $event)
     {
+        // SSLG adviser (club ID 1) can update any event
+        $sslgClub = Club::find(1);
+        if ($sslgClub && $user->user_id === $sslgClub->club_adviser) {
+            return true;
+        }
+
         return $user->user_id === $event->club->club_adviser ||
             (
                 $event->club->members()
