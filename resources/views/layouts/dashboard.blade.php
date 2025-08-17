@@ -196,12 +196,6 @@
                         <i class="fas fa-calendar-alt w-6 text-center text-lg"></i>
                         <span class="nav-text ml-3 truncate">Events</span>
                     </a>
-
-                    <a href="{{ route('events.my-events') }}"
-                        class="block py-3 px-4 rounded-lg transition duration-200 text-white mb-1 flex items-center {{ request()->routeIs('events.my-events') ? 'bg-blue-600 hover:bg-blue-700' : 'hover:bg-blue-600' }}">
-                        <i class="fas fa-calendar-plus w-6 text-center text-lg"></i>
-                        <span class="nav-text ml-3 truncate">My Events</span>
-                    </a>
                     @if (auth()->user()->role === 'TEACHER') {{-- Clubs Dropdown for TEACHER --}} <div
                             x-data="{
                                 isClubDropdownOpen: false,

@@ -361,7 +361,6 @@ Route::middleware(['auth'])->group(function () {
         // Global events list
         Route::get('/events', [EventController::class, 'globalIndex'])->name('events.index');
         Route::get('/events/check-changes', [EventController::class, 'checkGlobalEventChanges'])->name('events.check-changes');
-        Route::get('/my-events', [EventController::class, 'myEvents'])->name('events.my-events');
 
         // Event approval routes (for SSLG adviser only)
         Route::get('/events/pending', [EventController::class, 'pendingEvents'])->name('events.pending');

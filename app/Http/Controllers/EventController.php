@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class EventController extends Controller
@@ -168,7 +169,7 @@ class EventController extends Controller
         ));
     }
 
-    public function globalIndex()
+    public function globalIndex(Request $request)
     {
         $clubs = Club::all();
         $userId = Auth::id();
@@ -178,6 +179,13 @@ class EventController extends Controller
             // Get all clubs the user is associated with (as member or adviser)
             $clubsUserIsAssociatedWith = Auth::user()->getAllAssociatedClubIds();
         }
+
+        // Get filters
+        $organizerFilter = $request->get('organizer');
+        $clubFilter = $request->get('club', []);
+        $dateFilter = $request->get('date_filter');
+        $dateFrom = $request->get('date_from');
+        $dateTo = $request->get('date_to');
 
         // Get events query with proper visibility filtering
         $events = Event::with(['club', 'documents'])
@@ -198,9 +206,76 @@ class EventController extends Controller
                             });
                     });
                 }
-            })
-            ->orderBy('event_date')
-            ->paginate(10);
+            });
+
+        // Apply club filter
+        if (!empty($clubFilter)) {
+            $events->whereIn('club_id', $clubFilter);
+        }
+
+        // Apply date filter
+        if ($dateFilter) {
+            $today = now()->startOfDay();
+            $endOfDay = now()->endOfDay();
+
+            switch ($dateFilter) {
+                case 'upcoming':
+                    $events->where('event_date', '>', $endOfDay);
+                    break;
+
+                case 'this-month':
+                    $events->whereMonth('event_date', now()->month)
+                        ->whereYear('event_date', now()->year);
+                    break;
+
+                case 'next-month':
+                    $nextMonth = now()->addMonth();
+                    $events->whereMonth('event_date', $nextMonth->month)
+                        ->whereYear('event_date', $nextMonth->year);
+                    break;
+
+                case 'custom':
+                    if ($dateFrom) {
+                        $events->where('event_date', '>=', $dateFrom);
+                    }
+                    if ($dateTo) {
+                        $events->where('event_date', '<=', $dateTo);
+                    }
+                    break;
+            }
+        }
+
+        // Apply organizer filter
+        if ($organizerFilter && Auth::check()) {
+            switch ($organizerFilter) {
+                case 'by-me':
+                    $events->where('organizer_id', $userId);
+                    break;
+
+                case 'by-club-advisers':
+                    $events->whereHas('club', function ($query) {
+                        $query->whereNotNull('club_adviser');
+                    })->whereExists(function ($query) {
+                        $query->select(DB::raw(1))
+                            ->from('tbl_clubs')
+                            ->whereColumn('tbl_clubs.club_id', 'tbl_events.club_id')
+                            ->whereColumn('tbl_clubs.club_adviser', 'tbl_events.organizer_id');
+                    });
+                    break;
+
+                case 'by-club-officers':
+                    $events->whereHas('organizer', function ($query) {
+                        $query->whereHas('clubMemberships', function ($membershipQuery) {
+                            $membershipQuery->where('club_role', 'MEMBER')
+                                ->whereNotNull('club_position')
+                                ->where('club_position', '!=', '');
+                        });
+                    });
+                    break;
+            }
+        }
+
+        $events = $events->orderBy('event_date')->paginate(10);
 
         return view('events.index', [
             'events' => $events,
@@ -592,18 +667,5 @@ class EventController extends Controller
             storage_path('app/public/' . $document->document_path),
             $document->original_name
         );
-    }
-
-    /**
-     * Show user's created events with their approval status
-     */
-    public function myEvents()
-    {
-        $events = Event::with(['club', 'documents'])
-            ->where('organizer_id', Auth::id())
-            ->latest()
-            ->paginate(10);
-
-        return view('events.my-events', compact('events'));
     }
 }

@@ -77,14 +77,14 @@
                     Filter Events
                 </h2>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                     <!-- Club Filter (Dropdown) -->
                     <div>
                         <label for="club-filter-trigger"
                             class="block text-sm font-semibold text-gray-700 mb-3">Clubs</label>
                         <div x-data="clubFilter({
                             clubs: {{ $clubs->toJson() }},
-                            initialSelected: {{ $clubs->pluck('club_id')->toJson() }}
+                            initialSelected: {{ request('club') ? collect(request('club'))->map(fn($id) => (int) $id)->toJson() : $clubs->pluck('club_id')->toJson() }}
                         })" x-id="['club-filter']" class="relative" @click.away="isOpen = false">
                             <!-- Hidden input to store selected club IDs -->
                             <input type="hidden" name="club[]" :value="selectedClubs.join(',')" id="selected-clubs">
@@ -172,28 +172,50 @@
                         <select id="date-filter"
                             class="w-full rounded-lg border-gray-300 bg-gray-50 pl-3 sm:pl-4 pr-8 sm:pr-10 py-2 sm:py-3 text-gray-700 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 appearance-none text-sm sm:text-base">
                             <option value="">All Dates</option>
-                            <option value="upcoming">Upcoming Events</option>
-                            <option value="this-month">This Month</option>
-                            <option value="next-month">Next Month</option>
-                            <option value="custom">Custom Date Range</option>
+                            <option value="upcoming" {{ request('date_filter') == 'upcoming' ? 'selected' : '' }}>Upcoming
+                                Events</option>
+                            <option value="this-month" {{ request('date_filter') == 'this-month' ? 'selected' : '' }}>This
+                                Month</option>
+                            <option value="next-month" {{ request('date_filter') == 'next-month' ? 'selected' : '' }}>Next
+                                Month</option>
+                            <option value="custom" {{ request('date_filter') == 'custom' ? 'selected' : '' }}>Custom Date
+                                Range</option>
                         </select>
 
                         <!-- Custom Date Range (initially hidden) -->
-                        <div id="custom-date-range" class="mt-3 hidden">
+                        <div id="custom-date-range"
+                            class="mt-3 {{ request('date_filter') == 'custom' ? '' : 'hidden' }}">
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label for="date-from"
                                         class="block text-xs font-medium text-gray-700 mb-1">From</label>
-                                    <input type="date" id="date-from"
+                                    <input type="date" id="date-from" value="{{ request('date_from') }}"
                                         class="w-full rounded-lg border-gray-300 bg-gray-50 px-3 py-2 text-gray-700 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-sm">
                                 </div>
                                 <div>
                                     <label for="date-to" class="block text-xs font-medium text-gray-700 mb-1">To</label>
-                                    <input type="date" id="date-to"
+                                    <input type="date" id="date-to" value="{{ request('date_to') }}"
                                         class="w-full rounded-lg border-gray-300 bg-gray-50 px-3 py-2 text-gray-700 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-sm">
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Organizer Filter -->
+                    <div>
+                        <label for="organizer-filter" class="block text-sm font-semibold text-gray-700 mb-3">Organized
+                            By</label>
+                        <select id="organizer-filter"
+                            class="w-full rounded-lg border-gray-300 bg-gray-50 pl-3 sm:pl-4 pr-8 sm:pr-10 py-2 sm:py-3 text-gray-700 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 appearance-none text-sm sm:text-base">
+                            <option value="">All Events</option>
+                            <option value="by-me" {{ request('organizer') == 'by-me' ? 'selected' : '' }}>By Me</option>
+                            <option value="by-club-advisers"
+                                {{ request('organizer') == 'by-club-advisers' ? 'selected' : '' }}>By Club Advisers
+                            </option>
+                            <option value="by-club-officers"
+                                {{ request('organizer') == 'by-club-officers' ? 'selected' : '' }}>By Club Officers
+                            </option>
+                        </select>
                     </div>
                 </div>
 
@@ -493,96 +515,47 @@
                 // Get date filter value
                 const selectedDateOption = dateFilter.value;
 
-                // Get current date for date filtering
-                const currentDate = new Date();
-                const today = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+                // Get organizer filter value
+                const organizerFilter = document.getElementById('organizer-filter').value;
 
-                let visibleEvents = 0;
+                // Build query parameters
+                const params = new URLSearchParams();
 
-                eventItems.forEach(item => {
-                    let showEvent = true;
+                // Add club filter
+                if (selectedClubs.length > 0 && selectedClubs.length < {{ $clubs->count() }}) {
+                    selectedClubs.forEach(clubId => {
+                        params.append('club[]', clubId);
+                    });
+                }
 
-                    // Club filter
-                    const eventClubId = item.dataset.clubId;
-                    if (!selectedClubs.includes(eventClubId)) {
-                        showEvent = false;
-                    }
+                // Add date filter
+                if (selectedDateOption) {
+                    params.append('date_filter', selectedDateOption);
 
-                    // Date filter
-                    if (showEvent && selectedDateOption) {
-                        const eventDate = new Date(item.dataset.eventDate);
-
-                        if (selectedDateOption === 'upcoming') {
-                            if (eventDate < today) {
-                                showEvent = false;
-                            }
-                        } else if (selectedDateOption === 'this-month') {
-                            if (eventDate.getMonth() !== today.getMonth() ||
-                                eventDate.getFullYear() !== today.getFullYear()) {
-                                showEvent = false;
-                            }
-                        } else if (selectedDateOption === 'next-month') {
-                            const nextMonth = new Date(today);
-                            nextMonth.setMonth(today.getMonth() + 1);
-                            if (eventDate.getMonth() !== nextMonth.getMonth() ||
-                                eventDate.getFullYear() !== nextMonth.getFullYear()) {
-                                showEvent = false;
-                            }
-                        } else if (selectedDateOption === 'custom') {
-                            const fromDate = dateFrom.value ? new Date(dateFrom.value) : null;
-                            const toDate = dateTo.value ? new Date(dateTo.value) : null;
-
-                            if (fromDate && eventDate < fromDate) {
-                                showEvent = false;
-                            }
-
-                            if (toDate) {
-                                const toDateEnd = new Date(toDate);
-                                toDateEnd.setHours(23, 59, 59, 999);
-                                if (eventDate > toDateEnd) {
-                                    showEvent = false;
-                                }
-                            }
+                    if (selectedDateOption === 'custom') {
+                        if (dateFrom.value) {
+                            params.append('date_from', dateFrom.value);
+                        }
+                        if (dateTo.value) {
+                            params.append('date_to', dateTo.value);
                         }
                     }
+                }
 
-                    // Show/hide event
-                    item.style.display = showEvent ? 'block' : 'none';
-                    if (showEvent) visibleEvents++;
-                });
+                // Add organizer filter
+                if (organizerFilter) {
+                    params.append('organizer', organizerFilter);
+                }
 
-                // Update counter
-                eventsCount.textContent = `${visibleEvents} event${visibleEvents !== 1 ? 's' : ''} found`;
-
-                // Toggle empty state
-                emptyState.classList.toggle('hidden', visibleEvents > 0);
+                // Redirect with filters
+                const url = '{{ route('events.index') }}' + (params.toString() ? '?' + params.toString() : '');
+                window.location.href = url;
             }
 
             // Clear all filters
             function clearFilters() {
-                // Reset Alpine component state through DOM
-                const clubFilterComponent = document.querySelector('[x-data^="clubFilter"]');
-                if (clubFilterComponent) {
-                    const component = Alpine.$data(clubFilterComponent, 'clubFilter');
-                    component.selectedClubs = component.clubs.map(c => c.club_id);
-                }
-
-                // Reset date filter
-                dateFilter.value = '';
-                customDateRange.classList.add('hidden');
-                dateFrom.value = '';
-                dateTo.value = '';
-
-                // Show all events
-                eventItems.forEach(item => {
-                    item.style.display = 'block';
-                });
-
-                // Update counter
-                eventsCount.textContent = `${eventItems.length} event${eventItems.length !== 1 ? 's' : ''} found`;
-
-                // Hide empty state
-                emptyState.classList.add('hidden');
+                // Redirect to base events page without any filters
+                window.location.href = '{{ route('events.index') }}';
             }
 
             // Event listeners
