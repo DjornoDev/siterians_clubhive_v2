@@ -92,6 +92,44 @@
             transition: all 0.2s ease;
         }
 
+        /* Notification badge styles */
+        .notification-badge {
+            background-color: #ef4444;
+            color: white;
+            font-size: 0.75rem;
+            border-radius: 9999px;
+            padding: 0.125rem 0.5rem;
+            margin-left: 0.5rem;
+            min-width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        /* Show notification dot when sidebar is collapsed */
+        .sidebar-icon-only .nav-link-with-notification {
+            position: relative;
+        }
+
+        .sidebar-icon-only .nav-link-with-notification::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            width: 8px;
+            height: 8px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            border: 2px solid #1e40af;
+        }
+
+        /* Hide text badge when sidebar is collapsed */
+        .sidebar-icon-only .notification-badge {
+            display: none;
+        }
+
         .transition-width {
             transition: width 0.3s ease-in-out;
         }
@@ -196,6 +234,26 @@
                         <i class="fas fa-calendar-alt w-6 text-center text-lg"></i>
                         <span class="nav-text ml-3 truncate">Events</span>
                     </a>
+
+                    {{-- Event Approvals for SSLG Adviser - moved under Events section --}}
+                    @php
+                        $sslgClub = \App\Models\Club::find(1);
+                        $isSSLGAdviser = $sslgClub && auth()->id() === $sslgClub->club_adviser;
+                    @endphp
+                    @if ($isSSLGAdviser)
+                        <a href="{{ route('events.pending') }}"
+                            class="block py-3 px-4 rounded-lg transition duration-200 text-white mb-1 flex items-center {{ request()->routeIs('events.pending') || request()->routeIs('events.approval.*') ? 'bg-blue-600 hover:bg-blue-700' : 'hover:bg-blue-600' }} {{ $pendingEventsCount > 0 ? 'nav-link-with-notification' : '' }}">
+                            <i class="fas fa-calendar-check w-6 text-center text-lg"></i>
+                            <span class="nav-text ml-3 flex items-center">
+                                Event Approvals
+                                @if ($pendingEventsCount > 0)
+                                    <span class="notification-badge">
+                                        {{ $pendingEventsCount }}
+                                    </span>
+                                @endif
+                            </span>
+                        </a>
+                    @endif
                     @if (auth()->user()->role === 'TEACHER') {{-- Clubs Dropdown for TEACHER --}} <div
                             x-data="{
                                 isClubDropdownOpen: false,
@@ -268,13 +326,6 @@
                                 class="block py-3 px-4 rounded-lg transition duration-200 text-white mb-1 flex items-center {{ request()->routeIs('voting.*') ? 'bg-blue-600 hover:bg-blue-700' : 'hover:bg-blue-600' }}">
                                 <i class="fas fa-poll w-6 text-center text-lg"></i>
                                 <span class="nav-text ml-3 truncate">Voting</span>
-                            </a>
-
-                            {{-- Pending Events link for SSLG Adviser --}}
-                            <a href="{{ route('events.pending') }}"
-                                class="block py-3 px-4 rounded-lg transition duration-200 text-white mb-1 flex items-center {{ request()->routeIs('events.pending') || request()->routeIs('events.approval.*') ? 'bg-blue-600 hover:bg-blue-700' : 'hover:bg-blue-600' }}">
-                                <i class="fas fa-calendar-check w-6 text-center text-lg"></i>
-                                <span class="nav-text ml-3 truncate">Event Approvals</span>
                             </a>
                         @endif
                     @else

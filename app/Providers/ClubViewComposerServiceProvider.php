@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Club;
+use App\Models\Event;
 
 class ClubViewComposerServiceProvider extends ServiceProvider
 {
@@ -35,6 +36,21 @@ class ClubViewComposerServiceProvider extends ServiceProvider
             } else {
                 $view->with('pendingRequestsCount', 0);
             }
+        });
+
+        // Share pending events count with dashboard layout for SSLG adviser
+        View::composer('layouts.dashboard', function ($view) {
+            $pendingEventsCount = 0;
+
+            if (Auth::check()) {
+                // Check if user is SSLG adviser (club ID 1)
+                $sslgClub = Club::find(1);
+                if ($sslgClub && Auth::id() === $sslgClub->club_adviser) {
+                    $pendingEventsCount = \App\Models\Event::where('approval_status', 'pending')->count();
+                }
+            }
+
+            $view->with('pendingEventsCount', $pendingEventsCount);
         });
     }
 }
