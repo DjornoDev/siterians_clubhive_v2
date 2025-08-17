@@ -95,4 +95,9 @@ class Club extends Model
     {
         return $this->hasMany(ClubQuestion::class, 'club_id')->active()->ordered();
     }
+
+    public function elections()
+    {
+        return $this->hasMany(Election::class, 'club_id');
+    }
 }

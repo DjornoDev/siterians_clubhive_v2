@@ -608,7 +608,7 @@
                 <div class="space-y-4">
                     <div
                         class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 transition-colors duration-200 group">
-                        <button onclick="exportData('users')" class="w-full flex items-center justify-between">
+                        <button onclick="showFormatModal('users')" class="w-full flex items-center justify-between">
                             <div class="flex items-center">
                                 <div class="bg-blue-100 p-3 rounded-full mr-3 group-hover:bg-blue-200 transition-colors">
                                     <i class="fas fa-users text-blue-600"></i>
@@ -623,7 +623,7 @@
                     </div>
                     <div
                         class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-green-300 transition-colors duration-200 group">
-                        <button onclick="exportData('clubs')" class="w-full flex items-center justify-between">
+                        <button onclick="showFormatModal('clubs')" class="w-full flex items-center justify-between">
                             <div class="flex items-center">
                                 <div class="bg-green-100 p-3 rounded-full mr-3 group-hover:bg-green-200 transition-colors">
                                     <i class="fas fa-users-cog text-green-600"></i>
@@ -638,20 +638,92 @@
                     </div>
                     <div
                         class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-purple-300 transition-colors duration-200 group">
-                        <button onclick="exportData('events')" class="w-full flex items-center justify-between">
+                        <button onclick="showFormatModal('action-logs')" class="w-full flex items-center justify-between">
                             <div class="flex items-center">
                                 <div
                                     class="bg-purple-100 p-3 rounded-full mr-3 group-hover:bg-purple-200 transition-colors">
                                     <i class="fas fa-calendar-alt text-purple-600"></i>
                                 </div>
                                 <div class="text-left">
-                                    <h4 class="font-medium text-gray-800">Events Report</h4>
-                                    <p class="text-sm text-gray-500">Export events data</p>
+                                    <h4 class="font-medium text-gray-800">Action Logs Report</h4>
+                                    <p class="text-sm text-gray-500">Export system activity logs</p>
                                 </div>
                             </div>
                             <i class="fas fa-download text-gray-400 group-hover:text-purple-500 transition-colors"></i>
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Format Selection Modal -->
+        <div id="formatSelectionModal"
+            class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                        <span class="bg-blue-100 p-2 rounded-full mr-2">
+                            <i class="fas fa-file-export text-blue-600"></i>
+                        </span>
+                        Select Export Format
+                    </h3>
+                    <button onclick="closeFormatModal()"
+                        class="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-200 rounded-full p-1">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="space-y-3">
+                    <button onclick="exportData('csv')"
+                        class="w-full p-4 border border-gray-200 rounded-lg hover:bg-green-50 hover:border-green-300 transition-colors duration-200 group text-left">
+                        <div class="flex items-center">
+                            <div class="bg-green-100 p-3 rounded-full mr-3 group-hover:bg-green-200 transition-colors">
+                                <i class="fas fa-file-csv text-green-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-800">CSV Format</h4>
+                                <p class="text-sm text-gray-500">Comma-separated values for spreadsheets</p>
+                            </div>
+                        </div>
+                    </button>
+
+                    <button onclick="exportData('xlsx')"
+                        class="w-full p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors duration-200 group text-left">
+                        <div class="flex items-center">
+                            <div class="bg-blue-100 p-3 rounded-full mr-3 group-hover:bg-blue-200 transition-colors">
+                                <i class="fas fa-file-excel text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-800">Excel Format (.xlsx)</h4>
+                                <p class="text-sm text-gray-500">Microsoft Excel workbook</p>
+                            </div>
+                        </div>
+                    </button>
+
+                    <button onclick="exportData('pdf')"
+                        class="w-full p-4 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-red-300 transition-colors duration-200 group text-left">
+                        <div class="flex items-center">
+                            <div class="bg-red-100 p-3 rounded-full mr-3 group-hover:bg-red-200 transition-colors">
+                                <i class="fas fa-file-pdf text-red-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-800">PDF Format</h4>
+                                <p class="text-sm text-gray-500">Portable document with formatting</p>
+                            </div>
+                        </div>
+                    </button>
+
+                    <button onclick="exportData('json')"
+                        class="w-full p-4 border border-gray-200 rounded-lg hover:bg-purple-50 hover:border-purple-300 transition-colors duration-200 group text-left">
+                        <div class="flex items-center">
+                            <div class="bg-purple-100 p-3 rounded-full mr-3 group-hover:bg-purple-200 transition-colors">
+                                <i class="fas fa-code text-purple-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-800">JSON Format</h4>
+                                <p class="text-sm text-gray-500">JavaScript Object Notation for APIs</p>
+                            </div>
+                        </div>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1205,8 +1277,62 @@
                         });
                 } // Send Announcement Function Removed
 
-                function exportData(type) {
-                    window.location.href = `/admin/export/${type}`;
+                let currentExportType = '';
+
+                function showFormatModal(type) {
+                    currentExportType = type;
+                    document.getElementById('exportDataModal').classList.add('hidden');
+                    document.getElementById('formatSelectionModal').classList.remove('hidden');
+                }
+
+                function closeFormatModal() {
+                    document.getElementById('formatSelectionModal').classList.add('hidden');
+                    currentExportType = '';
+                }
+
+                function exportData(format) {
+                    if (!currentExportType) {
+                        alert('Please select an export type first.');
+                        return;
+                    }
+
+                    // Store the export type before closing modal
+                    const exportType = currentExportType;
+
+                    closeFormatModal();
+
+                    // Show loading indicator
+                    const loadingToast = document.createElement('div');
+                    loadingToast.className = 'fixed top-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+                    loadingToast.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Preparing export...';
+                    document.body.appendChild(loadingToast);
+
+                    // Build correct URL based on export type
+                    let exportUrl = '';
+                    switch (exportType) {
+                        case 'users':
+                            exportUrl = `/admin/export/users?format=${format}`;
+                            break;
+                        case 'clubs':
+                            exportUrl = `/admin/export/clubs?format=${format}`;
+                            break;
+                        case 'action-logs':
+                            exportUrl = `/admin/export/action-logs?format=${format}`;
+                            break;
+                        default:
+                            alert('Invalid export type: ' + exportType);
+                            return;
+                    }
+
+                    // Redirect to export with format
+                    window.location.href = exportUrl;
+
+                    // Remove loading indicator after a delay
+                    setTimeout(() => {
+                        if (loadingToast.parentNode) {
+                            loadingToast.parentNode.removeChild(loadingToast);
+                        }
+                    }, 3000);
                 }
             </script>
         @endpush

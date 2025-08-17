@@ -1,4 +1,25 @@
 Table	Create table
+action_logs	CREATE TABLE `action_logs` (
+ `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+ `user_id` bigint(20) unsigned DEFAULT NULL,
+ `user_name` varchar(255) DEFAULT NULL,
+ `user_role` enum('ADMIN','TEACHER','STUDENT') DEFAULT NULL,
+ `action_category` varchar(255) NOT NULL,
+ `action_type` varchar(255) NOT NULL,
+ `action_description` varchar(255) NOT NULL,
+ `action_details` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`action_details`)),
+ `status` enum('success','failed') NOT NULL DEFAULT 'success',
+ `ip_address` varchar(255) DEFAULT NULL,
+ `user_agent` varchar(255) DEFAULT NULL,
+ `created_at` timestamp NULL DEFAULT NULL,
+ `updated_at` timestamp NULL DEFAULT NULL,
+ PRIMARY KEY (`id`),
+ KEY `action_logs_user_id_foreign` (`user_id`),
+ KEY `action_logs_created_at_user_id_index` (`created_at`,`user_id`),
+ KEY `action_logs_action_category_action_type_index` (`action_category`,`action_type`),
+ KEY `action_logs_status_index` (`status`),
+ CONSTRAINT `action_logs_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `tbl_users` (`user_id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=62 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 club_questions	CREATE TABLE `club_questions` (
  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
  `club_id` bigint(20) unsigned NOT NULL,
@@ -139,7 +160,21 @@ tbl_events	CREATE TABLE `tbl_events` (
  CONSTRAINT `tbl_events_approved_by_foreign` FOREIGN KEY (`approved_by`) REFERENCES `tbl_users` (`user_id`) ON DELETE SET NULL,
  CONSTRAINT `tbl_events_club_id_foreign` FOREIGN KEY (`club_id`) REFERENCES `tbl_clubs` (`club_id`) ON DELETE CASCADE,
  CONSTRAINT `tbl_events_organizer_id_foreign` FOREIGN KEY (`organizer_id`) REFERENCES `tbl_users` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+tbl_event_documents	CREATE TABLE `tbl_event_documents` (
+ `document_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+ `event_id` bigint(20) unsigned NOT NULL,
+ `document_path` varchar(255) NOT NULL,
+ `original_name` varchar(255) NOT NULL,
+ `mime_type` varchar(255) NOT NULL,
+ `file_size` bigint(20) unsigned NOT NULL,
+ `uploaded_at` timestamp NOT NULL DEFAULT current_timestamp(),
+ `created_at` timestamp NULL DEFAULT NULL,
+ `updated_at` timestamp NULL DEFAULT NULL,
+ PRIMARY KEY (`document_id`),
+ KEY `tbl_event_documents_event_id_uploaded_at_index` (`event_id`,`uploaded_at`),
+ CONSTRAINT `tbl_event_documents_event_id_foreign` FOREIGN KEY (`event_id`) REFERENCES `tbl_events` (`event_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 tbl_posts	CREATE TABLE `tbl_posts` (
  `post_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
  `post_caption` text NOT NULL,
@@ -158,7 +193,21 @@ tbl_posts	CREATE TABLE `tbl_posts` (
  KEY `tbl_posts_author_id_foreign` (`author_id`),
  CONSTRAINT `tbl_posts_author_id_foreign` FOREIGN KEY (`author_id`) REFERENCES `tbl_users` (`user_id`) ON DELETE CASCADE,
  CONSTRAINT `tbl_posts_club_id_foreign` FOREIGN KEY (`club_id`) REFERENCES `tbl_clubs` (`club_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+tbl_post_documents	CREATE TABLE `tbl_post_documents` (
+ `document_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+ `post_id` bigint(20) unsigned NOT NULL,
+ `document_path` varchar(255) NOT NULL,
+ `original_name` varchar(255) NOT NULL,
+ `mime_type` varchar(255) NOT NULL,
+ `file_size` bigint(20) unsigned NOT NULL,
+ `uploaded_at` timestamp NOT NULL DEFAULT current_timestamp(),
+ `created_at` timestamp NULL DEFAULT NULL,
+ `updated_at` timestamp NULL DEFAULT NULL,
+ PRIMARY KEY (`document_id`),
+ KEY `tbl_post_documents_post_id_uploaded_at_index` (`post_id`,`uploaded_at`),
+ CONSTRAINT `tbl_post_documents_post_id_foreign` FOREIGN KEY (`post_id`) REFERENCES `tbl_posts` (`post_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 tbl_post_images	CREATE TABLE `tbl_post_images` (
  `image_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
  `post_id` bigint(20) unsigned NOT NULL,
@@ -168,7 +217,7 @@ tbl_post_images	CREATE TABLE `tbl_post_images` (
  PRIMARY KEY (`image_id`),
  KEY `tbl_post_images_post_id_foreign` (`post_id`),
  CONSTRAINT `tbl_post_images_post_id_foreign` FOREIGN KEY (`post_id`) REFERENCES `tbl_posts` (`post_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=141 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+) ENGINE=InnoDB AUTO_INCREMENT=144 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 tbl_sections	CREATE TABLE `tbl_sections` (
  `section_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
  `class_id` bigint(20) unsigned NOT NULL,
@@ -202,7 +251,7 @@ tbl_users	CREATE TABLE `tbl_users` (
  UNIQUE KEY `tbl_users_email_unique` (`email`),
  KEY `tbl_users_section_id_foreign` (`section_id`),
  CONSTRAINT `tbl_users_section_id_foreign` FOREIGN KEY (`section_id`) REFERENCES `tbl_sections` (`section_id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+) ENGINE=InnoDB AUTO_INCREMENT=82 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 tbl_votes	CREATE TABLE `tbl_votes` (
  `vote_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
  `election_id` bigint(20) unsigned NOT NULL,

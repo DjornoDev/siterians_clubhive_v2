@@ -10,7 +10,8 @@
                 <div class="mb-4 md:mb-0">
                     <h2 class="text-3xl font-bold mb-1">Election Dashboard</h2>
                     <p class="text-blue-100">Track voting results and participation stats</p>
-                </div>                <div class="w-full md:w-64 relative">
+                </div>
+                <div class="w-full md:w-64 relative">
                     <label class="block text-sm font-medium text-blue-100 mb-2">Select Election</label>
                     <div class="relative">
                         <select id="election-selector"
@@ -29,14 +30,16 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Export Button -->
             <div class="mt-4 flex justify-end">
-                <button id="export-csv-btn" 
+                <button id="export-csv-btn"
                     class="flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled>
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                     </svg>
                     Export Results to CSV
                 </button>
@@ -126,12 +129,13 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Results by Position -->
             <div class="mb-8">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl font-semibold text-gray-800 flex items-center">
-                        <svg class="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg class="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
@@ -151,8 +155,8 @@
                 <div id="results-container" class="space-y-8">
                     <!-- Results will be populated here dynamically -->
                 </div>
-            </div> 
-            
+            </div>
+
             <!-- Recent Voting Activity -->
             <div class="mb-6">
                 <div class="flex justify-between items-center mb-5">
@@ -190,7 +194,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- No data message -->
         <div id="no-data-message" class="hidden">
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-10 text-center mt-8">
@@ -366,7 +370,8 @@
 
                     if (data.success) {
                         currentElection = data.election;
-                        displayDashboard(data);                        // Set up an interval to refresh data every 10 seconds for real-time updates
+                        displayDashboard(
+                        data); // Set up an interval to refresh data every 10 seconds for real-time updates
                         refreshInterval = setInterval(() => {
                             loadElectionData(electionId);
                         }, 30000); //refresh every 30 seconds
@@ -383,7 +388,9 @@
                     noDataMessage.classList.remove('hidden');
                     noDataMessage.querySelector('p').textContent = 'Error loading election data';
                 }
-            }            function displayDashboard(data) {
+            }
+
+            function displayDashboard(data) {
                 const {
                     election,
                     votes,
@@ -420,6 +427,98 @@
                 dashboardContent.classList.remove('hidden');
             }
 
+            function createWinnersSection(results) {
+                // Calculate winners for each position
+                const winners = [];
+                // Extended position order to include all standard positions plus handle custom ones
+                const positionOrder = [
+                    'President',
+                    'Vice President',
+                    'Secretary',
+                    'Treasurer',
+                    'Auditor',
+                    'Public Information Officer (PIO)',
+                    'Protocol Officer',
+                    'Grade 7 Representative',
+                    'Grade 8 Representative',
+                    'Grade 9 Representative',
+                    'Grade 10 Representative',
+                    'Grade 11 Representative',
+                    'Grade 12 Representative'
+                ];
+
+                Object.entries(results).forEach(([position, candidates]) => {
+                    if (candidates && candidates.length > 0) {
+                        const sortedCandidates = [...candidates].sort((a, b) => b.votes - a.votes);
+                        const winner = sortedCandidates[0];
+
+                        if (winner.votes > 0) {
+                            winners.push({
+                                position: position,
+                                name: winner.name,
+                                partylist: winner.partylist,
+                                votes: winner.votes
+                            });
+                        }
+                    }
+                });
+
+                if (winners.length === 0) return null;
+
+                // Sort winners by position order (standard positions first, then custom positions alphabetically)
+                winners.sort((a, b) => {
+                    const posA = positionOrder.indexOf(a.position);
+                    const posB = positionOrder.indexOf(b.position);
+                    // Both positions are in the standard order
+                    if (posA !== -1 && posB !== -1) return posA - posB;
+                    // Position A is standard, B is custom - A comes first
+                    if (posA !== -1) return -1;
+                    // Position B is standard, A is custom - B comes first
+                    if (posB !== -1) return 1;
+                    // Both are custom positions - sort alphabetically
+                    return a.position.localeCompare(b.position);
+                });
+
+                const winnersSection = document.createElement('div');
+                winnersSection.className =
+                    'mb-8 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-xl p-6 shadow-sm';
+
+                winnersSection.innerHTML = `
+                    <div class="flex items-center mb-4">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 mr-3">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732L14.146 12.8l-1.179 4.456a1 1 0 01-1.934 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732L9.854 7.2l1.179-4.456A1 1 0 0112 2z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-900">🏆 Election Winners</h2>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        ${winners.map(winner => `
+                                <div class="bg-white rounded-lg border border-yellow-200 p-4 shadow-sm">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <div class="flex items-center mb-2">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mr-2">
+                                                    WINNER
+                                                </span>
+                                            </div>
+                                            <h3 class="font-semibold text-gray-900 text-lg">${winner.name}</h3>
+                                            <p class="text-sm text-gray-600 mb-1">${winner.position}</p>
+                                            <p class="text-xs text-gray-500">${winner.partylist}</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="text-2xl font-bold text-yellow-600">${winner.votes}</div>
+                                            <div class="text-xs text-gray-500">votes</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                    </div>
+                `;
+
+                return winnersSection;
+            }
+
             function displayResults(results) {
                 const resultsContainer = document.getElementById('results-container');
                 resultsContainer.innerHTML = '';
@@ -438,6 +537,12 @@
                 `;
                     resultsContainer.appendChild(emptyState);
                     return;
+                }
+
+                // Create winners summary section
+                const winnersSection = createWinnersSection(results);
+                if (winnersSection) {
+                    resultsContainer.appendChild(winnersSection);
                 }
 
                 // Create a grid layout for position cards
@@ -884,7 +989,9 @@
                 if (now < endDateTime) {
                     setTimeout(() => updateTimeRemaining(endDate), 1000);
                 }
-            }            function formatDate(dateString) {
+            }
+
+            function formatDate(dateString) {
                 const options = {
                     year: 'numeric',
                     month: 'short',
@@ -894,7 +1001,7 @@
                 };
                 return new Date(dateString).toLocaleDateString(undefined, options);
             }
-              // Function to export election results to CSV
+            // Function to export election results to CSV
             function exportResultsToCsv(election, results, votes, eligibleVoters) {
                 // Show loading state on button
                 const exportBtn = document.getElementById('export-csv-btn');
@@ -907,47 +1014,48 @@
                     </svg>
                     Generating CSV...
                 `;
-                
+
                 try {
                     // Generate CSV content with enhanced structure for spreadsheets
                     let csvContent = [];
-                    
+
                     // Get current date and time for report generation timestamp
                     const now = new Date();
                     const reportTimestamp = formatDate(now);
-                    const electionStatus = now > new Date(election.end_date) ? 'Completed' : 
-                                          (now > new Date(election.start_date) ? 'In Progress' : 'Not Started');
-                    
+                    const electionStatus = now > new Date(election.end_date) ? 'Completed' :
+                        (now > new Date(election.start_date) ? 'In Progress' : 'Not Started');
+
                     // Calculate voting duration
                     const startDate = new Date(election.start_date);
                     const endDate = new Date(election.end_date);
                     const durationMs = endDate - startDate;
                     const durationHours = Math.round(durationMs / (1000 * 60 * 60));
                     const durationDays = Math.round(durationMs / (1000 * 60 * 60 * 24) * 10) / 10;
-                    
+
                     // Create helper function for section separators (helps with spreadsheet readability)
                     const addSeparator = () => csvContent.push([]);
-                    
+
                     // Pre-calculate all winners data for summary section
                     const winnersData = [];
                     const positionOrder = ['President', 'Vice President', 'Secretary', 'Treasurer', 'Auditor'];
                     const sortedPositions = Object.entries(results).sort((a, b) => {
                         const posA = positionOrder.indexOf(a[0]);
                         const posB = positionOrder.indexOf(b[0]);
-                        
+
                         if (posA !== -1 && posB !== -1) return posA - posB;
                         if (posA !== -1) return -1;
                         if (posB !== -1) return 1;
                         return a[0].localeCompare(b[0]);
                     });
-                    
+
                     sortedPositions.forEach(([position, candidates]) => {
                         const totalVotes = candidates.reduce((sum, candidate) => sum + candidate.votes, 0);
                         const sortedCandidates = [...candidates].sort((a, b) => b.votes - a.votes);
-                        
+
                         if (totalVotes > 0 && sortedCandidates.length > 0) {
                             const winner = sortedCandidates[0];
-                            const votePercentage = totalVotes > 0 ? Math.round((winner.votes / totalVotes) * 100) : 0;
+                            const votePercentage = totalVotes > 0 ? Math.round((winner.votes / totalVotes) *
+                                100) : 0;
                             winnersData.push({
                                 position,
                                 name: winner.name,
@@ -958,13 +1066,13 @@
                             });
                         }
                     });
-                    
+
                     // ===== REPORT HEADER =====
                     // Add prominent title that will stand out in spreadsheet
                     csvContent.push([`${election.title.toUpperCase()} - ELECTION RESULTS`]);
                     csvContent.push(['Report Generated:', reportTimestamp]);
                     addSeparator();
-                    
+
                     // ===== ELECTION INFORMATION =====
                     csvContent.push(['ELECTION INFORMATION']);
                     csvContent.push(['Title:', election.title]);
@@ -974,15 +1082,16 @@
                     csvContent.push(['End Date:', formatDate(election.end_date)]);
                     csvContent.push(['Duration:', `${durationHours} hours (${durationDays} days)`]);
                     addSeparator();
-                    
+
                     // ===== PARTICIPATION SUMMARY =====
                     csvContent.push(['PARTICIPATION SUMMARY']);
                     csvContent.push(['Total Eligible Voters:', eligibleVoters]);
                     csvContent.push(['Total Votes Cast:', votes.length]);
-                    const participationRate = eligibleVoters > 0 ? Math.round((votes.length / eligibleVoters) * 100) : 0;
+                    const participationRate = eligibleVoters > 0 ? Math.round((votes.length / eligibleVoters) *
+                        100) : 0;
                     csvContent.push(['Participation Rate:', `${participationRate}%`]);
                     csvContent.push(['Non-Voters:', eligibleVoters - votes.length]);
-                    
+
                     // Add turnout evaluation metric
                     let turnoutEvaluation = '';
                     if (participationRate >= 75) turnoutEvaluation = 'Excellent';
@@ -991,19 +1100,21 @@
                     else turnoutEvaluation = 'Poor';
                     csvContent.push(['Turnout Evaluation:', turnoutEvaluation]);
                     addSeparator();
-                    
+
                     // ===== WINNERS SUMMARY TABLE =====
                     // This table provides a quick reference of all winners
                     if (winnersData.length > 0) {
                         csvContent.push(['WINNERS SUMMARY TABLE']);
                         // Add header columns for the summary table
-                        csvContent.push(['Position', 'Winner', 'Partylist', 'Votes Received', 'Total Position Votes', 'Percentage']);
-                        
+                        csvContent.push(['Position', 'Winner', 'Partylist', 'Votes Received',
+                            'Total Position Votes', 'Percentage'
+                        ]);
+
                         winnersData.forEach(winner => {
                             csvContent.push([
-                                winner.position, 
-                                winner.name, 
-                                winner.partylist, 
+                                winner.position,
+                                winner.name,
+                                winner.partylist,
                                 winner.votes,
                                 winner.totalVotes,
                                 `${winner.percentage}%`
@@ -1011,30 +1122,31 @@
                         });
                         addSeparator();
                     }
-                    
+
                     // ===== DETAILED RESULTS BY POSITION =====
                     csvContent.push(['DETAILED RESULTS BY POSITION']);
-                    
+
                     // Add results for each position in a tabular format
                     for (const [position, candidates] of sortedPositions) {
                         // Add position header
                         csvContent.push([]);
                         csvContent.push([`POSITION: ${position.toUpperCase()}`]);
-                        
+
                         // Add detailed table header
                         csvContent.push(['Rank', 'Candidate Name', 'Partylist', 'Votes', 'Percentage', 'Status']);
-                        
+
                         // Calculate total votes for this position
                         const totalVotes = candidates.reduce((sum, candidate) => sum + candidate.votes, 0);
-                        
+
                         // Sort candidates by vote count (descending)
                         const sortedCandidates = [...candidates].sort((a, b) => b.votes - a.votes);
-                        
+
                         // Add each candidate with detailed information
                         sortedCandidates.forEach((candidate, index) => {
-                            const votePercentage = totalVotes > 0 ? Math.round((candidate.votes / totalVotes) * 100) : 0;
+                            const votePercentage = totalVotes > 0 ? Math.round((candidate.votes /
+                                totalVotes) * 100) : 0;
                             const status = index === 0 && candidate.votes > 0 ? 'WINNER' : '';
-                            
+
                             csvContent.push([
                                 index + 1, // Rank
                                 candidate.name,
@@ -1044,38 +1156,41 @@
                                 status
                             ]);
                         });
-                        
+
                         // Add a summary row for this position
                         if (totalVotes > 0) {
                             csvContent.push(['', 'TOTAL', '', totalVotes, '100%', '']);
                         }
                     }
                     addSeparator();
-                    
+
                     // ===== VOTING TIMELINE INFORMATION =====
                     if (votes.length > 0 && votes[0].created_at) {
                         csvContent.push(['VOTING TIMELINE']);
-                        
+
                         // Sort votes by time
-                        const sortedVotes = [...votes].sort((a, b) => 
+                        const sortedVotes = [...votes].sort((a, b) =>
                             new Date(a.created_at) - new Date(b.created_at)
                         );
-                        
+
                         // Add first and last vote timestamps
                         if (sortedVotes.length > 0) {
                             csvContent.push(['First Vote Cast:', formatDate(sortedVotes[0].created_at)]);
-                            csvContent.push(['Last Vote Cast:', formatDate(sortedVotes[sortedVotes.length - 1].created_at)]);
-                            
+                            csvContent.push(['Last Vote Cast:', formatDate(sortedVotes[sortedVotes.length - 1]
+                                .created_at)]);
+
                             // Calculate voting session duration
                             const firstVote = new Date(sortedVotes[0].created_at);
                             const lastVote = new Date(sortedVotes[sortedVotes.length - 1].created_at);
                             const durationMs = lastVote - firstVote;
-                            
+
                             // Format duration in hours and minutes for readability
                             const durationHours = Math.floor(durationMs / (1000 * 60 * 60));
                             const durationMinutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
-                            csvContent.push(['Voting Session Duration:', `${durationHours} hours, ${durationMinutes} minutes`]);
-                            
+                            csvContent.push(['Voting Session Duration:',
+                                `${durationHours} hours, ${durationMinutes} minutes`
+                            ]);
+
                             // Calculate votes per hour (voting rate)
                             const votingHours = durationMs / (1000 * 60 * 60);
                             if (votingHours > 0) {
@@ -1083,62 +1198,65 @@
                                 csvContent.push(['Average Voting Rate:', `${votesPerHour} votes per hour`]);
                             }
                         }
-                        
+
                         // Add vote time distribution if we have multiple votes
                         if (sortedVotes.length > 1) {
                             // Count votes by hour of the day (for voting pattern analysis)
                             csvContent.push([]);
                             csvContent.push(['VOTES BY HOUR OF DAY']);
                             csvContent.push(['Hour', 'Number of Votes', 'Percentage']);
-                            
+
                             const votesByHour = {};
                             sortedVotes.forEach(vote => {
                                 const hour = new Date(vote.created_at).getHours();
                                 votesByHour[hour] = (votesByHour[hour] || 0) + 1;
                             });
-                            
+
                             // Add hourly vote data for analysis
                             for (let hour = 0; hour < 24; hour++) {
                                 const count = votesByHour[hour] || 0;
                                 if (count > 0) {
                                     const percentage = Math.round((count / votes.length) * 100);
                                     // Format hour in 12-hour format for readability
-                                    const hourFormatted = hour === 0 ? '12 AM' : 
-                                                        hour < 12 ? `${hour} AM` : 
-                                                        hour === 12 ? '12 PM' : 
-                                                        `${hour - 12} PM`;
+                                    const hourFormatted = hour === 0 ? '12 AM' :
+                                        hour < 12 ? `${hour} AM` :
+                                        hour === 12 ? '12 PM' :
+                                        `${hour - 12} PM`;
                                     csvContent.push([hourFormatted, count, `${percentage}%`]);
                                 }
                             }
                         }
                     }
-                    
+
                     // Add report footer with metadata
                     addSeparator();
                     csvContent.push(['Generated by Club Hive Voting System']);
                     csvContent.push(['Report Date:', reportTimestamp]);
                     csvContent.push(['© Siterians ClubHive']);
-                    
+
                     // Convert to CSV format with improved escape handling
-                    const csv = csvContent.map(row => 
+                    const csv = csvContent.map(row =>
                         row.map(cell => {
                             // Enhanced cell escaping for better spreadsheet compatibility
                             if (cell === undefined || cell === null) return '';
                             const cellStr = String(cell);
-                            if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n') || cellStr.includes('\r')) {
+                            if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n') ||
+                                cellStr.includes('\r')) {
                                 return `"${cellStr.replace(/"/g, '""')}"`;
                             }
                             return cellStr;
                         }).join(',')
                     ).join('\n');
-                    
+
                     // Create a download link with improved filename format
                     const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
-                    const timeStr = now.toISOString().split('T')[1].substring(0,5).replace(':', ''); // HHMM
+                    const timeStr = now.toISOString().split('T')[1].substring(0, 5).replace(':', ''); // HHMM
                     const cleanTitle = election.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
                     const fileName = `election_results_${cleanTitle}_${dateStr}_${timeStr}.csv`;
-                    
-                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+
+                    const blob = new Blob([csv], {
+                        type: 'text/csv;charset=utf-8;'
+                    });
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.setAttribute('href', url);
@@ -1147,25 +1265,27 @@
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-                    
+
                     // Show success message
                     const successAlert = document.createElement('div');
-                    successAlert.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-up';
+                    successAlert.className =
+                        'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-up';
                     successAlert.textContent = 'CSV export successful! File is downloading.';
                     document.body.appendChild(successAlert);
-                    
+
                     setTimeout(() => {
                         successAlert.remove();
                     }, 3000);
                 } catch (error) {
                     console.error('Error exporting CSV:', error);
-                    
+
                     // Show error message
                     const errorAlert = document.createElement('div');
-                    errorAlert.className = 'fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-up';
+                    errorAlert.className =
+                        'fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-up';
                     errorAlert.textContent = 'Error exporting results. Please try again.';
                     document.body.appendChild(errorAlert);
-                    
+
                     setTimeout(() => {
                         errorAlert.remove();
                     }, 3000);

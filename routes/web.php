@@ -216,90 +216,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/api/users/suggestions', [App\Http\Controllers\Admin\ActionLogController::class, 'getUserSuggestions'])->name('admin.action-logs.user-suggestions');
         Route::get('/api/actions/suggestions', [App\Http\Controllers\Admin\ActionLogController::class, 'getActionSuggestions'])->name('admin.action-logs.action-suggestions');
 
-        // New admin routes for data export and announcements
-        Route::get('/export/{type}', function ($type) {
-            // This is a simplified version - in a real app you might use a package like maatwebsite/excel
-            $data = [];
-            $filename = '';
-            $headers = [];
-
-            switch ($type) {
-                case 'users':
-                    $users = User::all();
-                    $filename = 'users_export_' . date('Y-m-d') . '.csv';
-                    $headers = ['ID', 'Name', 'Email', 'Role', 'Section', 'Created At'];
-
-                    // Prepare flattened data for CSV
-                    foreach ($users as $user) {
-                        $sectionName = $user->section ? $user->section->section_name : 'N/A';
-                        $data[] = [
-                            $user->user_id,
-                            $user->name,
-                            $user->email,
-                            $user->role,
-                            $sectionName,
-                            $user->created_at
-                        ];
-                    }
-                    break;
-
-                case 'clubs':
-                    $clubs = Club::with('adviser')->withCount('members')->get();
-                    $filename = 'clubs_export_' . date('Y-m-d') . '.csv';
-                    $headers = ['ID', 'Club Name', 'Description', 'Club Adviser', 'Members Count', 'Created At'];
-
-                    foreach ($clubs as $club) {
-                        $adviserName = $club->adviser ? $club->adviser->name : 'N/A';
-                        $data[] = [
-                            $club->club_id,
-                            $club->club_name,
-                            $club->club_description,
-                            $adviserName,
-                            $club->members_count,
-                            $club->created_at
-                        ];
-                    }
-                    break;
-
-                case 'events':
-                    $events = Event::all();
-                    $filename = 'events_export_' . date('Y-m-d') . '.csv';
-                    $headers = ['ID', 'Event Name', 'Club', 'Description', 'Date', 'Time', 'Location', 'Visibility', 'Created At'];
-
-                    foreach ($events as $event) {
-                        $clubName = $event->club ? $event->club->club_name : 'N/A';
-                        $data[] = [
-                            $event->event_id,
-                            $event->event_name,
-                            $clubName,
-                            $event->event_description,
-                            $event->event_date,
-                            $event->event_time,
-                            $event->event_location,
-                            $event->event_visibility,
-                            $event->created_at
-                        ];
-                    }
-                    break;
-
-                default:
-                    return redirect()->back()->with('error', 'Invalid export type');
-            }
-
-            return response()->streamDownload(function () use ($data, $headers) {
-                $handle = fopen('php://output', 'w');
-
-                // Add headers
-                fputcsv($handle, $headers);
-
-                // Add data rows
-                foreach ($data as $row) {
-                    fputcsv($handle, $row);
-                }
-
-                fclose($handle);
-            }, $filename);
-        })->name('admin.export');
+        // Enhanced Export Routes
+        Route::prefix('export')->group(function () {
+            Route::get('/users', [App\Http\Controllers\ExportController::class, 'exportUsers'])->name('admin.export.users');
+            Route::get('/clubs', [App\Http\Controllers\ExportController::class, 'exportClubs'])->name('admin.export.clubs');
+            Route::get('/action-logs', [App\Http\Controllers\ExportController::class, 'exportActionLogs'])->name('admin.export.action-logs');
+        });
 
         // Admin posts and events management routes
         Route::get('/posts', function (Request $request) {
@@ -466,6 +388,13 @@ Route::middleware(['auth'])->group(function () {
 
         Route::post('/clubs/{club}/toggle-approval', [ClubController::class, 'toggleApprovalRequirement'])
             ->name('clubs.toggle-approval');
+
+        // Teacher Export Routes
+        Route::prefix('clubs/{club}/export')->group(function () {
+            Route::get('/membership', [App\Http\Controllers\ExportController::class, 'exportClubMembership'])->name('clubs.export.membership');
+            Route::get('/events', [App\Http\Controllers\ExportController::class, 'exportClubEvents'])->name('clubs.export.events');
+            Route::get('/voting-results', [App\Http\Controllers\ExportController::class, 'exportVotingResults'])->name('clubs.export.voting-results');
+        });
     });
 
     // Add a route that both ADMIN and TEACHER can access for the toggle hunting day feature
