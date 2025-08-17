@@ -7,6 +7,7 @@ use App\Models\Post;
 use App\Models\PostDocument;
 use App\Models\User;
 use App\Models\PostImage;
+use App\Models\ActionLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
@@ -91,6 +92,22 @@ class PostController extends Controller
                 $post->images()->create(['image_path' => $path]);
             }
         }
+
+        // Log post creation
+        ActionLog::create_log(
+            'post_management',
+            'created',
+            "Created new post in club: {$club->club_name}",
+            [
+                'post_id' => $post->post_id,
+                'club_id' => $club->club_id,
+                'club_name' => $club->club_name,
+                'post_visibility' => $post->post_visibility,
+                'has_images' => $request->hasFile('images'),
+                'has_documents' => !empty($uploadedDocuments),
+                'has_file_attachment' => !empty($postData['file_attachment'])
+            ]
+        );
 
         return redirect()->route('clubs.show', $club);
     }

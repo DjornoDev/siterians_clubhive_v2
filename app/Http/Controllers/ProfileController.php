@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use App\Models\User;
+use App\Models\ActionLog;
 
 class ProfileController extends Controller
 {
@@ -57,6 +58,18 @@ class ProfileController extends Controller
 
         $user->save();
 
+        // Log the profile update
+        ActionLog::create_log(
+            'user_management',
+            'updated',
+            "Updated profile information",
+            [
+                'updated_user_id' => $user->user_id,
+                'updated_fields' => array_keys($request->safe()->except(['profile_picture', 'password', 'confirm_email_change', 'modal_has_profile_picture'])),
+                'profile_picture_updated' => $request->hasFile('profile_picture') || ($request->has('modal_has_profile_picture') && $request->modal_has_profile_picture == '1')
+            ]
+        );
+
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
@@ -70,6 +83,18 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+
+        // Log the account deletion
+        ActionLog::create_log(
+            'user_management',
+            'deleted',
+            "Deleted user account",
+            [
+                'deleted_user_id' => $user->user_id,
+                'deleted_username' => $user->username,
+                'deleted_email' => $user->email
+            ]
+        );
 
         // Delete user's profile picture if exists
         if ($user->profile_picture) {

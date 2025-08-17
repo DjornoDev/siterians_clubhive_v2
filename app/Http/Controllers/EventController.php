@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Club;
 use App\Models\Event;
 use App\Models\EventDocument;
+use App\Models\ActionLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
@@ -373,6 +374,22 @@ class EventController extends Controller
                 'event_name' => $event->event_name,
                 'files_count' => count($uploadedFiles),
             ]);
+
+            // Log event creation
+            ActionLog::create_log(
+                'event_management',
+                'created',
+                "Created event: {$event->event_name}",
+                [
+                    'event_id' => $event->event_id,
+                    'event_name' => $event->event_name,
+                    'club_id' => $club->club_id,
+                    'club_name' => $club->club_name,
+                    'event_date' => $event->event_date,
+                    'approval_status' => $approvalStatus,
+                    'files_uploaded' => count($uploadedFiles)
+                ]
+            );
 
             $message = $isSSLGAdviser ?
                 'Event created and automatically approved.' :

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Club;
+use App\Models\ActionLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
@@ -132,6 +133,18 @@ class ClubController extends Controller
                 'message' => 'Join request for ' . $club->club_name
             ]);
 
+            // Log join request
+            ActionLog::create_log(
+                'club_membership',
+                'join_requested',
+                "Requested to join club: {$club->club_name}",
+                [
+                    'club_id' => $club->club_id,
+                    'club_name' => $club->club_name,
+                    'status' => 'pending'
+                ]
+            );
+
             return response()->json([
                 'success' => true,
                 'message' => 'Join request sent! Wait for club adviser approval.',
@@ -145,6 +158,18 @@ class ClubController extends Controller
             'joined_date' => now(),
             'club_accessibility' => null
         ]);
+
+        // Log direct club join
+        ActionLog::create_log(
+            'club_membership',
+            'joined',
+            "Joined club: {$club->club_name}",
+            [
+                'club_id' => $club->club_id,
+                'club_name' => $club->club_name,
+                'club_role' => 'MEMBER'
+            ]
+        );
 
         return response()->json([
             'success' => true,
@@ -261,7 +286,7 @@ class ClubController extends Controller
             $logoPath = $request->file('club_logo')->store('club-logos', 'public');
             $bannerPath = $request->file('club_banner')->store('club-banners', 'public');
 
-            Club::create([
+            $club = Club::create([
                 'club_name' => $validated['club_name'],
                 'club_adviser' => $validated['club_adviser'],
                 'club_description' => $validated['club_description'],
@@ -270,6 +295,19 @@ class ClubController extends Controller
                 'club_logo' => $logoPath,
                 'club_banner' => $bannerPath,
             ]);
+
+            // Log club creation
+            ActionLog::create_log(
+                'club_management',
+                'created',
+                "Created new club: {$club->club_name}",
+                [
+                    'club_id' => $club->club_id,
+                    'club_name' => $club->club_name,
+                    'club_adviser' => $validated['club_adviser'],
+                    'category' => $validated['category']
+                ]
+            );
 
             return redirect()->route('admin.clubs.index')->with('success', 'Club created successfully');
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -320,6 +358,18 @@ class ClubController extends Controller
 
             $club->update($validated);
 
+            // Log club update
+            ActionLog::create_log(
+                'club_management',
+                'updated',
+                "Updated club: {$club->club_name}",
+                [
+                    'club_id' => $club->club_id,
+                    'club_name' => $club->club_name,
+                    'updated_fields' => array_keys($validated)
+                ]
+            );
+
             return redirect()->route('admin.clubs.index')->with('success', 'Club updated successfully');
         } catch (\Exception $e) {
             return back()->withInput()->with('error', 'Error updating club: ' . $e->getMessage());
@@ -329,6 +379,9 @@ class ClubController extends Controller
     public function destroy(Club $club)
     {
         try {
+            $clubName = $club->club_name;
+            $clubId = $club->club_id;
+
             // Delete associated files
             if ($club->club_logo) {
                 Storage::disk('public')->delete($club->club_logo);
@@ -338,6 +391,17 @@ class ClubController extends Controller
             }
 
             $club->delete();
+
+            // Log club deletion
+            ActionLog::create_log(
+                'club_management',
+                'deleted',
+                "Deleted club: {$clubName}",
+                [
+                    'club_id' => $clubId,
+                    'club_name' => $clubName
+                ]
+            );
 
             return redirect()->route('admin.clubs.index')->with('success', 'Club deleted successfully');
         } catch (\Exception $e) {

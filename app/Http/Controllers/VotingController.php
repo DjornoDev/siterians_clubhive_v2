@@ -9,6 +9,7 @@ use App\Models\VoteDetail;
 use App\Models\Club;
 use App\Models\User;
 use App\Models\ClubMembership;
+use App\Models\ActionLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -50,7 +51,7 @@ class VotingController extends Controller
 
         try {
             // Create the election
-            Election::create([
+            $election = Election::create([
                 'title' => $validated['title'],
                 'description' => $validated['description'],
                 'start_date' => now(),
@@ -58,6 +59,19 @@ class VotingController extends Controller
                 'club_id' => 1,
                 'is_published' => false,
             ]);
+
+            // Log election creation
+            ActionLog::create_log(
+                'voting_management',
+                'created',
+                "Created new voting election: {$election->title}",
+                [
+                    'election_id' => $election->election_id,
+                    'title' => $election->title,
+                    'end_date' => $election->end_date,
+                    'club_id' => 1
+                ]
+            );
 
             return redirect()->route('voting.index')->with('success', 'Voting created successfully! You can now add candidates.');
         } catch (\Exception $e) {
@@ -132,6 +146,19 @@ class VotingController extends Controller
                     'club_id' => 1,
                     'is_published' => false,
                 ]);
+
+                // Log election creation
+                ActionLog::create_log(
+                    'voting_management',
+                    'created',
+                    "Created new voting election: {$election->title}",
+                    [
+                        'election_id' => $election->election_id,
+                        'title' => $election->title,
+                        'end_date' => $election->end_date,
+                        'club_id' => 1
+                    ]
+                );
 
                 return redirect()->route('voting.index')->with('success', 'Voting created successfully! You can now add candidates.');
             } catch (\Exception $e) {
@@ -248,10 +275,24 @@ class VotingController extends Controller
         }
 
         // Toggle is_published status and force updated_at timestamp change to ensure checksum change
+        $oldStatus = $election->is_published;
         $election->update([
             'is_published' => !$election->is_published,
             'updated_at' => now()
         ]);
+
+        // Log the publishing toggle
+        ActionLog::create_log(
+            'voting_management',
+            'updated',
+            "Toggled election publication status: {$election->title} - " . ($election->is_published ? 'Published' : 'Unpublished'),
+            [
+                'election_id' => $election->election_id,
+                'title' => $election->title,
+                'old_status' => $oldStatus,
+                'new_status' => $election->is_published
+            ]
+        );
 
         // Ensure the checksum changes by touching the election model
         $election->touch();
@@ -512,6 +553,19 @@ class VotingController extends Controller
             }
 
             DB::commit();
+
+            // Log the vote submission
+            ActionLog::create_log(
+                'voting_management',
+                'created',
+                "Submitted vote for election: {$election->title}",
+                [
+                    'election_id' => $election->election_id,
+                    'election_title' => $election->title,
+                    'vote_id' => $vote->vote_id,
+                    'positions_voted' => count($validated['votes'])
+                ]
+            );
 
             return response()->json([
                 'success' => true,

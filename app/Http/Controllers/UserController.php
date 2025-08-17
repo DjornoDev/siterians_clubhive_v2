@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Section;
+use App\Models\ActionLog;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
@@ -174,6 +175,20 @@ class UserController extends Controller
                 ]);
             }
 
+            // Log user creation action
+            ActionLog::create_log(
+                'user_management',
+                'created',
+                "Created new user account for {$user->name}",
+                [
+                    'user_id' => $user->user_id,
+                    'user_name' => $user->name,
+                    'user_email' => $user->email,
+                    'user_role' => $user->role,
+                    'created_by' => auth()->user()->name ?? 'System'
+                ]
+            );
+
             return redirect()->route('admin.users.index')->with('user_added', true);
         } catch (\Exception $e) {
             return back()->withInput()->with('error', 'Error creating user: ' . $e->getMessage());
@@ -327,7 +342,30 @@ class UserController extends Controller
                 $updateData['password'] = Hash::make($validated['password']);
             }
 
+            // Store original data before update for comparison
+            $originalData = [
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'sex' => $user->sex,
+                'address' => $user->address,
+                'contact_no' => $user->contact_no,
+                'mother_name' => $user->mother_name,
+                'mother_contact_no' => $user->mother_contact_no,
+                'father_name' => $user->father_name,
+                'father_contact_no' => $user->father_contact_no,
+                'section_id' => $user->section_id,
+            ];
+
             $user->update($updateData);
+
+            // Log user update action with user-friendly description
+            ActionLog::create_user_update_log(
+                $user,
+                $originalData,
+                $updateData,
+                auth()->user()->name ?? 'System'
+            );
 
             // Return appropriate response based on request type
             if ($request->ajax() || $request->wantsJson()) {
@@ -365,7 +403,25 @@ class UserController extends Controller
         }
 
         try {
+            // Store user data for logging before deletion
+            $userData = [
+                'user_id' => $user->user_id,
+                'user_name' => $user->name,
+                'user_email' => $user->email,
+                'user_role' => $user->role,
+                'deleted_by' => auth()->user()->name ?? 'System'
+            ];
+
             $user->delete();
+
+            // Log user deletion action
+            ActionLog::create_log(
+                'user_management',
+                'deleted',
+                "Deleted user account for {$userData['user_name']}",
+                $userData
+            );
+
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             return response()->json([

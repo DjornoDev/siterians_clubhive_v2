@@ -6,6 +6,7 @@ use App\Models\Club;
 use App\Models\ClubQuestion;
 use App\Models\ClubJoinRequest;
 use App\Models\ClubQuestionAnswer;
+use App\Models\ActionLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -65,7 +66,7 @@ class ClubQuestionController extends Controller
             Log::info('Processed options:', ['options' => $options]);
         }
 
-        ClubQuestion::create([
+        $question = ClubQuestion::create([
             'club_id' => $club->club_id,
             'question' => $request->question,
             'question_type' => $request->question_type,
@@ -74,6 +75,19 @@ class ClubQuestionController extends Controller
             'order' => $request->order ?? 0,
             'is_active' => true
         ]);
+
+        // Log question creation
+        ActionLog::create_log(
+            'club_management',
+            'created',
+            "Created club question for {$club->club_name}: {$question->question}",
+            [
+                'club_id' => $club->club_id,
+                'club_name' => $club->club_name,
+                'question_id' => $question->question_id,
+                'question_type' => $question->question_type
+            ]
+        );
 
         Log::info('Question created successfully');
 

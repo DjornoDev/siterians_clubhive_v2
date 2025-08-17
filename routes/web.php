@@ -207,6 +207,15 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/clubs', [App\Http\Controllers\ClubController::class, 'store'])->name('admin.clubs.store');
         Route::get('/clubs/check-name-exists', [ClubController::class, 'checkClubNameExists'])->name('admin.clubs.check-name-exists');
 
+        // Action Logs
+        Route::get('/action-logs', [App\Http\Controllers\Admin\ActionLogController::class, 'index'])->name('admin.action-logs.index');
+        Route::get('/action-logs/archives', [App\Http\Controllers\Admin\ActionLogController::class, 'archives'])->name('admin.action-logs.archives');
+        Route::get('/action-logs/archives/download/{filename}', [App\Http\Controllers\Admin\ActionLogController::class, 'downloadArchive'])->name('admin.action-logs.download-archive');
+        Route::post('/action-logs/cleanup', [App\Http\Controllers\Admin\ActionLogController::class, 'cleanup'])->name('admin.action-logs.cleanup');
+        Route::get('/action-logs/{actionLog}', [App\Http\Controllers\Admin\ActionLogController::class, 'show'])->name('admin.action-logs.show');
+        Route::get('/api/users/suggestions', [App\Http\Controllers\Admin\ActionLogController::class, 'getUserSuggestions'])->name('admin.action-logs.user-suggestions');
+        Route::get('/api/actions/suggestions', [App\Http\Controllers\Admin\ActionLogController::class, 'getActionSuggestions'])->name('admin.action-logs.action-suggestions');
+
         // New admin routes for data export and announcements
         Route::get('/export/{type}', function ($type) {
             // This is a simplified version - in a real app you might use a package like maatwebsite/excel

@@ -13,6 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         // Register role middleware
         $middleware->alias(['role' => \App\Http\Middleware\CheckRole::class]);
+
+        // Register action logging middleware for authenticated routes
+        $middleware->web(append: [
+            \App\Http\Middleware\LogUserActions::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

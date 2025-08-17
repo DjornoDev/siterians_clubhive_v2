@@ -221,6 +221,12 @@
                         <i class="fas fa-user-cog w-6 text-center text-lg"></i>
                         <span class="nav-text ml-3 truncate">Manage Users</span>
                     </a>
+
+                    <a href="{{ route('admin.action-logs.index') }}"
+                        class="block py-3 px-4 rounded-lg transition duration-200 text-white mb-1 flex items-center {{ request()->routeIs('admin.action-logs.*') ? 'bg-blue-600 hover:bg-blue-700' : 'hover:bg-blue-600' }}">
+                        <i class="fas fa-history w-6 text-center text-lg"></i>
+                        <span class="nav-text ml-3 truncate">Action Logs</span>
+                    </a>
                 @else
                     {{-- Shared Navigation for TEACHER and STUDENT --}}
                     <a href="{{ route('home.index') }}"
