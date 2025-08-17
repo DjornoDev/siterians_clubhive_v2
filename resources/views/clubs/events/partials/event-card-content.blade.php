@@ -108,7 +108,55 @@
         </div>
 
         <!-- Supporting Documents Section -->
-        @if ($event->supporting_documents)
+        @if ($event->documents && $event->documents->count() > 0)
+            <div class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div class="flex items-center mb-2">
+                    <svg class="w-4 h-4 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <h4 class="text-sm font-medium text-gray-900">
+                        Event Documents ({{ $event->documents->count() }})
+                    </h4>
+                </div>
+
+                <div class="space-y-2">
+                    @foreach ($event->documents as $document)
+                        <div class="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
+                            <div class="flex items-center gap-3">
+                                <div class="w-6 h-6 bg-blue-100 rounded flex items-center justify-center">
+                                    <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-medium text-gray-900">
+                                        {{ $document->original_name }}
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        {{ $document->formatted_file_size }}
+                                        @if ($document->file_extension)
+                                            • {{ strtoupper($document->file_extension) }}
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+                            <a href="{{ route('events.download-document', ['event' => $event, 'document' => $document]) }}"
+                                class="inline-flex items-center px-2 py-1 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 transition-colors">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Download
+                            </a>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @elseif ($event->supporting_documents)
+            <!-- Legacy single document support -->
             <div class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">

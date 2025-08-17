@@ -125,10 +125,9 @@
 
                             <!-- Current Documents -->
                             <div id="current-documents-section">
-                                <label for="current-documents-list"
-                                    class="block text-sm font-medium text-gray-700 mb-2">
+                                <h4 class="block text-sm font-medium text-gray-700 mb-2">
                                     Current Documents
-                                </label>
+                                </h4>
                                 <div id="current-documents-list" class="space-y-2 mb-3">
                                     <!-- Current documents will be loaded here -->
                                 </div>
@@ -136,8 +135,7 @@
 
                             <!-- File Upload Section -->
                             <div>
-                                <label for="edit_event_documents"
-                                    class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="edit_event_documents" class="block text-sm font-medium text-gray-700 mb-2">
                                     Add New Documents
                                 </label>
                                 <div class="border-2 border-dashed border-gray-300 rounded-md p-4 text-center hover:border-blue-400 transition-colors"

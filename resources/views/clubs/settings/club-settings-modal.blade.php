@@ -5,23 +5,24 @@
             @method('PUT')
 
             <div class="mb-4">
-                <label class="block text-gray-700 mb-2">Club Name</label>
-                <input type="text" name="club_name" value="{{ $club->club_name }}" class="w-full p-2 border rounded">
+                <label for="club_name" class="block text-gray-700 mb-2">Club Name</label>
+                <input type="text" name="club_name" id="club_name" value="{{ $club->club_name }}"
+                    class="w-full p-2 border rounded">
             </div>
 
             <div class="mb-4">
-                <label class="block text-gray-700 mb-2">Description</label>
-                <textarea name="club_description" rows="6" class="w-full p-2 border rounded">{{ $club->club_description }}</textarea>
+                <label for="club_description" class="block text-gray-700 mb-2">Description</label>
+                <textarea name="club_description" id="club_description" rows="6" class="w-full p-2 border rounded">{{ $club->club_description }}</textarea>
             </div>
 
             <div class="mb-4">
-                <label class="block text-gray-700 mb-2">Club Logo</label>
-                <input type="file" name="club_logo" class="w-full">
+                <label for="club_logo" class="block text-gray-700 mb-2">Club Logo</label>
+                <input type="file" name="club_logo" id="club_logo" class="w-full">
             </div>
 
             <div class="mb-4">
-                <label class="block text-gray-700 mb-2">Club Banner</label>
-                <input type="file" name="club_banner" class="w-full">
+                <label for="club_banner" class="block text-gray-700 mb-2">Club Banner</label>
+                <input type="file" name="club_banner" id="club_banner" class="w-full">
             </div>
 
             <div class="flex justify-end space-x-4">

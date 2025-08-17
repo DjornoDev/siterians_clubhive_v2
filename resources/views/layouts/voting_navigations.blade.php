@@ -53,11 +53,12 @@
     </div>
 @endsection
 
-@push('scripts')    <script>
+@push('scripts')
+    <script>
         async function toggleVotingPublished() {
             try {
                 const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                
+
                 const response = await fetch("/voting/toggle-published", {
                     method: 'POST',
                     headers: {
@@ -71,7 +72,7 @@
                     const button = document.querySelector('#toggleVotingPublishedForm button');
                     const span = button.querySelector('span:not(.sr-only)');
                     const label = document.querySelector('#toggleVotingPublishedForm').previousElementSibling;
-                    
+
                     if (button.classList.contains('bg-gray-200')) {
                         button.classList.remove('bg-gray-200');
                         button.classList.add('bg-blue-600');
@@ -85,17 +86,17 @@
                         span.classList.add('translate-x-1');
                         label.textContent = 'Voting Unpublished';
                     }
-                    
+
                     // After successful toggle, fetch updated checksum to invalidate all clients' checksums
                     await fetch('{{ route('voting.check-changes') }}');
-                    
+
                     // Show success message
                     const successAlert = document.createElement('div');
                     successAlert.className =
                         'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-up';
                     successAlert.textContent = 'Voting status updated successfully!';
                     document.body.appendChild(successAlert);
-                    
+
                     // Remove the success message after 3 seconds
                     setTimeout(() => {
                         successAlert.remove();

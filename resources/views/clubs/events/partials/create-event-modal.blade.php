@@ -120,13 +120,13 @@
                             <!-- File Upload Section -->
                             <div>
                                 <label for="event_documents" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Event Documents
+                                    Event Documents (Max 5 files)
                                 </label>
                                 <div class="border-2 border-dashed border-gray-300 rounded-md p-4 text-center hover:border-blue-400 transition-colors"
                                     id="dropZone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);"
                                     ondragleave="dragLeaveHandler(event);">
-                                    <input type="file" name="supporting_documents" id="event_documents"
-                                        class="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.txt"
+                                    <input type="file" name="supporting_documents[]" id="event_documents"
+                                        class="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.txt" multiple
                                         onchange="handleFileSelect(event)">
                                     <div class="text-gray-600">
                                         <svg class="mx-auto h-10 w-10 text-gray-400 mb-2" stroke="currentColor"
@@ -139,12 +139,12 @@
                                             <button type="button"
                                                 class="text-blue-600 hover:text-blue-500 font-medium"
                                                 onclick="document.getElementById('event_documents').click()">
-                                                Click to upload
+                                                Click to upload files
                                             </button>
                                             or drag and drop
                                         </p>
                                         <p class="text-xs text-gray-500 mt-1">PDF, DOC, DOCX, JPG, PNG, GIF, TXT up to
-                                            10MB each</p>
+                                            10MB each (Maximum 5 files)</p>
                                     </div>
                                 </div>
                                 <div id="fileList" class="mt-3 space-y-2"></div>
@@ -177,21 +177,29 @@
 </div>
 
 <script>
+    let selectedFiles = [];
+    const MAX_FILES = 5;
+    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+
     function validateCreateFile(file) {
         const allowedTypes = ['application/pdf', 'application/msword',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'text/plain'
+            'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'text/plain',
+            'application/vnd.ms-powerpoint',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/zip', 'application/x-rar-compressed'
         ];
-        const maxSize = 10 * 1024 * 1024; // 10MB
 
         if (!allowedTypes.includes(file.type)) {
             return {
                 valid: false,
-                message: `${file.name}: Invalid file type. Allowed: PDF, DOC, DOCX, JPG, PNG, GIF, TXT`
+                message: `${file.name}: Invalid file type. Allowed: PDF, DOC, DOCX, JPG, PNG, GIF, TXT, PPT, PPTX, XLS, XLSX, ZIP, RAR`
             };
         }
 
-        if (file.size > maxSize) {
+        if (file.size > MAX_SIZE) {
             return {
                 valid: false,
                 message: `${file.name}: File too large. Maximum size is 10MB`
@@ -204,59 +212,122 @@
     }
 
     function handleFileSelect(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const validation = validateCreateFile(file);
-            displayFileValidation(validation, file);
-        } else {
-            clearFileDisplay();
-        }
+        const files = Array.from(event.target.files);
+        processFiles(files);
     }
 
-    function displayFileValidation(validation, file) {
+    function processFiles(files) {
         const errorDiv = document.getElementById('uploadError');
         const fileListDiv = document.getElementById('fileList');
 
+        // Clear previous errors
         errorDiv.classList.add('hidden');
-        fileListDiv.innerHTML = '';
+        errorDiv.innerHTML = '';
 
-        if (!validation.valid) {
-            errorDiv.innerHTML = validation.message;
+        // Check if adding these files would exceed the limit
+        if (selectedFiles.length + files.length > MAX_FILES) {
+            errorDiv.innerHTML =
+                `Too many files selected. Maximum ${MAX_FILES} files allowed. You currently have ${selectedFiles.length} files selected.`;
             errorDiv.classList.remove('hidden');
             return;
         }
 
-        // Show selected file
-        const fileItem = document.createElement('div');
-        fileItem.className = 'flex items-center justify-between p-2 bg-gray-50 rounded border';
-        fileItem.innerHTML = `
-            <div class="flex items-center">
-                <svg class="w-4 h-4 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                <span class="text-sm text-gray-700">${file.name}</span>
-                <span class="text-xs text-gray-500 ml-2">(${(file.size / (1024 * 1024)).toFixed(2)} MB)</span>
-            </div>
-            <button type="button" onclick="clearFileSelection()" class="text-red-500 hover:text-red-700">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
-        `;
-        fileListDiv.appendChild(fileItem);
+        const errors = [];
+        const validFiles = [];
+
+        files.forEach(file => {
+            // Check if file already exists
+            const isDuplicate = selectedFiles.some(existingFile =>
+                existingFile.name === file.name && existingFile.size === file.size
+            );
+
+            if (isDuplicate) {
+                errors.push(`${file.name}: File already selected`);
+                return;
+            }
+
+            const validation = validateCreateFile(file);
+            if (!validation.valid) {
+                errors.push(validation.message);
+            } else {
+                validFiles.push(file);
+            }
+        });
+
+        if (errors.length > 0) {
+            errorDiv.innerHTML = errors.join('<br>');
+            errorDiv.classList.remove('hidden');
+        }
+
+        // Add valid files to selection
+        selectedFiles.push(...validFiles);
+        updateFileDisplay();
+        updateFileInput();
+    }
+
+    function updateFileDisplay() {
+        const fileListDiv = document.getElementById('fileList');
+        fileListDiv.innerHTML = '';
+
+        if (selectedFiles.length === 0) {
+            return;
+        }
+
+        // Show file count
+        const countDiv = document.createElement('div');
+        countDiv.className = 'text-sm text-gray-600 mb-2';
+        countDiv.innerHTML = `${selectedFiles.length} of ${MAX_FILES} files selected`;
+        fileListDiv.appendChild(countDiv);
+
+        selectedFiles.forEach((file, index) => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'flex items-center justify-between p-2 bg-gray-50 rounded border';
+            fileItem.innerHTML = `
+                <div class="flex items-center">
+                    <svg class="w-4 h-4 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <span class="text-sm text-gray-700">${file.name}</span>
+                    <span class="text-xs text-gray-500 ml-2">(${(file.size / (1024 * 1024)).toFixed(2)} MB)</span>
+                </div>
+                <button type="button" onclick="removeFile(${index})" class="text-red-500 hover:text-red-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            `;
+            fileListDiv.appendChild(fileItem);
+        });
+    }
+
+    function updateFileInput() {
+        const input = document.getElementById('event_documents');
+        const dt = new DataTransfer();
+
+        selectedFiles.forEach(file => {
+            dt.items.add(file);
+        });
+
+        input.files = dt.files;
+    }
+
+    function removeFile(index) {
+        selectedFiles.splice(index, 1);
+        updateFileDisplay();
+        updateFileInput();
     }
 
     function clearFileSelection() {
-        const fileInput = document.getElementById('event_documents');
-        fileInput.value = '';
-        clearFileDisplay();
+        selectedFiles = [];
+        updateFileDisplay();
+        updateFileInput();
+        clearErrorDisplay();
     }
 
-    function clearFileDisplay() {
+    function clearErrorDisplay() {
         const errorDiv = document.getElementById('uploadError');
-        const fileListDiv = document.getElementById('fileList');
         errorDiv.classList.add('hidden');
-        fileListDiv.innerHTML = '';
+        errorDiv.innerHTML = '';
     }
 
     function dropHandler(ev) {

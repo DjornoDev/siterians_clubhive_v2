@@ -386,11 +386,13 @@ class ClubController extends Controller
     public function show(Club $club)
     {
         $todayEvents = $club->events()
+            ->with('documents')
             ->whereDate('event_date', today())
             ->orderBy('event_time')
             ->get();
 
         $upcomingEvents = $club->events()
+            ->with('documents')
             ->where('event_date', '>', today())
             ->orderBy('event_date')
             ->take(5) // Adjust the number of upcoming events to show
@@ -415,7 +417,7 @@ class ClubController extends Controller
 
         return view('clubs.index', [
             'club' => $club->loadCount('members'),
-            'posts' => $postsQuery->latest()->paginate(10),
+            'posts' => $postsQuery->with(['author', 'images', 'documents'])->latest()->paginate(10),
             'todayEvents' => $todayEvents,
             'upcomingEvents' => $upcomingEvents,
             'isClubMember' => $isClubMember,
@@ -447,7 +449,7 @@ class ClubController extends Controller
         $currentChecksum = $request->query('checksum', '');
 
         // Get all events for this club
-        $events = $club->events()->get();
+        $events = $club->events()->with('documents')->get();
 
         // Generate a new checksum that includes event IDs and updated timestamps
         // This will change if events are added, edited, or deleted
@@ -562,9 +564,9 @@ class ClubController extends Controller
             }
 
             // Get paginated results for each tab
-            $todayEvents = $todayQuery->orderBy('event_date', 'asc')->paginate(9, ['*'], 'today_page');
-            $upcomingEvents = $upcomingQuery->orderBy('event_date', 'asc')->paginate(9, ['*'], 'upcoming_page');
-            $pastEvents = $pastQuery->orderBy('event_date', 'desc')->paginate(9, ['*'], 'past_page');
+            $todayEvents = $todayQuery->with('documents')->orderBy('event_date', 'asc')->paginate(9, ['*'], 'today_page');
+            $upcomingEvents = $upcomingQuery->with('documents')->orderBy('event_date', 'asc')->paginate(9, ['*'], 'upcoming_page');
+            $pastEvents = $pastQuery->with('documents')->orderBy('event_date', 'desc')->paginate(9, ['*'], 'past_page');
 
             // Get the main events collection based on current tab
             switch ($tab) {

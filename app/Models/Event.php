@@ -54,6 +54,14 @@ class Event extends Model
     }
 
     /**
+     * Get all documents for this event.
+     */
+    public function documents()
+    {
+        return $this->hasMany(EventDocument::class, 'event_id', 'event_id');
+    }
+
+    /**
      * Check if event is approved
      */
     public function isApproved()

@@ -1,5 +1,6 @@
-@section('title', $club->club_name . ' - Home')
 @extends('clubs.layouts.navigation')
+
+@section('title', $club->club_name . ' - Home')
 
 @section('club_content')
     <style>
@@ -28,6 +29,7 @@
         editPostCaption: '',
         editPostVisibility: 'CLUB_ONLY',
         currentPostImages: [],
+        currentPostDocuments: [],
         currentPostFileAttachment: null,
         showFullGallery: null,
         currentImageIndex: 0,
@@ -402,6 +404,7 @@ $canAccessVotingPage =
                                                         'url' => Storage::url($img->image_path),
                                                     ],
                                                 )->toJson() }};
+                                            currentPostDocuments = {{ $post->documents->filter(fn($doc) => $doc->id && $doc->original_name && $doc->file_size)->map(fn($doc) => ['id' => $doc->id, 'url' => route('posts.documents.download', $doc), 'original_name' => $doc->original_name, 'file_size' => $doc->file_size])->values()->toJson() }};
                                             currentPostFileAttachment = {{ $post->file_attachment
                                                 ? json_encode([
                                                     'url' => Storage::url($post->file_attachment),
@@ -447,8 +450,61 @@ $canAccessVotingPage =
                                     {{ $post->post_caption }}</p>
                             </div>
 
-                            <!-- File Attachment Section -->
-                            @if ($post->file_attachment)
+                            <!-- File Attachments Section -->
+                            @if ($post->documents && $post->documents->count() > 0)
+                                <div class="px-4 pb-4 sm:px-6">
+                                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+                                        <div class="flex items-center mb-3">
+                                            <svg class="w-4 h-4 text-blue-500 mr-2" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                                </path>
+                                            </svg>
+                                            <span class="text-sm font-medium text-blue-700">
+                                                Attachments ({{ $post->documents->count() }})
+                                            </span>
+                                        </div>
+                                        <div class="space-y-2">
+                                            @foreach ($post->documents as $document)
+                                                <div
+                                                    class="flex items-center justify-between bg-white rounded-md p-2 sm:p-3 border border-blue-200">
+                                                    <div class="flex items-center min-w-0 flex-1">
+                                                        <div class="bg-blue-100 rounded p-1 mr-2 sm:mr-3">
+                                                            <svg class="w-3 h-3 sm:w-4 sm:h-4 text-blue-600"
+                                                                fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fill-rule="evenodd"
+                                                                    d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+                                                                    clip-rule="evenodd"></path>
+                                                            </svg>
+                                                        </div>
+                                                        <div class="min-w-0 flex-1">
+                                                            <p
+                                                                class="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                                                                {{ $document->original_name }}</p>
+                                                            <p class="text-xs text-gray-500">
+                                                                {{ $document->formatted_file_size }} •
+                                                                {{ strtoupper($document->file_extension) }}</p>
+                                                        </div>
+                                                    </div>
+                                                    <a href="{{ route('posts.documents.download', $document) }}"
+                                                        class="ml-2 sm:ml-3 inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 transition-colors">
+                                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M12 10v6m0 0l-4-4m4 4l4-4m6 8a9 9 0 11-18 0 9 9 0 0118 0z">
+                                                            </path>
+                                                        </svg>
+                                                        <span class="hidden sm:inline">Download</span>
+                                                    </a>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                            @elseif ($post->file_attachment)
+                                <!-- Legacy single file support -->
                                 <div class="px-4 pb-4 sm:px-6">
                                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 sm:p-4">
                                         <div class="flex items-center justify-between">

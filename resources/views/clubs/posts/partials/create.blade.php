@@ -164,7 +164,7 @@
 
                             <!-- File Upload Options -->
                             <div class="space-y-4">
-                                <!-- General File Upload -->
+                                <!-- Single File Upload (Legacy) -->
                                 <div>
                                     <label for="file_attachment" class="block text-sm font-medium text-gray-600 mb-2">
                                         <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor"
@@ -173,13 +173,57 @@
                                                 d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13">
                                             </path>
                                         </svg>
-                                        Upload File (Documents, PDFs, etc.)
+                                        Upload Single File (Legacy)
                                     </label>
                                     <input id="file_attachment" name="file_attachment" type="file"
                                         accept=".pdf,.doc,.docx,.txt,.ppt,.pptx,.xls,.xlsx,.zip,.rar"
                                         class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                                     <p class="text-xs text-gray-500 mt-1">PDF, DOC, TXT, PPT, XLS, ZIP files up to 10MB
                                     </p>
+                                </div>
+
+                                <!-- Multiple File Upload (New) -->
+                                <div>
+                                    <label for="file_attachments"
+                                        class="block text-sm font-medium text-gray-600 mb-2">
+                                        <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13">
+                                            </path>
+                                        </svg>
+                                        Upload Multiple Documents (Max 5 files)
+                                    </label>
+                                    <div class="border-2 border-dashed border-gray-300 rounded-md p-4 text-center hover:border-blue-400 transition-colors"
+                                        id="postDropZone" ondrop="dropPostFiles(event);"
+                                        ondragover="dragOverPostFiles(event);"
+                                        ondragleave="dragLeavePostFiles(event);">
+                                        <input type="file" name="file_attachments[]" id="file_attachments"
+                                            class="hidden"
+                                            accept=".pdf,.doc,.docx,.txt,.ppt,.pptx,.xls,.xlsx,.zip,.rar" multiple
+                                            onchange="handlePostFileSelect(event)">
+                                        <div class="text-gray-600">
+                                            <svg class="mx-auto h-8 w-8 text-gray-400 mb-2" stroke="currentColor"
+                                                fill="none" viewBox="0 0 48 48">
+                                                <path
+                                                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                                    stroke-width="2" stroke-linecap="round"
+                                                    stroke-linejoin="round" />
+                                            </svg>
+                                            <p class="text-sm">
+                                                <button type="button"
+                                                    class="text-blue-600 hover:text-blue-500 font-medium"
+                                                    onclick="document.getElementById('file_attachments').click()">
+                                                    Click to upload multiple files
+                                                </button>
+                                                or drag and drop
+                                            </p>
+                                            <p class="text-xs text-gray-500 mt-1">PDF, DOC, TXT, PPT, XLS, ZIP files up
+                                                to 10MB each (Maximum 5 files)</p>
+                                        </div>
+                                    </div>
+                                    <div id="postFileList" class="mt-3 space-y-2"></div>
+                                    <div id="postUploadError" class="mt-2 text-red-600 text-sm hidden"></div>
                                 </div>
 
                                 <!-- Image Upload -->
@@ -311,3 +355,179 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Multiple file upload handling for posts
+    let selectedPostFiles = [];
+    const MAX_POST_FILES = 5;
+    const MAX_POST_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+    function validatePostFile(file) {
+        const allowedTypes = ['application/pdf', 'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-powerpoint',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/zip', 'application/x-rar-compressed', 'text/plain'
+        ];
+
+        if (!allowedTypes.includes(file.type)) {
+            return {
+                valid: false,
+                message: `${file.name}: Invalid file type. Allowed: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, ZIP, RAR, TXT`
+            };
+        }
+
+        if (file.size > MAX_POST_FILE_SIZE) {
+            return {
+                valid: false,
+                message: `${file.name}: File too large. Maximum size is 10MB`
+            };
+        }
+
+        return {
+            valid: true
+        };
+    }
+
+    function handlePostFileSelect(event) {
+        const files = Array.from(event.target.files);
+        processPostFiles(files);
+    }
+
+    function processPostFiles(files) {
+        const errorDiv = document.getElementById('postUploadError');
+        const fileListDiv = document.getElementById('postFileList');
+
+        // Clear previous errors
+        errorDiv.classList.add('hidden');
+        errorDiv.innerHTML = '';
+
+        // Check if adding these files would exceed the limit
+        if (selectedPostFiles.length + files.length > MAX_POST_FILES) {
+            errorDiv.innerHTML =
+                `Too many files selected. Maximum ${MAX_POST_FILES} files allowed. You currently have ${selectedPostFiles.length} files selected.`;
+            errorDiv.classList.remove('hidden');
+            return;
+        }
+
+        const errors = [];
+        const validFiles = [];
+
+        files.forEach(file => {
+            // Check if file already exists
+            const isDuplicate = selectedPostFiles.some(existingFile =>
+                existingFile.name === file.name && existingFile.size === file.size
+            );
+
+            if (isDuplicate) {
+                errors.push(`${file.name}: File already selected`);
+                return;
+            }
+
+            const validation = validatePostFile(file);
+            if (!validation.valid) {
+                errors.push(validation.message);
+            } else {
+                validFiles.push(file);
+            }
+        });
+
+        if (errors.length > 0) {
+            errorDiv.innerHTML = errors.join('<br>');
+            errorDiv.classList.remove('hidden');
+        }
+
+        // Add valid files to selection
+        selectedPostFiles.push(...validFiles);
+        updatePostFileDisplay();
+        updatePostFileInput();
+    }
+
+    function updatePostFileDisplay() {
+        const fileListDiv = document.getElementById('postFileList');
+        fileListDiv.innerHTML = '';
+
+        if (selectedPostFiles.length === 0) {
+            return;
+        }
+
+        // Show file count
+        const countDiv = document.createElement('div');
+        countDiv.className = 'text-sm text-gray-600 mb-2';
+        countDiv.innerHTML = `${selectedPostFiles.length} of ${MAX_POST_FILES} files selected`;
+        fileListDiv.appendChild(countDiv);
+
+        selectedPostFiles.forEach((file, index) => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'flex items-center justify-between p-2 bg-gray-50 rounded border';
+            fileItem.innerHTML = `
+                <div class="flex items-center">
+                    <svg class="w-4 h-4 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <span class="text-sm text-gray-700">${file.name}</span>
+                    <span class="text-xs text-gray-500 ml-2">(${(file.size / (1024 * 1024)).toFixed(2)} MB)</span>
+                </div>
+                <button type="button" onclick="removePostFile(${index})" class="text-red-500 hover:text-red-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            `;
+            fileListDiv.appendChild(fileItem);
+        });
+    }
+
+    function updatePostFileInput() {
+        const input = document.getElementById('file_attachments');
+        const dt = new DataTransfer();
+
+        selectedPostFiles.forEach(file => {
+            dt.items.add(file);
+        });
+
+        input.files = dt.files;
+    }
+
+    function removePostFile(index) {
+        selectedPostFiles.splice(index, 1);
+        updatePostFileDisplay();
+        updatePostFileInput();
+    }
+
+    function clearPostFileSelection() {
+        selectedPostFiles = [];
+        updatePostFileDisplay();
+        updatePostFileInput();
+        clearPostErrorDisplay();
+    }
+
+    function clearPostErrorDisplay() {
+        const errorDiv = document.getElementById('postUploadError');
+        errorDiv.classList.add('hidden');
+        errorDiv.innerHTML = '';
+    }
+
+    function dropPostFiles(ev) {
+        ev.preventDefault();
+        const dropZone = document.getElementById('postDropZone');
+        dropZone.classList.remove('border-blue-400', 'bg-blue-50');
+
+        const files = Array.from(ev.dataTransfer.files);
+        processPostFiles(files);
+    }
+
+    function dragOverPostFiles(ev) {
+        ev.preventDefault();
+        const dropZone = document.getElementById('postDropZone');
+        dropZone.classList.add('border-blue-400', 'bg-blue-50');
+    }
+
+    function dragLeavePostFiles(ev) {
+        ev.preventDefault();
+        const dropZone = document.getElementById('postDropZone');
+        dropZone.classList.remove('border-blue-400', 'bg-blue-50');
+    }
+</script>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Club;
 use App\Models\Event;
+use App\Models\EventDocument;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
@@ -81,13 +82,13 @@ class EventController extends Controller
 
             // Create separate queries for each tab
             $todayQuery = clone $baseQuery;
-            $todayQuery->whereBetween('event_date', [$today, $endOfDay]);
+            $todayQuery->whereBetween('event_date', [$today, $endOfDay])->with('documents');
 
             $upcomingQuery = clone $baseQuery;
-            $upcomingQuery->where('event_date', '>', $endOfDay);
+            $upcomingQuery->where('event_date', '>', $endOfDay)->with('documents');
 
             $pastQuery = clone $baseQuery;
-            $pastQuery->where('event_date', '<', $today);
+            $pastQuery->where('event_date', '<', $today)->with('documents');
 
             // Apply search and filters to all queries
             $queries = [$todayQuery, $upcomingQuery, $pastQuery];
@@ -179,7 +180,7 @@ class EventController extends Controller
         }
 
         // Get events query with proper visibility filtering
-        $events = Event::with('club')
+        $events = Event::with(['club', 'documents'])
             ->where('approval_status', 'approved') // Only show approved events
             ->where(function ($query) use ($userId, $clubsUserIsAssociatedWith) {
                 // Get all PUBLIC events
@@ -237,27 +238,29 @@ class EventController extends Controller
             'event_time' => 'nullable|string',
             'event_visibility' => 'required|in:PUBLIC,CLUB_ONLY',
             'event_location' => 'nullable|string',
-            'supporting_documents' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png,txt,ppt,pptx,xls,xlsx,zip,rar|max:10240', // 10MB max, expanded file types
+            'supporting_documents' => 'nullable|array|max:5', // Max 5 files
+            'supporting_documents.*' => 'file|mimes:pdf,doc,docx,jpg,jpeg,png,txt,ppt,pptx,xls,xlsx,zip,rar|max:10240', // 10MB max per file
         ]);
 
-        // Handle file upload
-        $filePath = null;
-        $originalName = null;
-        $mimeType = null;
-        $fileSize = null;
-
+        // Handle multiple file uploads
+        $uploadedFiles = [];
         if ($request->hasFile('supporting_documents')) {
-            $file = $request->file('supporting_documents');
-            $filePath = $file->store('event-documents', 'public');
-            $originalName = $file->getClientOriginalName();
-            $mimeType = $file->getMimeType();
-            $fileSize = $file->getSize();
+            foreach ($request->file('supporting_documents') as $file) {
+                $filePath = $file->store('event-documents', 'public');
+                $uploadedFiles[] = [
+                    'document_path' => $filePath,
+                    'original_name' => $file->getClientOriginalName(),
+                    'mime_type' => $file->getMimeType(),
+                    'file_size' => $file->getSize(),
+                    'uploaded_at' => now(),
+                ];
 
-            Log::info('File uploaded successfully', [
-                'path' => $filePath,
-                'original_name' => $originalName,
-                'size' => $fileSize,
-            ]);
+                Log::info('File uploaded successfully', [
+                    'path' => $filePath,
+                    'original_name' => $file->getClientOriginalName(),
+                    'size' => $file->getSize(),
+                ]);
+            }
         }
 
         // Check if current user is SSLG adviser (club ID 1)
@@ -278,19 +281,22 @@ class EventController extends Controller
                 'event_time' => $validated['event_time'],
                 'event_visibility' => $validated['event_visibility'],
                 'event_location' => $validated['event_location'],
-                'supporting_documents' => $filePath,
-                'supporting_documents_original_name' => $originalName,
-                'supporting_documents_mime_type' => $mimeType,
-                'supporting_documents_size' => $fileSize,
                 'approval_status' => $approvalStatus,
                 'approved_by' => $approvedBy,
                 'approved_at' => $approvedAt,
             ]);
 
+            // Save uploaded documents to the new documents table
+            if (!empty($uploadedFiles)) {
+                foreach ($uploadedFiles as $fileData) {
+                    $event->documents()->create($fileData);
+                }
+            }
+
             Log::info('Event created successfully', [
                 'event_id' => $event->event_id,
                 'event_name' => $event->event_name,
-                'has_file' => !empty($event->supporting_documents),
+                'files_count' => count($uploadedFiles),
             ]);
 
             $message = $isSSLGAdviser ?
@@ -458,7 +464,7 @@ class EventController extends Controller
             abort(403, 'Unauthorized. Only SSLG adviser can view pending events.');
         }
 
-        $pendingEvents = Event::with(['club', 'organizer'])
+        $pendingEvents = Event::with(['club', 'organizer', 'documents'])
             ->where('approval_status', 'pending')
             ->latest()
             ->paginate(10);
@@ -565,12 +571,35 @@ class EventController extends Controller
         );
     }
 
+    public function downloadDocument(EventDocument $document)
+    {
+        $event = $document->event;
+
+        // Check if user can view this event or is SSLG adviser
+        $sslgClub = Club::find(1);
+        if (
+            !$event->canBeViewedBy(Auth::user()) &&
+            (!$sslgClub || Auth::id() !== $sslgClub->club_adviser)
+        ) {
+            abort(403, 'Unauthorized.');
+        }
+
+        if (!Storage::disk('public')->exists($document->document_path)) {
+            abort(404, 'Document not found.');
+        }
+
+        return response()->download(
+            storage_path('app/public/' . $document->document_path),
+            $document->original_name
+        );
+    }
+
     /**
      * Show user's created events with their approval status
      */
     public function myEvents()
     {
-        $events = Event::with(['club'])
+        $events = Event::with(['club', 'documents'])
             ->where('organizer_id', Auth::id())
             ->latest()
             ->paginate(10);

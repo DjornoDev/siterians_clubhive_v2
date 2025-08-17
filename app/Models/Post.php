@@ -45,6 +45,14 @@ class Post extends Model
     }
 
     /**
+     * Get all documents for this post.
+     */
+    public function documents()
+    {
+        return $this->hasMany(PostDocument::class, 'post_id', 'post_id');
+    }
+
+    /**
      * Determine if a user can view this post.
      *
      * @param  \App\Models\User|null  $user
