@@ -243,43 +243,32 @@
     <table class="members-table">
         <thead>
             <tr>
-                <th>Member ID</th>
                 <th>Name</th>
                 <th>Email</th>
                 <th>Sex</th>
-                <th>Contact</th>
-                <th>Class</th>
+                <th>Address</th>
+                <th>Contact No</th>
                 <th>Section</th>
-                <th>Status</th>
-                <th>Role</th>
-                <th>Joined Date</th>
+                <th>Mother Name</th>
+                <th>Mother Contact</th>
+                <th>Father Name</th>
+                <th>Father Contact</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($memberships as $membership)
                 @php $user = $membership->user; @endphp
                 <tr>
-                    <td>{{ $user->user_id }}</td>
-                    <td><strong>{{ $user->name }}</strong></td>
-                    <td>{{ $user->email }}</td>
+                    <td><strong>{{ $user->name ?? 'N/A' }}</strong></td>
+                    <td>{{ $user->email ?? 'N/A' }}</td>
                     <td>{{ $user->sex ?? 'N/A' }}</td>
+                    <td>{{ $user->address ?? 'N/A' }}</td>
                     <td>{{ $user->contact_no ?? 'N/A' }}</td>
-                    <td>
-                        @if ($user->section && $user->section->schoolClass)
-                            Grade {{ $user->section->schoolClass->grade_level }}
-                        @else
-                            N/A
-                        @endif
-                    </td>
                     <td>{{ $user->section ? $user->section->section_name : 'N/A' }}</td>
-                    <td>
-                        <span
-                            class="{{ $membership->membership_status === 'ACTIVE' ? 'status-active' : 'status-inactive' }}">
-                            {{ $membership->membership_status }}
-                        </span>
-                    </td>
-                    <td>{{ $membership->role ?? 'Member' }}</td>
-                    <td>{{ $membership->created_at->format('M d, Y') }}</td>
+                    <td>{{ $user->mother_name ?? 'N/A' }}</td>
+                    <td>{{ $user->mother_contact_no ?? 'N/A' }}</td>
+                    <td>{{ $user->father_name ?? 'N/A' }}</td>
+                    <td>{{ $user->father_contact_no ?? 'N/A' }}</td>
                 </tr>
             @endforeach
         </tbody>

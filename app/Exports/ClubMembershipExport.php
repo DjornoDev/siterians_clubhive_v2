@@ -20,21 +20,17 @@ class ClubMembershipExport
                 ? 'Grade ' . $membership->user->section->schoolClass->grade_level
                 : 'N/A';
 
-            $accessibility = is_array($membership->club_accessibility)
-                ? implode(', ', $membership->club_accessibility)
-                : $membership->club_accessibility;
-
             return [
-                'Member ID' => $membership->user->user_id,
-                'Name' => $membership->user->name,
-                'Email' => $membership->user->email,
-                'Role' => ucfirst($membership->club_role),
-                'Position' => $membership->club_position ?? 'Member',
+                'Name' => $membership->user->name ?? 'N/A',
+                'Email' => $membership->user->email ?? 'N/A',
+                'Sex' => $membership->user->sex ?? 'N/A',
+                'Address' => $membership->user->address ?? 'N/A',
+                'Contact No' => $membership->user->contact_no ?? 'N/A',
                 'Section' => $membership->user->section ? $membership->user->section->section_name : 'N/A',
-                'Class' => $className,
-                'Contact Number' => $membership->user->contact_no,
-                'Joined Date' => $membership->joined_date ? $membership->joined_date->format('Y-m-d') : 'N/A',
-                'Club Accessibility' => $accessibility,
+                'Mother Name' => $membership->user->mother_name ?? 'N/A',
+                'Mother Contact No' => $membership->user->mother_contact_no ?? 'N/A',
+                'Father Name' => $membership->user->father_name ?? 'N/A',
+                'Father Contact No' => $membership->user->father_contact_no ?? 'N/A',
             ];
         });
     }

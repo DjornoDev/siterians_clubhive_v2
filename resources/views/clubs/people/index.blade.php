@@ -5,283 +5,421 @@
     <div class="w-full max-w-none mx-auto px-4 sm:px-6 lg:px-8" x-data="editMember()">
         <div class="flex items-center justify-between mb-8">
             <h1 class="text-3xl font-bold text-gray-900">{{ $club->club_name }} Members</h1>
-            @if (auth()->user()->user_id === $club->club_adviser)
-                <div x-data="memberModal()">
-                    <button @click="isModalOpen = true"
-                        class="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                                clip-rule="evenodd" />
-                        </svg>
-                        Add Member
-                    </button>
-
-                    {{-- Add Member Modal --}}
-                    <div x-cloak x-show="isModalOpen"
-                        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-                        @click.self="isModalOpen = false">
-                        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl" @click.outside="isModalOpen = false">
-                            <form @submit.prevent="submitForm" method="POST"
-                                action="{{ route('clubs.members.store', $club) }}">
-                                <div class="p-6">
-                                    <h3 class="text-xl font-semibold mb-4">Add Members to {{ $club->club_name }}</h3>
-
-                                    <!-- Search Input -->
-                                    <div class="relative mb-4">
-                                        <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-                                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                            </svg>
-                                        </div>
-                                        <input type="text" x-model="searchTerm" @input.debounce.300ms="searchStudents"
-                                            placeholder="Search students by name or email"
-                                            class="w-full pl-10 pr-10 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                        <!-- Loading Spinner -->
-                                        <div x-show="isLoading" class="absolute right-3 top-3">
-                                            <svg class="animate-spin h-5 w-5 text-blue-500"
-                                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle class="opacity-25" cx="12" cy="12" r="10"
-                                                    stroke="currentColor" stroke-width="4"></circle>
-                                                <path class="opacity-75" fill="currentColor"
-                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                                </path>
-                                            </svg>
-                                        </div>
-                                    </div>
-
-                                    <!-- Suggestions -->
-                                    <div x-show="suggestions.length > 0"
-                                        class="border rounded-lg mb-4 max-h-60 overflow-auto">
-                                        <template x-for="student in suggestions" :key="student.user_id">
-                                            <div @click="selectStudent(student)"
-                                                class="p-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0 transition-colors">
-                                                <div class="font-medium" x-text="student.name"></div>
-                                                <div class="text-sm text-gray-600" x-text="student.email"></div>
-                                                <div class="text-sm text-gray-500">
-                                                    Grade <span x-text="student.display_grade"></span>
-                                                    -
-                                                    <span x-text="student.display_section"></span>
-                                                </div>
-                                            </div>
-                                        </template>
-                                    </div>
-
-                                    <!-- Selected Students -->
-                                    <div class="flex flex-wrap gap-2 mb-4">
-                                        <template x-for="student in selectedStudents" :key="student.user_id">
-                                            <div
-                                                class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full flex items-center gap-2 transition-colors hover:bg-blue-200">
-                                                <span x-text="student.name"></span>
-                                                <button @click="removeStudent(student)" type="button"
-                                                    class="text-blue-600 hover:text-blue-800 transition-colors focus:outline-none">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
-                                                        viewBox="0 0 20 20" fill="currentColor">
-                                                        <path fill-rule="evenodd"
-                                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                                                            clip-rule="evenodd" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </template>
-                                    </div>
-                                </div>
-
-                                <!-- Modal Footer -->
-                                <div class="bg-gray-50 px-6 py-4 flex justify-end gap-3 rounded-b-xl">
-                                    <button type="button" @click="isModalOpen = false"
-                                        class="px-5 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-                                        Cancel
-                                    </button>
-                                    <button type="submit"
-                                        class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-                                        :disabled="selectedStudents.length === 0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
-                                            fill="currentColor">
-                                            <path
-                                                d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
-                                        </svg>
-                                        Add Selected Members
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            @endif
         </div>
 
+
+
+        <!-- Club Settings Row -->
         @if (auth()->user()->user_id === $club->club_adviser)
-            <!-- 1. Approval Settings Section -->
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
-                <div class="p-6 border-b border-gray-100">
-                    <h2 class="text-lg font-semibold text-gray-900">Club Settings</h2>
-                </div>
-                <div class="p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="text-base font-medium text-gray-900">Membership Approval</h3>
-                            <p class="text-sm text-gray-600">Require approval for new members joining this club</p>
+            <div class="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-blue-100 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
                         </div>
-                        <div class="flex items-center">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-900">Club Settings</h3>
+                            <p class="text-xs text-gray-500">Manage club preferences and policies</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <!-- Membership Approval Toggle -->
+                        <div class="flex items-center gap-3">
+                            <div class="text-sm text-right">
+                                <span class="font-medium text-gray-700">Membership Approval</span>
+                                <p class="text-xs text-gray-500">Require approval for new members</p>
+                            </div>
                             <label class="inline-flex relative items-center cursor-pointer">
                                 <input type="checkbox" id="approval-toggle" {{ $club->requires_approval ? 'checked' : '' }}
                                     class="sr-only peer" onchange="toggleApprovalRequirement()">
                                 <div
-                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
                                 </div>
                             </label>
                         </div>
                     </div>
                 </div>
             </div>
+        @endif
 
-            <!-- 2. Data Visualization Section (Clean & Simple Design) -->
+        <!-- Member Management Actions -->
+        @if (auth()->user()->user_id === $club->club_adviser)
             <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
                 <div class="p-6 border-b border-gray-100">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h2 class="text-lg font-semibold text-gray-900">Club Analytics</h2>
-                            <p class="text-sm text-gray-600">Overview of membership statistics</p>
+                            <h2 class="text-lg font-semibold text-gray-900">Member Management</h2>
+                            <p class="text-sm text-gray-600">Add new members or export existing member data</p>
                         </div>
-                    </div>
-                </div>
-                <div class="p-6">
-                    @php
-                        $membersByGrade = $allMembers->groupBy(function ($member) {
-                            return $member->section && $member->section->schoolClass
-                                ? $member->section->schoolClass->grade_level
-                                : 'N/A';
-                        });
-
-                        $totalMembers = $allMembers->count();
-                        $activeMembers = $allMembers->where('status', 'ACTIVE')->count();
-                        $inactiveMembers = $allMembers->where('status', 'INACTIVE')->count();
-                        $activePercentage = $totalMembers > 0 ? round(($activeMembers / $totalMembers) * 100, 1) : 0;
-                    @endphp
-
-                    <!-- Stats Cards Row - Compact Design -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <!-- Total Members Card - Compact -->
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-blue-600 text-xs font-medium uppercase tracking-wide">Total Members</p>
-                                    <p class="text-2xl font-bold text-gray-900 mt-1">{{ $totalMembers }}</p>
-                                    <p class="text-gray-600 text-xs">
-                                        {{ $totalMembers > 1 ? 'students' : ($totalMembers == 1 ? 'student' : 'No students yet') }}
-                                    </p>
-                                </div>
-                                <div class="p-2 bg-blue-100 rounded">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        <div class="flex items-center gap-3">
+                            <!-- Add Member Button -->
+                            <div x-data="memberModal()">
+                                <button @click="isModalOpen = true"
+                                    class="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                        fill="currentColor">
+                                        <path fill-rule="evenodd"
+                                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                                            clip-rule="evenodd" />
                                     </svg>
-                                </div>
-                            </div>
-                        </div>
+                                    Add Member
+                                </button>
 
-                        <!-- Member Status Card - Compact -->
-                        <div class="bg-white border border-gray-200 rounded-lg p-4">
-                            <div class="flex items-center justify-between mb-3">
-                                <h4 class="text-sm font-semibold text-gray-900">Member Status</h4>
-                                <div class="p-1.5 bg-green-100 rounded">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </div>
-                            </div>
+                                {{-- Add Member Modal --}}
+                                <div x-cloak x-show="isModalOpen"
+                                    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+                                    @click.self="isModalOpen = false">
+                                    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl"
+                                        @click.outside="isModalOpen = false">
+                                        <form @submit.prevent="submitForm" method="POST"
+                                            action="{{ route('clubs.members.store', $club) }}">
+                                            <div class="p-6">
+                                                <h3 class="text-xl font-semibold mb-4">Add Members to {{ $club->club_name }}
+                                                </h3>
 
-                            <div class="space-y-2">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center">
-                                        <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                                        <span class="text-xs font-medium text-gray-700">Active</span>
-                                    </div>
-                                    <span class="text-lg font-bold text-green-600">{{ $activeMembers }}</span>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center">
-                                        <div class="w-3 h-3 bg-gray-400 rounded-full mr-2"></div>
-                                        <span class="text-xs font-medium text-gray-700">Inactive</span>
-                                    </div>
-                                    <span class="text-lg font-bold text-gray-500">{{ $inactiveMembers }}</span>
-                                </div>
-
-                                <!-- Compact Progress Bar -->
-                                <div class="mt-2">
-                                    <div class="flex justify-between text-xs text-gray-600 mb-1">
-                                        <span>Activity Rate</span>
-                                        <span>{{ $activePercentage }}%</span>
-                                    </div>
-                                    <div class="w-full bg-gray-200 rounded-full h-2">
-                                        <div class="bg-green-500 h-2 rounded-full transition-all duration-1000"
-                                            style="width: {{ $activePercentage }}%"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Grade Distribution Card - Compact -->
-                        <div class="bg-white border border-gray-200 rounded-lg p-4">
-                            <div class="flex items-center justify-between mb-3">
-                                <h4 class="text-sm font-semibold text-gray-900">Grade Distribution</h4>
-                                <div class="p-1.5 bg-purple-100 rounded">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-purple-600"
-                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                    </svg>
-                                </div>
-                            </div>
-
-                            @if ($membersByGrade->count() > 0)
-                                <div class="space-y-1.5">
-                                    @foreach ($membersByGrade->sortKeys() as $grade => $gradeMembers)
-                                        @php
-                                            $percentage =
-                                                $totalMembers > 0
-                                                    ? round(($gradeMembers->count() / $totalMembers) * 100, 1)
-                                                    : 0;
-                                        @endphp
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex items-center flex-1">
-                                                <span class="text-xs font-medium text-gray-700 w-12">Grade
-                                                    {{ $grade }}</span>
-                                                <div class="flex-1 mx-2">
-                                                    <div class="w-full bg-gray-200 rounded-full h-1.5">
-                                                        <div class="bg-blue-500 h-1.5 rounded-full transition-all duration-1000"
-                                                            style="width: {{ $percentage }}%"></div>
+                                                <!-- Search Input -->
+                                                <div class="relative mb-4">
+                                                    <div
+                                                        class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+                                                        <svg class="w-5 h-5 text-gray-500" fill="none"
+                                                            stroke="currentColor" viewBox="0 0 24 24"
+                                                            xmlns="http://www.w3.org/2000/svg">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                                        </svg>
+                                                    </div>
+                                                    <input type="text" x-model="searchTerm"
+                                                        @input.debounce.300ms="searchStudents"
+                                                        placeholder="Search students by name or email"
+                                                        class="w-full pl-10 pr-10 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                                    <!-- Loading Spinner -->
+                                                    <div x-show="isLoading" class="absolute right-3 top-3">
+                                                        <svg class="animate-spin h-5 w-5 text-blue-500"
+                                                            xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                            viewBox="0 0 24 24">
+                                                            <circle class="opacity-25" cx="12" cy="12" r="10"
+                                                                stroke="currentColor" stroke-width="4"></circle>
+                                                            <path class="opacity-75" fill="currentColor"
+                                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                                            </path>
+                                                        </svg>
                                                     </div>
                                                 </div>
-                                                <div class="text-right">
-                                                    <span
-                                                        class="text-xs font-bold text-gray-900">{{ $gradeMembers->count() }}</span>
-                                                    <span class="text-xs text-gray-500 ml-1">({{ $percentage }}%)</span>
+
+                                                <!-- Suggestions -->
+                                                <div x-show="suggestions.length > 0"
+                                                    class="border rounded-lg mb-4 max-h-60 overflow-auto">
+                                                    <template x-for="student in suggestions" :key="student.user_id">
+                                                        <div @click="selectStudent(student)"
+                                                            class="p-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0 transition-colors">
+                                                            <div class="font-medium" x-text="student.name"></div>
+                                                            <div class="text-sm text-gray-600" x-text="student.email"></div>
+                                                            <div class="text-sm text-gray-500">
+                                                                Grade <span x-text="student.display_grade"></span>
+                                                                -
+                                                                <span x-text="student.display_section"></span>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                </div>
+
+                                                <!-- Selected Students -->
+                                                <div class="flex flex-wrap gap-2 mb-4">
+                                                    <template x-for="student in selectedStudents" :key="student.user_id">
+                                                        <div
+                                                            class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full flex items-center gap-2 transition-colors hover:bg-blue-200">
+                                                            <span x-text="student.name"></span>
+                                                            <button @click="removeStudent(student)" type="button"
+                                                                class="text-blue-600 hover:text-blue-800 transition-colors focus:outline-none">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                                                    viewBox="0 0 20 20" fill="currentColor">
+                                                                    <path fill-rule="evenodd"
+                                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                                                        clip-rule="evenodd" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </template>
                                                 </div>
                                             </div>
-                                        </div>
-                                    @endforeach
+
+                                            <!-- Modal Footer -->
+                                            <div class="bg-gray-50 px-6 py-4 flex justify-end gap-3 rounded-b-xl">
+                                                <button type="button" @click="isModalOpen = false"
+                                                    class="px-5 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                                                    Cancel
+                                                </button>
+                                                <button type="submit"
+                                                    class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                                                    :disabled="selectedStudents.length === 0">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                                        viewBox="0 0 20 20" fill="currentColor">
+                                                        <path
+                                                            d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+                                                    </svg>
+                                                    Add Selected Members
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
                                 </div>
-                            @else
-                                <div class="text-center py-3">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-300 mx-auto mb-1"
-                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </div>
+
+                            <!-- Export Members Button -->
+                            <div x-data="exportModal()">
+                                <button @click="isModalOpen = true"
+                                    class="bg-green-600 text-white px-5 py-2.5 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 shadow-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                        fill="currentColor">
+                                        <path fill-rule="evenodd"
+                                            d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                            clip-rule="evenodd" />
                                     </svg>
-                                    <p class="text-xs text-gray-500">No grade data available</p>
+                                    Export Members
+                                </button>
+
+                                <!-- Export Modal -->
+                                <div x-cloak x-show="isModalOpen"
+                                    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+                                    @click.self="isModalOpen = false">
+                                    <div class="bg-white rounded-xl shadow-xl w-full max-w-md"
+                                        @click.outside="isModalOpen = false">
+                                        <div class="p-6">
+                                            <h3 class="text-xl font-semibold mb-4">Export Club Members</h3>
+                                            <p class="text-sm text-gray-600 mb-6">Choose your preferred export format to
+                                                download
+                                                the club members data.</p>
+
+                                            <div class="space-y-3">
+                                                <a href="{{ route('clubs.export.membership', ['club' => $club, 'format' => 'csv']) }}"
+                                                    class="flex items-center justify-between w-full p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                                    <div class="flex items-center gap-3">
+                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                            class="h-6 w-6 text-green-600" fill="none"
+                                                            viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                        </svg>
+                                                        <span class="font-medium">CSV Format</span>
+                                                    </div>
+                                                    <span class="text-sm text-gray-500">.csv</span>
+                                                </a>
+
+                                                <a href="{{ route('clubs.export.membership', ['club' => $club, 'format' => 'xlsx']) }}"
+                                                    class="flex items-center justify-between w-full p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                                    <div class="flex items-center gap-3">
+                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                            class="h-6 w-6 text-blue-600" fill="none"
+                                                            viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                        </svg>
+                                                        <span class="font-medium">Excel Format</span>
+                                                    </div>
+                                                    <span class="text-sm text-gray-500">.xlsx</span>
+                                                </a>
+
+                                                <a href="{{ route('clubs.export.membership', ['club' => $club, 'format' => 'json']) }}"
+                                                    class="flex items-center justify-between w-full p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                                    <div class="flex items-center gap-3">
+                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                            class="h-6 w-6 text-yellow-600" fill="none"
+                                                            viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                        </svg>
+                                                        <span class="font-medium">JSON Format</span>
+                                                    </div>
+                                                    <span class="text-sm text-gray-500">.json</span>
+                                                </a>
+
+                                                <a href="{{ route('clubs.export.membership', ['club' => $club, 'format' => 'pdf']) }}"
+                                                    class="flex items-center justify-between w-full p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                                    <div class="flex items-center gap-3">
+                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                            class="h-6 w-6 text-red-600" fill="none"
+                                                            viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                        </svg>
+                                                        <span class="font-medium">PDF Format</span>
+                                                    </div>
+                                                    <span class="text-sm text-gray-500">.pdf</span>
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <div class="bg-gray-50 px-6 py-4 flex justify-end rounded-b-xl">
+                                            <button type="button" @click="isModalOpen = false"
+                                                class="px-5 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                                                Close
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                            @endif
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+
+                <!-- 2. Data Visualization Section (Clean & Simple Design) -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+                    <div class="p-6 border-b border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 class="text-lg font-semibold text-gray-900">Club Analytics</h2>
+                                <p class="text-sm text-gray-600">Overview of membership statistics</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        @php
+                            $membersByGrade = $allMembers->groupBy(function ($member) {
+                                return $member->section && $member->section->schoolClass
+                                    ? $member->section->schoolClass->grade_level
+                                    : 'N/A';
+                            });
+
+                            $totalMembers = $allMembers->count();
+                            $activeMembers = $allMembers->where('status', 'ACTIVE')->count();
+                            $inactiveMembers = $allMembers->where('status', 'INACTIVE')->count();
+                            $activePercentage =
+                                $totalMembers > 0 ? round(($activeMembers / $totalMembers) * 100, 1) : 0;
+                        @endphp
+
+                        <!-- Stats Cards Row - Compact Design -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- Total Members Card - Compact -->
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-blue-600 text-xs font-medium uppercase tracking-wide">Total Members
+                                        </p>
+                                        <p class="text-2xl font-bold text-gray-900 mt-1">{{ $totalMembers }}</p>
+                                        <p class="text-gray-600 text-xs">
+                                            {{ $totalMembers > 1 ? 'students' : ($totalMembers == 1 ? 'student' : 'No students yet') }}
+                                        </p>
+                                    </div>
+                                    <div class="p-2 bg-blue-100 rounded">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Member Status Card - Compact -->
+                            <div class="bg-white border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="text-sm font-semibold text-gray-900">Member Status</h4>
+                                    <div class="p-1.5 bg-green-100 rounded">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center">
+                                            <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                                            <span class="text-xs font-medium text-gray-700">Active</span>
+                                        </div>
+                                        <span class="text-lg font-bold text-green-600">{{ $activeMembers }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center">
+                                            <div class="w-3 h-3 bg-gray-400 rounded-full mr-2"></div>
+                                            <span class="text-xs font-medium text-gray-700">Inactive</span>
+                                        </div>
+                                        <span class="text-lg font-bold text-gray-500">{{ $inactiveMembers }}</span>
+                                    </div>
+
+                                    <!-- Compact Progress Bar -->
+                                    <div class="mt-2">
+                                        <div class="flex justify-between text-xs text-gray-600 mb-1">
+                                            <span>Activity Rate</span>
+                                            <span>{{ $activePercentage }}%</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="bg-green-500 h-2 rounded-full transition-all duration-1000"
+                                                style="width: {{ $activePercentage }}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Grade Distribution Card - Compact -->
+                            <div class="bg-white border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="text-sm font-semibold text-gray-900">Grade Distribution</h4>
+                                    <div class="p-1.5 bg-purple-100 rounded">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-purple-600"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                        </svg>
+                                    </div>
+                                </div>
+
+                                @if ($membersByGrade->count() > 0)
+                                    <div class="space-y-1.5">
+                                        @foreach ($membersByGrade->sortKeys() as $grade => $gradeMembers)
+                                            @php
+                                                $percentage =
+                                                    $totalMembers > 0
+                                                        ? round(($gradeMembers->count() / $totalMembers) * 100, 1)
+                                                        : 0;
+                                            @endphp
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center flex-1">
+                                                    <span class="text-xs font-medium text-gray-700 w-12">Grade
+                                                        {{ $grade }}</span>
+                                                    <div class="flex-1 mx-2">
+                                                        <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                                            <div class="bg-blue-500 h-1.5 rounded-full transition-all duration-1000"
+                                                                style="width: {{ $percentage }}%"></div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-right">
+                                                        <span
+                                                            class="text-xs font-bold text-gray-900">{{ $gradeMembers->count() }}</span>
+                                                        <span
+                                                            class="text-xs text-gray-500 ml-1">({{ $percentage }}%)</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <div class="text-center py-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-300 mx-auto mb-1"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                        </svg>
+                                        <p class="text-xs text-gray-500">No grade data available</p>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
         @endif
 
         <!-- 3. Filters and Table Section -->
@@ -831,6 +969,10 @@
         @endif
 
         document.addEventListener('alpine:init', () => {
+            Alpine.data('exportModal', () => ({
+                isModalOpen: false,
+            }));
+
             Alpine.data('memberModal', () => ({
                 isModalOpen: false,
                 searchTerm: '',

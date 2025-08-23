@@ -12,10 +12,11 @@
                     <p class="text-blue-100">Track voting results and participation stats</p>
                 </div>
                 <div class="w-full md:w-64 relative">
-                    <label class="block text-sm font-medium text-blue-100 mb-2">Select Election</label>
+                    <label for="election-selector" class="block text-sm font-medium text-blue-100 mb-2">Select
+                        Election</label>
                     <div class="relative">
                         <select id="election-selector"
-                            class="form-select w-full pl-4 pr-10 py-2 rounded-md shadow-sm border-0 
+                            class="form-select w-full pl-4 pr-10 py-2 rounded-md shadow-sm border-0
                         bg-white/90 backdrop-blur-sm text-gray-800 font-medium
                         focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                             <option value="">Loading elections...</option>
@@ -371,7 +372,7 @@
                     if (data.success) {
                         currentElection = data.election;
                         displayDashboard(
-                        data); // Set up an interval to refresh data every 10 seconds for real-time updates
+                            data); // Set up an interval to refresh data every 10 seconds for real-time updates
                         refreshInterval = setInterval(() => {
                             loadElectionData(electionId);
                         }, 30000); //refresh every 30 seconds
@@ -494,25 +495,25 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         ${winners.map(winner => `
-                                <div class="bg-white rounded-lg border border-yellow-200 p-4 shadow-sm">
-                                    <div class="flex items-start justify-between">
-                                        <div class="flex-1">
-                                            <div class="flex items-center mb-2">
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mr-2">
-                                                    WINNER
-                                                </span>
+                                        <div class="bg-white rounded-lg border border-yellow-200 p-4 shadow-sm">
+                                            <div class="flex items-start justify-between">
+                                                <div class="flex-1">
+                                                    <div class="flex items-center mb-2">
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mr-2">
+                                                            WINNER
+                                                        </span>
+                                                    </div>
+                                                    <h3 class="font-semibold text-gray-900 text-lg">${winner.name}</h3>
+                                                    <p class="text-sm text-gray-600 mb-1">${winner.position}</p>
+                                                    <p class="text-xs text-gray-500">${winner.partylist}</p>
+                                                </div>
+                                                <div class="text-right">
+                                                    <div class="text-2xl font-bold text-yellow-600">${winner.votes}</div>
+                                                    <div class="text-xs text-gray-500">votes</div>
+                                                </div>
                                             </div>
-                                            <h3 class="font-semibold text-gray-900 text-lg">${winner.name}</h3>
-                                            <p class="text-sm text-gray-600 mb-1">${winner.position}</p>
-                                            <p class="text-xs text-gray-500">${winner.partylist}</p>
                                         </div>
-                                        <div class="text-right">
-                                            <div class="text-2xl font-bold text-yellow-600">${winner.votes}</div>
-                                            <div class="text-xs text-gray-500">votes</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            `).join('')}
+                                    `).join('')}
                     </div>
                 `;
 
@@ -587,7 +588,7 @@
                     header.innerHTML = `
                     <h3 class="text-lg font-medium text-white flex items-center">
                         <svg class="h-5 w-5 mr-2 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                         ${position}
@@ -694,7 +695,7 @@
                         </div>
                         <div class="text-xs text-gray-500 mb-1.5">${candidate.partylist}</div>
                         <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                            <div class="h-2.5 rounded-full ${i === 0 && candidate.votes > 0 ? headerColors[colorIndex] : 'bg-gray-400'}" 
+                            <div class="h-2.5 rounded-full ${i === 0 && candidate.votes > 0 ? headerColors[colorIndex] : 'bg-gray-400'}"
                                  style="width: ${votePercentage}%"></div>
                         </div>
                     `;

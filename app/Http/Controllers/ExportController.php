@@ -14,6 +14,7 @@ use App\Models\Candidate;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Rap2hpoutre\FastExcel\FastExcel;
 use App\Exports\UsersExport;
@@ -31,7 +32,7 @@ class ExportController extends Controller
     public function exportUsers(Request $request)
     {
         // Only admin can export users
-        if (auth()->user()->role !== 'ADMIN') {
+        if (Auth::user()->role !== 'ADMIN') {
             return back()->with('error', 'Access denied. Admin privileges required.');
         }
 
@@ -60,7 +61,7 @@ class ExportController extends Controller
     public function exportClubs(Request $request)
     {
         // Only admin can export clubs
-        if (auth()->user()->role !== 'ADMIN') {
+        if (Auth::user()->role !== 'ADMIN') {
             return back()->with('error', 'Access denied. Admin privileges required.');
         }
 
@@ -89,7 +90,7 @@ class ExportController extends Controller
     public function exportActionLogs(Request $request)
     {
         // Only admin can export action logs
-        if (auth()->user()->role !== 'ADMIN') {
+        if (Auth::user()->role !== 'ADMIN') {
             return back()->with('error', 'Access denied. Admin privileges required.');
         }
 
@@ -117,7 +118,10 @@ class ExportController extends Controller
      */
     public function exportClubMembership(Request $request, Club $club)
     {
-        // Only teachers with club access can export membership
+        // Only club advisers can export membership
+        if (Auth::id() !== $club->club_adviser) {
+            return back()->with('error', 'Access denied. Only club advisers can export membership data.');
+        }
 
         $format = $request->get('format', 'csv');
         $memberships = ClubMembership::with(['user.section.schoolClass'])
@@ -127,16 +131,16 @@ class ExportController extends Controller
         switch ($format) {
             case 'csv':
                 return $this->exportMembershipCsv($memberships, $club);
+            case 'xlsx':
+                $membershipExport = new ClubMembershipExport($club);
+                return (new FastExcel($membershipExport->collection()))
+                    ->download('club_membership_' . str_replace(' ', '_', $club->club_name) . '_' . date('Y-m-d_H-i-s') . '.xlsx');
             case 'json':
                 return $this->exportMembershipJson($memberships, $club);
             case 'pdf':
                 return $this->exportMembershipPdf($memberships, $club);
-            case 'table':
-                $membershipExport = new ClubMembershipExport($club);
-                return (new FastExcel($membershipExport->collection()))
-                    ->download('club_membership_' . str_replace(' ', '_', $club->club_name) . '_' . date('Y-m-d_H-i-s') . '.xlsx');
             default:
-                return back()->with('error', 'Invalid format');
+                return back()->with('error', 'Invalid export format. Supported formats: csv, xlsx, json, pdf');
         }
     }
 
@@ -394,36 +398,33 @@ class ExportController extends Controller
 
             // CSV headers
             fputcsv($file, [
-                'Member ID',
-                'Student Name',
+                'Name',
                 'Email',
                 'Sex',
-                'Contact Number',
-                'Class',
+                'Address',
+                'Contact No',
                 'Section',
-                'Membership Status',
-                'Joined Date',
-                'Role in Club'
+                'Mother Name',
+                'Mother Contact No',
+                'Father Name',
+                'Father Contact No'
             ]);
 
             foreach ($memberships as $membership) {
                 $user = $membership->user;
-                $className = $user->section && $user->section->schoolClass
-                    ? 'Grade ' . $user->section->schoolClass->grade_level
-                    : 'N/A';
                 $sectionName = $user->section ? $user->section->section_name : 'N/A';
 
                 fputcsv($file, [
-                    $user->user_id,
-                    $user->name,
-                    $user->email,
+                    $user->name ?? 'N/A',
+                    $user->email ?? 'N/A',
                     $user->sex ?? 'N/A',
+                    $user->address ?? 'N/A',
                     $user->contact_no ?? 'N/A',
-                    $className,
                     $sectionName,
-                    $membership->membership_status,
-                    $membership->created_at,
-                    $membership->role ?? 'Member'
+                    $user->mother_name ?? 'N/A',
+                    $user->mother_contact_no ?? 'N/A',
+                    $user->father_name ?? 'N/A',
+                    $user->father_contact_no ?? 'N/A'
                 ]);
             }
 
@@ -568,7 +569,7 @@ class ExportController extends Controller
                 'title' => 'Action Logs Export',
                 'exported_at' => now()->toISOString(),
                 'total_records' => $logs->count(),
-                'exported_by' => auth()->user()->name
+                'exported_by' => Auth::user()->name
             ],
             'action_logs' => $logs->map(function ($log) {
                 return [
@@ -622,24 +623,21 @@ class ExportController extends Controller
                 'adviser' => $club->adviser ? $club->adviser->name : null,
                 'exported_at' => now()->toISOString(),
                 'total_members' => $memberships->count(),
-                'exported_by' => auth()->user()->name
+                'exported_by' => Auth::user()->name
             ],
             'memberships' => $memberships->map(function ($membership) {
                 $user = $membership->user;
                 return [
-                    'member_id' => $user->user_id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'sex' => $user->sex,
-                    'contact_number' => $user->contact_no,
-                    'address' => $user->address,
-                    'class' => $user->section && $user->section->schoolClass
-                        ? 'Grade ' . $user->section->schoolClass->grade_level
-                        : null,
-                    'section' => $user->section ? $user->section->section_name : null,
-                    'membership_status' => $membership->membership_status,
-                    'role_in_club' => $membership->role ?? 'Member',
-                    'joined_date' => $membership->created_at->toISOString()
+                    'name' => $user->name ?? 'N/A',
+                    'email' => $user->email ?? 'N/A',
+                    'sex' => $user->sex ?? 'N/A',
+                    'address' => $user->address ?? 'N/A',
+                    'contact_no' => $user->contact_no ?? 'N/A',
+                    'section' => $user->section ? $user->section->section_name : 'N/A',
+                    'mother_name' => $user->mother_name ?? 'N/A',
+                    'mother_contact_no' => $user->mother_contact_no ?? 'N/A',
+                    'father_name' => $user->father_name ?? 'N/A',
+                    'father_contact_no' => $user->father_contact_no ?? 'N/A'
                 ];
             })
         ];
@@ -660,7 +658,7 @@ class ExportController extends Controller
                 'adviser' => $club->adviser ? $club->adviser->name : null,
                 'exported_at' => now()->toISOString(),
                 'total_events' => $events->count(),
-                'exported_by' => auth()->user()->name
+                'exported_by' => Auth::user()->name
             ],
             'events' => $events->map(function ($event) {
                 return [
@@ -694,7 +692,7 @@ class ExportController extends Controller
                 'adviser' => $club->adviser ? $club->adviser->name : null,
                 'exported_at' => now()->toISOString(),
                 'total_elections' => $elections->count(),
-                'exported_by' => auth()->user()->name
+                'exported_by' => Auth::user()->name
             ],
             'elections' => $elections->map(function ($election) {
                 $votes = Vote::where('election_id', $election->election_id)->get();
@@ -734,7 +732,7 @@ class ExportController extends Controller
             'club' => $club,
             'memberships' => $memberships,
             'export_date' => now(),
-            'exported_by' => auth()->user()->name
+            'exported_by' => Auth::user()->name
         ];
 
         $pdf = Pdf::loadView('exports.pdf.club-membership', $data);
@@ -749,7 +747,7 @@ class ExportController extends Controller
             'club' => $club,
             'events' => $events,
             'export_date' => now(),
-            'exported_by' => auth()->user()->name
+            'exported_by' => Auth::user()->name
         ];
 
         $pdf = Pdf::loadView('exports.pdf.club-events', $data);
@@ -764,7 +762,7 @@ class ExportController extends Controller
             'club' => $club,
             'elections' => $elections,
             'export_date' => now(),
-            'exported_by' => auth()->user()->name
+            'exported_by' => Auth::user()->name
         ];
 
         $pdf = Pdf::loadView('exports.pdf.voting-results', $data);
