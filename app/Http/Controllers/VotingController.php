@@ -19,27 +19,47 @@ use Illuminate\Validation\Rule;
 
 class VotingController extends Controller
 {
-    public function index()
+    /**
+     * Display the voting index page
+     * 
+     * @param \App\Models\Club $club
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     */
+    public function index(Club $club)
     {
-        // Check if the authenticated user is a teacher who is adviser of club ID 1
-        if (Auth::user()->role === 'TEACHER' && Auth::user()->advisedClubs->contains('club_id', 1)) {
-            return view('voting.teacher.index');
+        // Check if user is authenticated
+        if (!Auth::check()) {
+            return redirect()->route('login');
         }
 
-        // For students, return the student voting view
-        if (Auth::user()->role === 'STUDENT') {
-            return view('voting.student.index');
+        $user = Auth::user();
+
+        // Check if user is a teacher and club adviser
+        if ($user->role === 'TEACHER' && $user->user_id === $club->club_adviser) {
+            return view('voting.teacher.index', compact('club'));
         }
 
-        // Redirect others back
-        return redirect()->back()->with('error', 'You do not have access to the voting system.');
+        // Check if user is a student and club member
+        if ($user->role === 'STUDENT' && $club->members()->where('user_id', $user->user_id)->exists()) {
+            return view('voting.student.index', compact('club'));
+        }
+
+        // Redirect unauthorized users
+        return redirect()->back()->with('error', 'You do not have access to the voting system for this club.');
     }
 
-    public function store(Request $request)
+    /**
+     * Store a new election for a specific club
+     * 
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Club $club
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function store(Request $request, Club $club)
     {
-        // Authorization check
-        if (!(Auth::user()->role === 'TEACHER' && Auth::user()->advisedClubs->contains('club_id', 1))) {
-            return redirect()->back()->with('error', 'Unauthorized');
+        // Authorization check - only club advisers can create elections
+        if (Auth::user()->role !== 'TEACHER' || Auth::user()->user_id !== $club->club_adviser) {
+            return redirect()->back()->with('error', 'Unauthorized. Only club advisers can create elections.');
         }
 
         // Validate request
@@ -50,13 +70,13 @@ class VotingController extends Controller
         ]);
 
         try {
-            // Create the election
+            // Create the election for the specific club
             $election = Election::create([
                 'title' => $validated['title'],
                 'description' => $validated['description'],
                 'start_date' => now(),
                 'end_date' => $validated['end_date'],
-                'club_id' => 1,
+                'club_id' => $club->club_id,
                 'is_published' => false,
             ]);
 
@@ -64,16 +84,17 @@ class VotingController extends Controller
             ActionLog::create_log(
                 'voting_management',
                 'created',
-                "Created new voting election: {$election->title}",
+                "Created new voting election: {$election->title} for club: {$club->club_name}",
                 [
                     'election_id' => $election->election_id,
                     'title' => $election->title,
                     'end_date' => $election->end_date,
-                    'club_id' => 1
+                    'club_id' => $club->club_id,
+                    'club_name' => $club->club_name
                 ]
             );
 
-            return redirect()->route('voting.index')->with('success', 'Voting created successfully! You can now add candidates.');
+            return redirect()->route('clubs.voting.index', $club)->with('success', 'Voting created successfully! You can now add candidates.');
         } catch (\Exception $e) {
             return redirect()->back()
                 ->withInput()
@@ -82,20 +103,24 @@ class VotingController extends Controller
     }
 
     /**
-     * Search for students who are members of club ID 1
+     * Search for students who are members of a specific club
+     * 
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Club $club
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function searchStudents(Request $request)
+    public function searchStudents(Request $request, Club $club)
     {
-        // Authorization check
-        if (!(Auth::user()->role === 'TEACHER' && Auth::user()->advisedClubs->contains('club_id', 1))) {
+        // Authorization check - only club advisers can search students
+        if (Auth::user()->role !== 'TEACHER' || Auth::user()->user_id !== $club->club_adviser) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         $query = $request->input('query');
 
-        // Get members of club with ID 1 (SSLG)
-        $students = User::whereHas('clubMemberships', function ($q) {
-            $q->where('club_id', 1);
+        // Get members of the specific club
+        $students = User::whereHas('clubMemberships', function ($q) use ($club) {
+            $q->where('club_id', $club->club_id);
         })
             ->where('role', 'STUDENT')
             ->where(function ($q) use ($query) {
@@ -108,23 +133,32 @@ class VotingController extends Controller
 
         return response()->json($students);
     }
-    public function responses()
+    /**
+     * Display voting responses for a specific club
+     * 
+     * @param \App\Models\Club $club
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     */
+    public function responses(Club $club)
     {
-        // Only allow teachers who are advisers of club ID 1 to access responses
-        if (Auth::user()->role === 'TEACHER' && Auth::user()->advisedClubs->contains('club_id', 1)) {
-            return view('voting.teacher.responses');
+        // Only allow club advisers to access responses
+        if (Auth::user()->role !== 'TEACHER' || Auth::user()->user_id !== $club->club_adviser) {
+            return redirect()->back()->with('error', 'You do not have access to voting responses for this club.');
         }
 
-        // Redirect others back
-        return redirect()->back()->with('error', 'You do not have access to voting responses.');
+        return view('voting.teacher.responses', compact('club'));
     }
     /**
      * Save candidate information for an election
+     * 
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Club $club
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function saveCandidate(Request $request)
+    public function saveCandidate(Request $request, Club $club)
     {
-        // Authorization check
-        if (!(Auth::user()->role === 'TEACHER' && Auth::user()->advisedClubs->contains('club_id', 1))) {
+        // Authorization check - only club advisers can save candidates
+        if (Auth::user()->role !== 'TEACHER' || Auth::user()->user_id !== $club->club_adviser) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -143,7 +177,7 @@ class VotingController extends Controller
                     'description' => $validated['description'],
                     'start_date' => now(),
                     'end_date' => $validated['end_date'],
-                    'club_id' => 1,
+                    'club_id' => $club->club_id,
                     'is_published' => false,
                 ]);
 
@@ -155,12 +189,12 @@ class VotingController extends Controller
                     [
                         'election_id' => $election->election_id,
                         'title' => $election->title,
-                        'end_date' => $election->end_date,
-                        'club_id' => 1
+                        'end_date' => $validated['end_date'],
+                        'club_id' => $club->club_id
                     ]
                 );
 
-                return redirect()->route('voting.index')->with('success', 'Voting created successfully! You can now add candidates.');
+                return redirect()->route('clubs.voting.index', $club)->with('success', 'Voting created successfully! You can now add candidates.');
             } catch (\Exception $e) {
                 return redirect()->back()
                     ->withInput()
@@ -192,8 +226,8 @@ class VotingController extends Controller
             if (!empty($validated['election_id'])) {
                 $election = Election::find($validated['election_id']);
             } else {
-                // If no election_id provided, get the latest active election
-                $election = Election::where('club_id', 1)
+                // If no election_id provided, get the latest active election for this club
+                $election = Election::where('club_id', $club->club_id)
                     ->where('end_date', '>', now())
                     ->latest()
                     ->first();
@@ -252,24 +286,30 @@ class VotingController extends Controller
             'election_id' => $election->election_id
         ]);
     }
-    public function togglePublished()
+    /**
+     * Toggle the published status of an election for a specific club
+     * 
+     * @param \App\Models\Club $club
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function togglePublished(Club $club)
     {
-        // Only allow teachers who are advisers of club ID 1 to toggle published status
-        if (!(Auth::user()->role === 'TEACHER' && Auth::user()->advisedClubs->contains('club_id', 1))) {
-            abort(403, 'You do not have permission to toggle voting publication status');
+        // Only allow club advisers to toggle published status
+        if (Auth::user()->role !== 'TEACHER' || Auth::user()->user_id !== $club->club_adviser) {
+            abort(403, 'You do not have permission to toggle voting publication status for this club');
         }
 
         // Get current active election or create one if none exists
-        $election = Election::where('club_id', 1)->latest()->first();
+        $election = Election::where('club_id', $club->club_id)->latest()->first();
 
         if (!$election) {
             // If no election exists, create a default one
             $election = Election::create([
-                'title' => 'SSLG Election',
-                'description' => 'SSLG election for new student officers',
+                'title' => $club->club_name . ' Election',
+                'description' => $club->club_name . ' election for new student officers',
                 'start_date' => now(),
                 'end_date' => now()->addDays(7),
-                'club_id' => 1,
+                'club_id' => $club->club_id,
                 'is_published' => false,
             ]);
         }
@@ -304,12 +344,16 @@ class VotingController extends Controller
     }
 
     /**
-     * Get candidates for the active election
-     */    public function getCandidates()
+     * Get candidates for the active election in a specific club
+     * 
+     * @param \App\Models\Club $club
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getCandidates(Club $club)
     {
         try {
-            // Get the latest published election
-            $election = Election::where('club_id', 1)
+            // Get the latest published election for this club
+            $election = Election::where('club_id', $club->club_id)
                 ->where('is_published', true)
                 ->where('end_date', '>', now())
                 ->latest()
@@ -360,12 +404,22 @@ class VotingController extends Controller
     }
 
     /**
-     * Submit votes for the election
+     * Submit votes for the election in a specific club
+     * 
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Club $club
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function submitVote(Request $request)
+    public function submitVote(Request $request, Club $club)
     {
+        // Check if user is a student and member of this club
         if (Auth::user()->role !== 'STUDENT') {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        // Verify the user is a member of this club
+        if (!$club->members()->where('user_id', Auth::id())->exists()) {
+            return response()->json(['success' => false, 'message' => 'You are not a member of this club'], 403);
         }
         try {
             // Get the election first to validate available positions
@@ -598,11 +652,21 @@ class VotingController extends Controller
 
     /**
      * Check if the user has already voted in the election
+     * 
+     * @param \App\Models\Club $club
+     * @param int $electionId
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function checkVoted($electionId)
+    public function checkVoted(Club $club, $electionId)
     {
+        // Check if user is a student and member of this club
         if (Auth::user()->role !== 'STUDENT') {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        // Verify the user is a member of this club
+        if (!$club->members()->where('user_id', Auth::id())->exists()) {
+            return response()->json(['success' => false, 'message' => 'You are not a member of this club'], 403);
         }
 
         $hasVoted = Vote::where('election_id', $electionId)
@@ -617,11 +681,21 @@ class VotingController extends Controller
 
     /**
      * Get the user's vote details for a specific election
+     * 
+     * @param \App\Models\Club $club
+     * @param int $electionId
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function getMyVote($electionId)
+    public function getMyVote(Club $club, $electionId)
     {
+        // Check if user is a student and member of this club
         if (Auth::user()->role !== 'STUDENT') {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        // Verify the user is a member of this club
+        if (!$club->members()->where('user_id', Auth::id())->exists()) {
+            return response()->json(['success' => false, 'message' => 'You are not a member of this club'], 403);
         }
 
         try {
@@ -667,17 +741,20 @@ class VotingController extends Controller
 
     /**
      * Get all elections for teacher dashboard
+     * 
+     * @param \App\Models\Club $club
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function getTeacherElections()
+    public function getTeacherElections(Club $club)
     {
-        // Check if the authenticated user is a teacher who is adviser of club ID 1
-        if (!(Auth::user()->role === 'TEACHER' && Auth::user()->advisedClubs->contains('club_id', 1))) {
+        // Check if the authenticated user is a teacher and club adviser
+        if (Auth::user()->role !== 'TEACHER' || Auth::user()->user_id !== $club->club_adviser) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
         try {
             // Get all elections for this teacher's club
-            $elections = Election::where('club_id', 1)
+            $elections = Election::where('club_id', $club->club_id)
                 ->orderBy('end_date', 'desc')
                 ->get();
 
@@ -692,11 +769,15 @@ class VotingController extends Controller
 
     /**
      * Get detailed election results for teacher dashboard
+     * 
+     * @param \App\Models\Club $club
+     * @param int $electionId
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function getElectionResults($electionId)
+    public function getElectionResults(Club $club, $electionId)
     {
-        // Check if the authenticated user is a teacher who is adviser of club ID 1
-        if (!(Auth::user()->role === 'TEACHER' && Auth::user()->advisedClubs->contains('club_id', 1))) {
+        // Check if the authenticated user is a teacher and club adviser
+        if (Auth::user()->role !== 'TEACHER' || Auth::user()->user_id !== $club->club_adviser) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
@@ -770,14 +851,16 @@ class VotingController extends Controller
     }
     /**
      * Reset all voting data including elections, candidates, votes, and vote details.
-     * Only accessible to teachers who are advisers of club ID 1.
+     * Only accessible to club advisers.
      *
      * @param Request $request
+     * @param \App\Models\Club $club
      * @return \Illuminate\Http\JsonResponse
-     */    public function resetVotingData(Request $request)
+     */
+    public function resetVotingData(Request $request, Club $club)
     {
-        // Authorization check
-        if (!(Auth::user()->role === 'TEACHER' && Auth::user()->advisedClubs->contains('club_id', 1))) {
+        // Authorization check - only club advisers can reset voting data
+        if (Auth::user()->role !== 'TEACHER' || Auth::user()->user_id !== $club->club_adviser) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
@@ -826,9 +909,10 @@ class VotingController extends Controller
      * Check for changes in voting data for real-time updates
      *
      * @param Request $request
+     * @param \App\Models\Club $club
      * @return \Illuminate\Http\JsonResponse
      */
-    public function checkVotingChanges(Request $request)
+    public function checkVotingChanges(Request $request, Club $club)
     {
         $currentChecksum = $request->query('checksum', '');
         $role = Auth::user()->role;
@@ -837,7 +921,7 @@ class VotingController extends Controller
             // Different data to check based on user role
             if ($role === 'TEACHER') {
                 // For teachers, include more details including votes
-                $election = Election::where('club_id', 1)
+                $election = Election::where('club_id', $club->club_id)
                     ->where('end_date', '>', now())
                     ->latest()
                     ->first();
@@ -871,7 +955,7 @@ class VotingController extends Controller
                 ]);
             } else {
                 // For students, just check the election and candidates
-                $election = Election::where('club_id', 1)
+                $election = Election::where('club_id', $club->club_id)
                     ->where('is_published', true)
                     ->where('end_date', '>', now())
                     ->latest()
@@ -911,13 +995,14 @@ class VotingController extends Controller
     /**
      * Get candidate data for editing
      * 
+     * @param \App\Models\Club $club
      * @param int $candidateId
      * @return \Illuminate\Http\JsonResponse
      */
-    public function editCandidate($candidateId)
+    public function editCandidate(Club $club, $candidateId)
     {
-        // Authorization check
-        if (!(Auth::user()->role === 'TEACHER' && Auth::user()->advisedClubs->contains('club_id', 1))) {
+        // Authorization check - only club advisers can edit candidates
+        if (Auth::user()->role !== 'TEACHER' || Auth::user()->user_id !== $club->club_adviser) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -957,13 +1042,14 @@ class VotingController extends Controller
      * Update candidate information
      * 
      * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Club $club
      * @param int $candidateId
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updateCandidate(Request $request, $candidateId)
+    public function updateCandidate(Request $request, Club $club, $candidateId)
     {
-        // Authorization check
-        if (!(Auth::user()->role === 'TEACHER' && Auth::user()->advisedClubs->contains('club_id', 1))) {
+        // Authorization check - only club advisers can update candidates
+        if (Auth::user()->role !== 'TEACHER' || Auth::user()->user_id !== $club->club_adviser) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -1021,13 +1107,14 @@ class VotingController extends Controller
     /**
      * Delete a candidate
      * 
+     * @param \App\Models\Club $club
      * @param int $candidateId
      * @return \Illuminate\Http\JsonResponse
      */
-    public function deleteCandidate($candidateId)
+    public function deleteCandidate(Club $club, $candidateId)
     {
-        // Authorization check
-        if (!(Auth::user()->role === 'TEACHER' && Auth::user()->advisedClubs->contains('club_id', 1))) {
+        // Authorization check - only club advisers can delete candidates
+        if (Auth::user()->role !== 'TEACHER' || Auth::user()->user_id !== $club->club_adviser) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -1055,6 +1142,106 @@ class VotingController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error deleting candidate: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update club member positions based on election results
+     * This method should be called after an election ends
+     * 
+     * @param \App\Models\Club $club
+     * @param int $electionId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateMemberPositions(Club $club, $electionId)
+    {
+        // Authorization check - only club advisers can update member positions
+        if (Auth::user()->role !== 'TEACHER' || Auth::user()->user_id !== $club->club_adviser) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        try {
+            // Get the election
+            $election = Election::where('club_id', $club->club_id)
+                ->where('election_id', $electionId)
+                ->first();
+
+            if (!$election) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Election not found'
+                ], 404);
+            }
+
+            // Check if election has ended
+            if ($election->end_date > now()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Election has not ended yet'
+                ], 422);
+            }
+
+            DB::beginTransaction();
+
+            // Get all positions in this election
+            $positions = Candidate::where('election_id', $electionId)
+                ->select('position')
+                ->distinct()
+                ->pluck('position');
+
+            $updatedCount = 0;
+
+            foreach ($positions as $position) {
+                // Get the candidate with the most votes for this position
+                $winner = Candidate::where('election_id', $electionId)
+                    ->where('position', $position)
+                    ->withCount('votes')
+                    ->orderBy('votes_count', 'desc')
+                    ->first();
+
+                if ($winner && $winner->votes_count > 0) {
+                    // First, remove the position from any existing member who holds it
+                    ClubMembership::where('club_id', $club->club_id)
+                        ->where('club_position', $position)
+                        ->update(['club_position' => null]);
+
+                    // Then assign the position to the new winner
+                    $membership = ClubMembership::where('club_id', $club->club_id)
+                        ->where('user_id', $winner->user_id)
+                        ->first();
+
+                    if ($membership) {
+                        $membership->update(['club_position' => $position]);
+                        $updatedCount++;
+                    }
+                }
+            }
+
+            DB::commit();
+
+            // Log the position updates
+            ActionLog::create_log(
+                'voting_management',
+                'updated',
+                "Updated {$updatedCount} member positions after election: {$election->title}",
+                [
+                    'election_id' => $electionId,
+                    'club_id' => $club->club_id,
+                    'positions_updated' => $updatedCount
+                ]
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => "Successfully updated {$updatedCount} member positions",
+                'positions_updated' => $updatedCount
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating member positions: ' . $e->getMessage()
             ], 500);
         }
     }

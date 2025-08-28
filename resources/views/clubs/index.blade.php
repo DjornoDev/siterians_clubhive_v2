@@ -63,20 +63,21 @@
             // Check if club hunting day is active
             $isHuntingActive = \App\Models\Club::find(1)?->is_club_hunting_day ?? false;
 
-            // Check if there's an active election
-$activeElection = \App\Models\Election::where('club_id', 1)
+            // Check if there's an active election for this specific club
+$activeElection = \App\Models\Election::where('club_id', $club->club_id)
     ->where('is_published', true)
     ->where('start_date', '<=', now())
     ->where('end_date', '>=', now())
     ->latest()
-    ->first(); // Determine if user can access clubs page
+    ->first();
+
+// Determine if user can access clubs page
 $canAccessClubsPage = auth()->user()->role === 'STUDENT';
 
-// Determine if user can access voting page - only students and the adviser of club ID 1
+// Determine if user can access voting page - only students and the adviser of this club
 $canAccessVotingPage =
     auth()->user()->role === 'STUDENT' ||
-    (auth()->user()->role === 'TEACHER' &&
-                    auth()->user()->user_id === \App\Models\Club::find(1)?->club_adviser);
+    (auth()->user()->role === 'TEACHER' && auth()->user()->user_id === $club->club_adviser);
         @endphp @if ($isHuntingActive || $activeElection)
 
             <!-- Notification Section -->
@@ -127,12 +128,13 @@ $canAccessVotingPage =
                                         <p class="text-xs text-blue-700 mt-0.5 sm:mt-1">{{ $activeElection->title }} is now
                                             active.
                                             As the club adviser, you can monitor the voting process at the <a
-                                                href="{{ route('voting.index') }}" class="underline font-medium">Voting
+                                                href="{{ route('clubs.voting.index', $club) }}"
+                                                class="underline font-medium">Voting
                                                 page</a>.</p>
                                     @else
                                         <p class="text-xs text-blue-700 mt-0.5 sm:mt-1">{{ $activeElection->title }} is now
                                             active.
-                                            Cast your vote at the <a href="{{ route('voting.index') }}"
+                                            Cast your vote at the <a href="{{ route('clubs.voting.index', $club) }}"
                                                 class="underline font-medium">Voting page</a>.</p>
                                     @endif
                                 @else

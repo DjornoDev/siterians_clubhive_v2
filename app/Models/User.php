@@ -89,6 +89,11 @@ class User extends Authenticatable
         return $this->hasMany(Vote::class, 'voter_id');
     }
 
+    public function actionLogs()
+    {
+        return $this->hasMany(ActionLog::class, 'user_id');
+    }
+
     public function schoolClass()
     {
         return $this->hasOneThrough(

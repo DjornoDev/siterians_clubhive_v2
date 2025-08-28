@@ -321,19 +321,7 @@
                             </div>
                         </div>
 
-                        {{-- Check if user is adviser of Club ID 1 (SSLG) --}}
-                        @php
-                            $isClubOneAdviser = auth()->user()->advisedClubs->contains('club_id', 1);
-                        @endphp
-
-                        @if ($isClubOneAdviser)
-                            {{-- Voting link for Club ID 1 Adviser --}}
-                            <a href="{{ route('voting.index') }}"
-                                class="block py-3 px-4 rounded-lg transition duration-200 text-white mb-1 flex items-center {{ request()->routeIs('voting.*') ? 'bg-blue-600 hover:bg-blue-700' : 'hover:bg-blue-600' }}">
-                                <i class="fas fa-poll w-6 text-center text-lg"></i>
-                                <span class="nav-text ml-3 truncate">Voting</span>
-                            </a>
-                        @endif
+                        {{-- Voting is now club-specific, accessible through individual club pages --}}
                     @else
                         @if (auth()->user()->role === 'STUDENT')
                             {{-- Direct link to Clubs for STUDENT --}}
@@ -400,12 +388,7 @@
                                     </div>
                                 </div>
                             </div>
-                            {{-- Voting link - visible to all STUDENTS --}}
-                            <a href="{{ route('voting.index') }}"
-                                class="block py-3 px-4 rounded-lg transition duration-200 text-white mb-1 flex items-center {{ request()->routeIs('voting.*') ? 'bg-blue-600 hover:bg-blue-700' : 'hover:bg-blue-600' }}">
-                                <i class="fas fa-poll w-6 text-center text-lg"></i>
-                                <span class="nav-text ml-3 truncate">Voting</span>
-                            </a>
+                            {{-- Voting is now club-specific, accessible through individual club pages --}}
                         @else
                             {{-- Direct link to Clubs for STUDENT --}}
                             <a href="{{ route('clubs.index') }}"

@@ -63,6 +63,7 @@
         }
 
         @keyframes bounceSlowly {
+
             0%,
             100% {
                 transform: translateY(0);
@@ -74,6 +75,7 @@
         }
 
         @keyframes colorPulse {
+
             0%,
             100% {
                 color: #F9A825;
@@ -127,13 +129,12 @@
                                 class="text-white hover:text-[#4A6CF7] px-3 py-2 text-sm font-medium">Login</a>
                         @endauth
                     @endif
-                    {{-- <form method="POST" action="{{ route('logout') }}">
+                    <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit"
-                            class="w-full text-left block px-4 py-2 text-sm text-[#4A6CF7]">
+                        <button type="submit" class="w-full text-left block px-4 py-2 text-sm text-[#4A6CF7]">
                             <i class="fas fa-sign-out-alt mr-2 text-red-500"></i> Logout
                         </button>
-                    </form> --}}
+                    </form>
                 </div>
             </div>
         </div>
@@ -154,7 +155,7 @@
                         <span class="sr-only">Unleash Your Potential</span>
                     </h2>
                     <p class="mt-4 text-lg text-gray-200 animate-slide-in-right">
-                        Explore, connect, and grow in a community designed to transform your school experience. 
+                        Explore, connect, and grow in a community designed to transform your school experience.
                         Find your tribe and make your mark with Siterians ClubHive.
                     </p>
                     <div class="mt-8 flex space-x-4" style="animation: fadeIn 1.5s ease-out;">
@@ -207,7 +208,8 @@
                                     <div class="w-2 h-2 rounded-full bg-[#4A6CF7] mr-3"></div>
                                     <div class="flex-grow flex justify-between items-center">
                                         <span class="text-gray-700">Club Hunting Day</span>
-                                        <span class="font-medium {{ $isHuntingActive ? 'text-green-600' : 'text-red-600' }}">
+                                        <span
+                                            class="font-medium {{ $isHuntingActive ? 'text-green-600' : 'text-red-600' }}">
                                             {{ $isHuntingActive ? 'Active' : 'Inactive' }}
                                         </span>
                                     </div>
@@ -234,34 +236,37 @@
 
             <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
                 @forelse ($featuredClubs as $club)
-                <div
-                    class="bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-xl">
-                    <div class="h-40 bg-[#4A6CF7] bg-opacity-10 overflow-hidden">
-                        @if ($club->club_banner)
-                            <img src="{{ asset(Storage::url($club->club_banner)) }}" alt="{{ $club->club_name }} Banner"
-                                class="w-full h-full object-cover transition-all duration-500 hover:scale-110">
-                        @else
-                            <div class="w-full h-full flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-[#2B34C9] animate-pulse"
-                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                            </div>
-                        @endif
+                    <div
+                        class="bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-xl">
+                        <div class="h-40 bg-[#4A6CF7] bg-opacity-10 overflow-hidden">
+                            @if ($club->club_banner)
+                                <img src="{{ asset(Storage::url($club->club_banner)) }}"
+                                    alt="{{ $club->club_name }} Banner"
+                                    class="w-full h-full object-cover transition-all duration-500 hover:scale-110">
+                            @else
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="h-16 w-16 text-[#2B34C9] animate-pulse" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-medium text-lg text-[#2B34C9]">{{ $club->club_name }}</h3>
+                            <p class="text-gray-600 text-sm mt-1">{{ $club->members_count }} Members</p>
+                            <a href="{{ route('login') }}"
+                                class="mt-3 inline-block text-[#4A6CF7] hover:text-opacity-80 text-sm font-medium transition-colors duration-300 group">Learn
+                                more <span
+                                    class="inline-block transform transition-transform duration-300 group-hover:translate-x-1">→</span></a>
+                        </div>
                     </div>
-                    <div class="p-4">
-                        <h3 class="font-medium text-lg text-[#2B34C9]">{{ $club->club_name }}</h3>
-                        <p class="text-gray-600 text-sm mt-1">{{ $club->members_count }} Members</p>
-                        <a href="{{ route('login') }}"
-                            class="mt-3 inline-block text-[#4A6CF7] hover:text-opacity-80 text-sm font-medium transition-colors duration-300 group">Learn
-                            more <span class="inline-block transform transition-transform duration-300 group-hover:translate-x-1">→</span></a>
-                    </div>
-                </div>
                 @empty
-                <div class="col-span-3 text-center py-8">
-                    <p class="text-gray-500">No clubs available at the moment.</p>
-                </div>
+                    <div class="col-span-3 text-center py-8">
+                        <p class="text-gray-500">No clubs available at the moment.</p>
+                    </div>
                 @endforelse
             </div>
         </div>
@@ -271,24 +276,29 @@
     <div class="py-16 bg-[#2B34C9] text-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="text-2xl font-bold text-center mb-12">Our School in Numbers</h2>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-                <div class="bg-white/10 rounded-lg p-6 transform transition-all duration-500 hover:scale-110 hover:bg-white/20 hover:shadow-lg hover:shadow-white/10">
+                <div
+                    class="bg-white/10 rounded-lg p-6 transform transition-all duration-500 hover:scale-110 hover:bg-white/20 hover:shadow-lg hover:shadow-white/10">
                     <div class="text-4xl font-bold mb-2 text-[#F9A825] animate-color-pulse">{{ $totalStudents }}</div>
                     <div class="text-lg">Students</div>
                 </div>
-                
-                <div class="bg-white/10 rounded-lg p-6 transform transition-all duration-500 hover:scale-110 hover:bg-white/20 hover:shadow-lg hover:shadow-white/10">
+
+                <div
+                    class="bg-white/10 rounded-lg p-6 transform transition-all duration-500 hover:scale-110 hover:bg-white/20 hover:shadow-lg hover:shadow-white/10">
                     <div class="text-4xl font-bold mb-2 text-[#F9A825] animate-color-pulse">{{ $totalClubs }}</div>
                     <div class="text-lg">Active Clubs</div>
                 </div>
-                
-                <div class="bg-white/10 rounded-lg p-6 transform transition-all duration-500 hover:scale-110 hover:bg-white/20 hover:shadow-lg hover:shadow-white/10">
-                    <div class="text-4xl font-bold mb-2 text-[#F9A825] animate-color-pulse">{{ $totalClubAdvisers }}</div>
+
+                <div
+                    class="bg-white/10 rounded-lg p-6 transform transition-all duration-500 hover:scale-110 hover:bg-white/20 hover:shadow-lg hover:shadow-white/10">
+                    <div class="text-4xl font-bold mb-2 text-[#F9A825] animate-color-pulse">{{ $totalClubAdvisers }}
+                    </div>
                     <div class="text-lg">Club Advisers</div>
                 </div>
-                
-                <div class="bg-white/10 rounded-lg p-6 transform transition-all duration-500 hover:scale-110 hover:bg-white/20 hover:shadow-lg hover:shadow-white/10">
+
+                <div
+                    class="bg-white/10 rounded-lg p-6 transform transition-all duration-500 hover:scale-110 hover:bg-white/20 hover:shadow-lg hover:shadow-white/10">
                     <div class="text-4xl font-bold mb-2 text-[#F9A825] animate-color-pulse">{{ $totalEvents }}</div>
                     <div class="text-lg">Events This Year</div>
                 </div>
@@ -301,10 +311,11 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="text-2xl font-bold text-[#2B34C9] text-center mb-2">Latest News & Announcements</h2>
             <p class="text-center text-gray-600 mb-12">Stay updated with the latest happenings in our school</p>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 @forelse ($latestPosts as $post)
-                    <div class="bg-[#F5F5F5] rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-xl">
+                    <div
+                        class="bg-[#F5F5F5] rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-xl">
                         <div class="h-3 bg-[#2B34C9]"></div>
                         <div class="p-6">
                             <div class="flex items-center mb-3">
@@ -314,8 +325,10 @@
                             </div>
                             <h3 class="font-medium text-lg text-[#2B34C9] mb-2">{{ $post->post_title }}</h3>
                             <p class="text-gray-600 text-sm line-clamp-3">{{ strip_tags($post->post_content) }}</p>
-                            <a href="{{ route('login') }}" class="mt-4 inline-block text-[#4A6CF7] hover:text-opacity-80 text-sm font-medium transition-colors duration-300 group">
-                                Read more <span class="inline-block transform transition-transform duration-300 group-hover:translate-x-1">→</span>
+                            <a href="{{ route('login') }}"
+                                class="mt-4 inline-block text-[#4A6CF7] hover:text-opacity-80 text-sm font-medium transition-colors duration-300 group">
+                                Read more <span
+                                    class="inline-block transform transition-transform duration-300 group-hover:translate-x-1">→</span>
                             </a>
                         </div>
                     </div>
@@ -330,22 +343,25 @@
 
     <!-- CTA Section -->
     <div class="bg-[#4A6CF7] bg-opacity-10 py-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">                <div
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div
                 class="bg-[#2B34C9] rounded-lg shadow-xl overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-2xl">
                 <div class="px-6 py-8 md:p-10 md:flex md:items-center md:justify-between">
                     <div>
                         <h2 class="text-xl font-bold text-white md:text-2xl animate-bounce-slow">
-                            @if($isHuntingActive)
+                            @if ($isHuntingActive)
                                 Club Hunting Day is ACTIVE!
                             @else
                                 Ready to Join a Club?
                             @endif
                         </h2>
                         <p class="mt-2 text-gray-200">
-                            @if($isHuntingActive)
-                                Join now! {{ $totalClubs }} clubs with {{ $totalMembers }} members are waiting for you!
+                            @if ($isHuntingActive)
+                                Join now! {{ $totalClubs }} clubs with {{ $totalMembers }} members are waiting for
+                                you!
                             @else
-                                Discover your passion, develop new skills, and make lasting connections with {{ $totalMembers }} peers.
+                                Discover your passion, develop new skills, and make lasting connections with
+                                {{ $totalMembers }} peers.
                             @endif
                         </p>
                     </div>
@@ -353,13 +369,14 @@
                         <a href="{{ route('login') }}"
                             class="inline-block bg-[#F9A825] text-white font-medium px-5 py-3 rounded-lg shadow-md hover:bg-opacity-90 transition duration-150 transform hover:scale-105 hover:shadow-xl relative overflow-hidden group">
                             <span class="relative z-10">
-                                @if($isHuntingActive)
+                                @if ($isHuntingActive)
                                     Join Now
                                 @else
                                     Get Started
                                 @endif
                             </span>
-                            <span class="absolute inset-0 bg-white/30 transform scale-0 rounded-lg transition-transform duration-300 origin-bottom-left group-hover:scale-100"></span>
+                            <span
+                                class="absolute inset-0 bg-white/30 transform scale-0 rounded-lg transition-transform duration-300 origin-bottom-left group-hover:scale-100"></span>
                         </a>
                     </div>
                 </div>
@@ -374,8 +391,9 @@
                 <div class="flex items-center">
                     <img src="{{ asset('images/school_logo.png') }}" alt="School Logo"
                         class="h-10 w-auto animate-pulse">
-                    <div class="ml-3">                            <p class="font-medium">Sitero Francisco Memorial NHS</p>
-                            <p class="text-xs text-gray-200">&copy; {{ now()->format('Y') }} Siterians Clubhive</p>
+                    <div class="ml-3">
+                        <p class="font-medium">Sitero Francisco Memorial NHS</p>
+                        <p class="text-xs text-gray-200">&copy; {{ now()->format('Y') }} Siterians Clubhive</p>
                     </div>
                 </div>
 
@@ -414,8 +432,10 @@
     </footer>
 
     <!-- Scroll to top button -->
-    <button id="scrollToTop" class="fixed bottom-8 right-8 bg-[#4A6CF7] text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transform transition-transform duration-300 hover:scale-110 hover:bg-[#F9A825] opacity-0 invisible">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <button id="scrollToTop"
+        class="fixed bottom-8 right-8 bg-[#4A6CF7] text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transform transition-transform duration-300 hover:scale-110 hover:bg-[#F9A825] opacity-0 invisible">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
         </svg>
     </button>
@@ -428,7 +448,7 @@
             if (typedElement) {
                 const text = "Unleash Your Potential";
                 let index = 0;
-                
+
                 function typeWriter() {
                     if (index < text.length) {
                         typedElement.textContent += text.charAt(index);
@@ -436,14 +456,14 @@
                         setTimeout(typeWriter, 100);
                     }
                 }
-                
+
                 // Start typing animation
                 typeWriter();
             }
 
             // Scroll to top button functionality
             const scrollToTopBtn = document.getElementById('scrollToTop');
-            
+
             if (scrollToTopBtn) {
                 window.addEventListener('scroll', function() {
                     if (window.pageYOffset > 300) {
@@ -454,7 +474,7 @@
                         scrollToTopBtn.classList.add('opacity-0', 'invisible');
                     }
                 });
-                
+
                 scrollToTopBtn.addEventListener('click', function() {
                     window.scrollTo({
                         top: 0,

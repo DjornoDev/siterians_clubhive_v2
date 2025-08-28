@@ -413,75 +413,63 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/clubs/{club}/join', [ClubController::class, 'join'])->name('clubs.join');
     });
 
-    // Voting routes
-    Route::middleware(['auth'])->prefix('voting')->group(function () {
-        Route::get('/', [App\Http\Controllers\VotingController::class, 'index'])->name('voting.index');
-        // Responses route only accessible to teachers who are advisers of club ID 1
-        Route::get('/responses', [App\Http\Controllers\VotingController::class, 'responses'])
-            ->middleware('role:TEACHER')
-            ->name('voting.responses');
-        // Store route for creating new voting
-        Route::post('/store', [App\Http\Controllers\VotingController::class, 'store'])
-            ->middleware('role:TEACHER')
-            ->name('voting.store');
-        // Toggle publish status route - only for teachers
-        Route::post('/toggle-published', [App\Http\Controllers\VotingController::class, 'togglePublished'])
-            ->middleware('role:TEACHER')
-            ->name('voting.toggle-published');
-        // Student search route for candidates
-        Route::get('/search-students', [App\Http\Controllers\VotingController::class, 'searchStudents'])
-            ->middleware('role:TEACHER')
-            ->name('voting.search-students');
-        // Save candidate information
-        Route::post('/save-candidate', [App\Http\Controllers\VotingController::class, 'saveCandidate'])
-            ->middleware('role:TEACHER')
-            ->name('voting.save-candidate');
-        // Edit candidate route - only for teachers
-        Route::get('/edit-candidate/{candidateId}', [App\Http\Controllers\VotingController::class, 'editCandidate'])
-            ->middleware('role:TEACHER')
-            ->name('voting.edit-candidate');
-        // Update candidate route - only for teachers
-        Route::post('/update-candidate/{candidateId}', [App\Http\Controllers\VotingController::class, 'updateCandidate'])
-            ->middleware('role:TEACHER')
-            ->name('voting.update-candidate');
-        // Delete candidate route - only for teachers
-        Route::delete('/delete-candidate/{candidateId}', [App\Http\Controllers\VotingController::class, 'deleteCandidate'])
-            ->middleware('role:TEACHER')
-            ->name('voting.delete-candidate');
-        // Reset voting data route - only for teachers
-        Route::post('/reset', [App\Http\Controllers\VotingController::class, 'resetVotingData'])
-            ->middleware('role:TEACHER')
-            ->name('voting.reset');
-        // Route for checking changes in voting data (for real-time updates)
-        Route::get('/check-changes', [App\Http\Controllers\VotingController::class, 'checkVotingChanges'])
-            ->name('voting.check-changes');
+    // Club-specific voting routes
+    Route::middleware(['auth'])->group(function () {
+        Route::prefix('clubs/{club}/voting')->name('clubs.voting.')->group(function () {
+            // Main voting index
+            Route::get('/', [App\Http\Controllers\VotingController::class, 'index'])->name('index');
 
-        // Get candidates for student voting
-        Route::get('/candidates', [App\Http\Controllers\VotingController::class, 'getCandidates'])
-            ->name('voting.candidates');
+            // Teacher/Adviser routes
+            Route::middleware(['auth'])->group(function () {
+                // Store route for creating new voting
+                Route::post('/store', [App\Http\Controllers\VotingController::class, 'store'])->name('store');
 
-        // Submit votes
-        Route::post('/submit', [App\Http\Controllers\VotingController::class, 'submitVote'])
-            ->name('voting.submit');
+                // Toggle published status
+                Route::post('/toggle-published', [App\Http\Controllers\VotingController::class, 'togglePublished'])->name('toggle-published');
 
-        // Check if user has already voted
-        Route::get('/check-voted/{electionId}', [App\Http\Controllers\VotingController::class, 'checkVoted'])
-            ->name('voting.check-voted');
+                // Search for students
+                Route::get('/search-students', [App\Http\Controllers\VotingController::class, 'searchStudents'])->name('search-students');
 
-        // Get user's vote details
-        Route::get('/my-vote/{electionId}', [App\Http\Controllers\VotingController::class, 'getMyVote'])
-            ->name('voting.my-vote');
+                // Save candidates
+                Route::post('/save-candidate', [App\Http\Controllers\VotingController::class, 'saveCandidate'])->name('save-candidate');
 
-        // Teacher routes for managing elections
-        Route::prefix('teacher')->middleware(['auth'])->group(function () {
-            // Elections management
-            Route::get('/elections', [App\Http\Controllers\VotingController::class, 'getTeacherElections']);
-            Route::get('/results/{electionId}', [App\Http\Controllers\VotingController::class, 'getElectionResults']);
+                // Edit candidate
+                Route::get('/edit-candidate/{candidateId}', [App\Http\Controllers\VotingController::class, 'editCandidate'])->name('edit-candidate');
 
-            // Views
-            Route::get('/responses', function () {
-                return view('voting.teacher.responses');
-            })->name('voting.teacher.responses');
+                // Update candidate
+                Route::post('/update-candidate/{candidateId}', [App\Http\Controllers\VotingController::class, 'updateCandidate'])->name('update-candidate');
+
+                // Delete candidate
+                Route::delete('/delete-candidate/{candidateId}', [App\Http\Controllers\VotingController::class, 'deleteCandidate'])->name('delete-candidate');
+
+                // Reset voting data route - only for club advisers
+                Route::post('/reset', [App\Http\Controllers\VotingController::class, 'resetVotingData'])->name('reset');
+
+                // Route for checking changes in voting data (for real-time updates)
+                Route::get('/check-changes', [App\Http\Controllers\VotingController::class, 'checkVotingChanges'])->name('check-changes');
+
+                // Get candidates for student voting
+                Route::get('/candidates', [App\Http\Controllers\VotingController::class, 'getCandidates'])->name('candidates');
+
+                // Submit vote
+                Route::post('/submit', [App\Http\Controllers\VotingController::class, 'submitVote'])->name('submit');
+
+                // Check if user has voted
+                Route::get('/check-voted/{electionId}', [App\Http\Controllers\VotingController::class, 'checkVoted'])->name('check-voted');
+
+                // Get user's vote details
+                Route::get('/my-vote/{electionId}', [App\Http\Controllers\VotingController::class, 'getMyVote'])->name('my-vote');
+
+                // Teacher-specific routes
+                Route::get('/elections', [App\Http\Controllers\VotingController::class, 'getTeacherElections'])->name('elections');
+                Route::get('/results/{electionId}', [App\Http\Controllers\VotingController::class, 'getElectionResults'])->name('results');
+
+                // Update member positions after election
+                Route::post('/update-positions/{electionId}', [App\Http\Controllers\VotingController::class, 'updateMemberPositions'])->name('update-positions');
+
+                // Voting responses
+                Route::get('/responses', [App\Http\Controllers\VotingController::class, 'responses'])->name('responses');
+            });
         });
     });
 

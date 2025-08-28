@@ -1,8 +1,8 @@
-@extends('layouts.dashboard')
+@extends('clubs.layouts.navigation')
 
-@section('title', 'Student Voting')
+@section('title', $club->club_name . ' - Student Voting')
 
-@section('content')
+@section('club_content')
     <div class="container mx-auto px-4 py-8" x-data="studentVoting()" x-init="init()" x-cloak>
 
         <!-- No Active Election Message -->
@@ -355,7 +355,7 @@
                         return;
                     }
 
-                    fetch('{{ route('voting.check-changes') }}?checksum=' + this.lastChecksum)
+                    fetch('{{ route('clubs.voting.check-changes', $club) }}?checksum=' + this.lastChecksum)
                         .then(response => response.json())
                         .then(data => {
                             if (data.hasChanges) {
@@ -367,7 +367,7 @@
                 },
                 fetchCandidates() {
                     this.loading = true;
-                    fetch('{{ route('voting.candidates') }}')
+                    fetch('{{ route('clubs.voting.candidates', $club) }}')
                         .then(response => {
                             if (!response.ok) {
                                 throw new Error('Server returned ' + response.status + ' ' + response.statusText);
@@ -421,7 +421,8 @@
                     // Set checking status to prevent form from showing briefly
                     this.checkingVoteStatus = true;
 
-                    fetch('{{ route('voting.check-voted', ':id') }}'.replace(':id', this.election.election_id))
+                    fetch('{{ route('clubs.voting.check-voted', [$club, ':id']) }}'.replace(':id', this.election
+                            .election_id))
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
@@ -445,7 +446,7 @@
                 getMyVoteDetails() {
                     if (!this.election) return;
 
-                    fetch('{{ route('voting.my-vote', ':id') }}'.replace(':id', this.election.election_id))
+                    fetch('{{ route('clubs.voting.my-vote', [$club, ':id']) }}'.replace(':id', this.election.election_id))
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
@@ -498,7 +499,7 @@
                     }));
 
                     // Submit the vote
-                    fetch('{{ route('voting.submit') }}', {
+                    fetch('{{ route('clubs.voting.submit', $club) }}', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',

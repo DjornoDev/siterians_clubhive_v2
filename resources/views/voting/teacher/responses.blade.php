@@ -1,7 +1,7 @@
-@extends('layouts.voting_navigations')
-@section('title', 'Voting Responses')
+@extends('clubs.layouts.navigation')
+@section('title', $club->club_name . ' - Voting Responses')
 
-@section('voting_content')
+@section('club_content')
     <div class="bg-white shadow rounded-lg p-6">
         <!-- Dashboard Header with Election Selector -->
         <div
@@ -307,7 +307,7 @@
                 try {
                     loadingIndicator.classList.remove('hidden');
 
-                    const response = await fetch('/voting/teacher/elections');
+                    const response = await fetch('{{ route('clubs.voting.elections', $club) }}');
                     const data = await response.json();
 
                     if (data.success && data.elections.length > 0) {
@@ -366,7 +366,8 @@
                         clearInterval(refreshInterval);
                     }
 
-                    const response = await fetch(`/voting/teacher/results/${electionId}`);
+                    const response = await fetch(`{{ route('clubs.voting.results', [$club, ':electionId']) }}`
+                        .replace(':electionId', electionId));
                     const data = await response.json();
 
                     if (data.success) {
@@ -495,25 +496,25 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         ${winners.map(winner => `
-                                        <div class="bg-white rounded-lg border border-yellow-200 p-4 shadow-sm">
-                                            <div class="flex items-start justify-between">
-                                                <div class="flex-1">
-                                                    <div class="flex items-center mb-2">
-                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mr-2">
-                                                            WINNER
-                                                        </span>
+                                            <div class="bg-white rounded-lg border border-yellow-200 p-4 shadow-sm">
+                                                <div class="flex items-start justify-between">
+                                                    <div class="flex-1">
+                                                        <div class="flex items-center mb-2">
+                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mr-2">
+                                                                WINNER
+                                                            </span>
+                                                        </div>
+                                                        <h3 class="font-semibold text-gray-900 text-lg">${winner.name}</h3>
+                                                        <p class="text-sm text-gray-600 mb-1">${winner.position}</p>
+                                                        <p class="text-xs text-gray-500">${winner.partylist}</p>
                                                     </div>
-                                                    <h3 class="font-semibold text-gray-900 text-lg">${winner.name}</h3>
-                                                    <p class="text-sm text-gray-600 mb-1">${winner.position}</p>
-                                                    <p class="text-xs text-gray-500">${winner.partylist}</p>
-                                                </div>
-                                                <div class="text-right">
-                                                    <div class="text-2xl font-bold text-yellow-600">${winner.votes}</div>
-                                                    <div class="text-xs text-gray-500">votes</div>
+                                                    <div class="text-right">
+                                                        <div class="text-2xl font-bold text-yellow-600">${winner.votes}</div>
+                                                        <div class="text-xs text-gray-500">votes</div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    `).join('')}
+                                        `).join('')}
                     </div>
                 `;
 

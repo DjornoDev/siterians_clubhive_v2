@@ -89,7 +89,7 @@
         </div>
 
         <!-- Main Statistics Cards -->
-        <div class="mb-8">
+        {{-- <div class="mb-8">
             <div class="flex items-center justify-between mb-6">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-800">System Statistics</h2>
@@ -202,30 +202,16 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
-        <!-- Quick Analytics Summary with Chart Filters -->
+        <!-- Quick Analytics Summary -->
         <div class="bg-white rounded-lg shadow-sm p-5 mb-6 border border-gray-200">
             <!-- Header with responsive layout -->
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                 <h3 class="text-lg font-semibold text-gray-800">Quick Analytics</h3>
-                <!-- Chart Filters -->
+                <!-- Time Filter -->
                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                     <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
-                        <div class="relative">
-                            <select id="chartViewType" onchange="toggleChartView()"
-                                class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 text-sm font-medium text-gray-700 shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 w-full sm:w-auto min-w-[160px] cursor-pointer">
-                                <option value="monthly">Monthly New Data</option>
-                                <option value="cumulative">Cumulative Total</option>
-                            </select>
-                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </div>
-                        </div>
                         <div class="relative">
                             <select id="chartTimeFilter" onchange="updateCharts()"
                                 class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 text-sm font-medium text-gray-700 shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 w-full sm:w-auto min-w-[140px] cursor-pointer">
@@ -234,8 +220,7 @@
                                 <option value="12">Last 12 months</option>
                             </select>
                             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
+                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M19 9l-7 7-7-7"></path>
                                 </svg>
@@ -299,11 +284,11 @@
                 </div>
             </div>
 
-            <!-- Monthly Growth Trends -->
+            <!-- Monthly Active Users -->
             <div
                 class="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg transition-shadow duration-300">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Monthly New Registrations</h3>
+                    <h3 class="text-lg font-semibold text-gray-800">Monthly Active Users</h3>
                     <div class="bg-green-50 p-2 rounded-full">
                         <i class="fas fa-chart-line text-green-600"></i>
                     </div>
@@ -314,16 +299,11 @@
                 <div class="mt-4 flex flex-wrap justify-center gap-3 text-sm">
                     <div class="flex items-center">
                         <div class="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                        <span class="text-gray-600">New Clubs per month</span>
+                        <span class="text-gray-600">Unique users per month</span>
                     </div>
-                    <div class="flex items-center">
-                        <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                        <span class="text-gray-600">New Events per month</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
-                        <span class="text-gray-600">New Users per month</span>
-                    </div>
+                </div>
+                <div class="mt-2 text-xs text-gray-500 text-center">
+                    Based on actual user actions: posts, club activities, events, and system logs
                 </div>
             </div>
 
@@ -767,59 +747,53 @@
                     }
                 });
 
-                // Growth Trends Line Chart - Real Monthly New Data (NOT Cumulative)
+                // Monthly Active Users Line Chart
                 const growthTrendsCtx = document.getElementById('growthTrendsChart').getContext('2d');
                 @php
-                    // Get REAL MONTHLY data - NEW items created per month (not cumulative)
+                    // Get monthly active users data - unique users who logged in or used the system per month
                     $months = [];
-                    $clubGrowthMonthly = [];
-                    $eventGrowthMonthly = [];
-                    $userGrowthMonthly = [];
-
-                    // Also prepare cumulative data for comparison
-                    $clubGrowthCumulative = [];
-                    $eventGrowthCumulative = [];
-                    $userGrowthCumulative = [];
+                    $monthlyActiveUsers = [];
 
                     for ($i = 7; $i >= 0; $i--) {
                         $date = now()->subMonths($i);
                         $months[] = $date->format('M');
 
-                        // Count NEW items created IN this specific month
-                        $newClubsThisMonth = \App\Models\Club::whereBetween('created_at', [$date->startOfMonth()->copy(), $date->endOfMonth()->copy()])->count();
-                        $clubGrowthMonthly[] = $newClubsThisMonth;
+                        // Count unique users who were active in this month using REAL data sources
+                        // Primary: action_logs table (actual user actions)
+                        // Fallback: posts, club memberships, events (user activities)
+                        $activeUsersFromLogs = \App\Models\ActionLog::whereBetween('created_at', [$date->startOfMonth()->copy(), $date->endOfMonth()->copy()])
+                            ->whereNotNull('user_id')
+                            ->distinct('user_id')
+                            ->pluck('user_id');
 
-                        $newEventsThisMonth = \App\Models\Event::whereBetween('created_at', [$date->startOfMonth()->copy(), $date->endOfMonth()->copy()])->count();
-                        $eventGrowthMonthly[] = $newEventsThisMonth;
+                        $activeUsersFromPosts = \App\Models\User::whereHas('posts', function ($q) use ($date) {
+                            $q->whereBetween('created_at', [$date->startOfMonth()->copy(), $date->endOfMonth()->copy()]);
+                        })->pluck('user_id');
 
-                        $newUsersThisMonth = \App\Models\User::whereBetween('created_at', [$date->startOfMonth()->copy(), $date->endOfMonth()->copy()])->count();
-                        $userGrowthMonthly[] = $newUsersThisMonth;
+                        $activeUsersFromMemberships = \App\Models\User::whereHas('clubMemberships', function ($q) use ($date) {
+                            $q->whereBetween('created_at', [$date->startOfMonth()->copy(), $date->endOfMonth()->copy()]);
+                        })->pluck('user_id');
 
-                        // Count TOTAL items created up to this month (cumulative)
-                        $totalClubsUpToMonth = \App\Models\Club::where('created_at', '<=', $date->endOfMonth())->count();
-                        $clubGrowthCumulative[] = $totalClubsUpToMonth;
+                        $activeUsersFromEvents = \App\Models\User::whereHas('organizedEvents', function ($q) use ($date) {
+                            $q->whereBetween('created_at', [$date->startOfMonth()->copy(), $date->endOfMonth()->copy()]);
+                        })->pluck('user_id');
 
-                        $totalEventsUpToMonth = \App\Models\Event::where('created_at', '<=', $date->endOfMonth())->count();
-                        $eventGrowthCumulative[] = $totalEventsUpToMonth;
+                        // Combine all unique user IDs and count them
+                        $allActiveUserIds = $activeUsersFromLogs->concat($activeUsersFromPosts)->concat($activeUsersFromMemberships)->concat($activeUsersFromEvents)->unique();
 
-                        $totalUsersUpToMonth = \App\Models\User::where('created_at', '<=', $date->endOfMonth())->count();
-                        $userGrowthCumulative[] = $totalUsersUpToMonth;
+                        $activeUsersThisMonth = $allActiveUserIds->count();
+
+                        // Debug: Log the breakdown for this month (remove in production)
+                        // \Log::info("Month: " . $date->format('M Y') . " - Logs: " . $activeUsersFromLogs->count() . ", Posts: " . $activeUsersFromPosts->count() . ", Memberships: " . $activeUsersFromMemberships->count() . ", Events: " . $activeUsersFromEvents->count() . ", Total Unique: " . $activeUsersThisMonth);
+
+                        $monthlyActiveUsers[] = $activeUsersThisMonth;
                     }
                 @endphp
 
                 // Store chart data globally for filtering
                 window.originalChartData = {
                     months: {!! json_encode($months) !!},
-                    monthly: {
-                        clubs: [{{ implode(',', $clubGrowthMonthly) }}],
-                        events: [{{ implode(',', $eventGrowthMonthly) }}],
-                        users: [{{ implode(',', $userGrowthMonthly) }}]
-                    },
-                    cumulative: {
-                        clubs: [{{ implode(',', $clubGrowthCumulative) }}],
-                        events: [{{ implode(',', $eventGrowthCumulative) }}],
-                        users: [{{ implode(',', $userGrowthCumulative) }}]
-                    }
+                    activeUsers: [{{ implode(',', $monthlyActiveUsers) }}]
                 };
 
                 window.growthChart = new Chart(growthTrendsCtx, {
@@ -827,42 +801,17 @@
                     data: {
                         labels: {!! json_encode($months) !!},
                         datasets: [{
-                                label: 'New Clubs',
-                                data: [{{ implode(',', $clubGrowthMonthly) }}],
-                                borderColor: '#3B82F6',
-                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                fill: false,
-                                tension: 0.4,
-                                pointBackgroundColor: '#3B82F6',
-                                pointBorderColor: '#ffffff',
-                                pointBorderWidth: 2,
-                                pointRadius: 4
-                            },
-                            {
-                                label: 'New Events',
-                                data: [{{ implode(',', $eventGrowthMonthly) }}],
-                                borderColor: '#10B981',
-                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                                fill: false,
-                                tension: 0.4,
-                                pointBackgroundColor: '#10B981',
-                                pointBorderColor: '#ffffff',
-                                pointBorderWidth: 2,
-                                pointRadius: 4
-                            },
-                            {
-                                label: 'New Users',
-                                data: [{{ implode(',', $userGrowthMonthly) }}],
-                                borderColor: '#8B5CF6',
-                                backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                                fill: false,
-                                tension: 0.4,
-                                pointBackgroundColor: '#8B5CF6',
-                                pointBorderColor: '#ffffff',
-                                pointBorderWidth: 2,
-                                pointRadius: 4
-                            }
-                        ]
+                            label: 'Active Users',
+                            data: [{{ implode(',', $monthlyActiveUsers) }}],
+                            borderColor: '#3B82F6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: false,
+                            tension: 0.4,
+                            pointBackgroundColor: '#3B82F6',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 4
+                        }]
                     },
                     options: {
                         responsive: true,
@@ -874,10 +823,10 @@
                             tooltip: {
                                 callbacks: {
                                     title: function(tooltipItems) {
-                                        return tooltipItems[0].label + ' - New registrations';
+                                        return tooltipItems[0].label + ' - Active users';
                                     },
                                     label: function(context) {
-                                        return context.dataset.label + ': ' + context.parsed.y + ' new';
+                                        return context.dataset.label + ': ' + context.parsed.y + ' users';
                                     }
                                 }
                             }
@@ -890,7 +839,7 @@
                                 },
                                 title: {
                                     display: true,
-                                    text: 'New per month'
+                                    text: 'Active users per month'
                                 }
                             },
                             x: {
@@ -905,64 +854,17 @@
                 // Filter function for charts
                 function updateCharts() {
                     const months = parseInt(document.getElementById('chartTimeFilter').value);
-                    const viewType = document.getElementById('chartViewType').value;
 
-                    // Get current data source
-                    const dataSource = window.originalChartData[viewType];
-
-                    // Update Growth Trends Chart with filtered data
+                    // Update Monthly Active Users Chart with filtered data
                     const filteredMonths = window.originalChartData.months.slice(-months);
-                    const filteredClubs = dataSource.clubs.slice(-months);
-                    const filteredEvents = dataSource.events.slice(-months);
-                    const filteredUsers = dataSource.users.slice(-months);
+                    const filteredActiveUsers = window.originalChartData.activeUsers.slice(-months);
 
                     window.growthChart.data.labels = filteredMonths;
-                    window.growthChart.data.datasets[0].data = filteredClubs;
-                    window.growthChart.data.datasets[1].data = filteredEvents;
-                    window.growthChart.data.datasets[2].data = filteredUsers;
+                    window.growthChart.data.datasets[0].data = filteredActiveUsers;
                     window.growthChart.update();
                 }
 
-                // Toggle between monthly and cumulative view
-                function toggleChartView() {
-                    const viewType = document.getElementById('chartViewType').value;
-                    const chartTitle = document.querySelector('.text-lg.font-semibold.text-gray-800');
-                    const legend = document.querySelectorAll('.text-gray-600');
 
-                    if (viewType === 'monthly') {
-                        chartTitle.textContent = 'Monthly New Registrations';
-                        // Update legend
-                        legend[0].textContent = 'New Clubs per month';
-                        legend[1].textContent = 'New Events per month';
-                        legend[2].textContent = 'New Users per month';
-
-                        // Update tooltip and y-axis label
-                        window.growthChart.options.plugins.tooltip.callbacks.title = function(tooltipItems) {
-                            return tooltipItems[0].label + ' - New registrations';
-                        };
-                        window.growthChart.options.plugins.tooltip.callbacks.label = function(context) {
-                            return context.dataset.label + ': ' + context.parsed.y + ' new';
-                        };
-                        window.growthChart.options.scales.y.title.text = 'New per month';
-                    } else {
-                        chartTitle.textContent = 'Cumulative Growth';
-                        // Update legend
-                        legend[0].textContent = 'Total Clubs';
-                        legend[1].textContent = 'Total Events';
-                        legend[2].textContent = 'Total Users';
-
-                        // Update tooltip and y-axis label
-                        window.growthChart.options.plugins.tooltip.callbacks.title = function(tooltipItems) {
-                            return tooltipItems[0].label + ' - Total count';
-                        };
-                        window.growthChart.options.plugins.tooltip.callbacks.label = function(context) {
-                            return context.dataset.label + ': ' + context.parsed.y + ' total';
-                        };
-                        window.growthChart.options.scales.y.title.text = 'Total count';
-                    }
-
-                    updateCharts(); // Apply the data change
-                }
 
                 // Activity Overview Bar Chart - Real Data from Last 7 Days
                 const activityOverviewCtx = document.getElementById('activityOverviewChart').getContext('2d');
