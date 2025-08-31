@@ -6,6 +6,7 @@ use App\Models\Club;
 use App\Models\Event;
 use App\Models\EventDocument;
 use App\Models\ActionLog;
+use App\Services\MainClubService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
@@ -339,9 +340,9 @@ class EventController extends Controller
             }
         }
 
-        // Check if current user is SSLG adviser (club ID 1)
-        $sslgClub = Club::find(1);
-        $isSSLGAdviser = $sslgClub && Auth::id() === $sslgClub->club_adviser;
+        // Check if current user is main club adviser (SSLG)
+        $sslgClub = MainClubService::getMainClub();
+        $isSSLGAdviser = MainClubService::isMainClubAdviser(Auth::id());
 
         // Auto-approve if SSLG adviser, otherwise set to pending
         $approvalStatus = $isSSLGAdviser ? 'approved' : 'pending';
@@ -461,8 +462,8 @@ class EventController extends Controller
 
         // If event is being edited and it was previously approved, reset to pending
         // BUT if the current user is SSLG adviser, auto-approve again
-        $sslgClub = Club::find(1);
-        $isSSLGAdviser = $sslgClub && Auth::id() === $sslgClub->club_adviser;
+        $sslgClub = MainClubService::getMainClub();
+        $isSSLGAdviser = MainClubService::isMainClubAdviser(Auth::id());
 
         if ($event->approval_status === 'approved') {
             if ($isSSLGAdviser) {
@@ -550,9 +551,8 @@ class EventController extends Controller
      */
     public function pendingEvents()
     {
-        // Check if user is SSLG adviser (club ID 1)
-        $sslgClub = Club::find(1);
-        if (!$sslgClub || Auth::id() !== $sslgClub->club_adviser) {
+        // Check if user is main club adviser (SSLG)
+        if (!MainClubService::isMainClubAdviser(Auth::id())) {
             abort(403, 'Unauthorized. Only SSLG adviser can view pending events.');
         }
 
@@ -569,9 +569,8 @@ class EventController extends Controller
      */
     public function showForApproval(Event $event)
     {
-        // Check if user is SSLG adviser (club ID 1)
-        $sslgClub = Club::find(1);
-        if (!$sslgClub || Auth::id() !== $sslgClub->club_adviser) {
+        // Check if user is main club adviser (SSLG)
+        if (!MainClubService::isMainClubAdviser(Auth::id())) {
             abort(403, 'Unauthorized. Only SSLG adviser can view pending events.');
         }
 
@@ -588,9 +587,8 @@ class EventController extends Controller
      */
     public function approve(Event $event)
     {
-        // Check if user is SSLG adviser (club ID 1)
-        $sslgClub = Club::find(1);
-        if (!$sslgClub || Auth::id() !== $sslgClub->club_adviser) {
+        // Check if user is main club adviser (SSLG)
+        if (!MainClubService::isMainClubAdviser(Auth::id())) {
             abort(403, 'Unauthorized. Only SSLG adviser can approve events.');
         }
 
@@ -614,9 +612,8 @@ class EventController extends Controller
      */
     public function reject(Request $request, Event $event)
     {
-        // Check if user is SSLG adviser (club ID 1)
-        $sslgClub = Club::find(1);
-        if (!$sslgClub || Auth::id() !== $sslgClub->club_adviser) {
+        // Check if user is main club adviser (SSLG)
+        if (!MainClubService::isMainClubAdviser(Auth::id())) {
             abort(403, 'Unauthorized. Only SSLG adviser can reject events.');
         }
 
@@ -644,11 +641,10 @@ class EventController extends Controller
      */
     public function downloadSupportingDocument(Event $event)
     {
-        // Check if user can view this event or is SSLG adviser
-        $sslgClub = Club::find(1);
+        // Check if user can view this event or is main club adviser
         if (
             !$event->canBeViewedBy(Auth::user()) &&
-            (!$sslgClub || Auth::id() !== $sslgClub->club_adviser)
+            !MainClubService::isMainClubAdviser(Auth::id())
         ) {
             abort(403, 'Unauthorized.');
         }
@@ -667,11 +663,10 @@ class EventController extends Controller
     {
         $event = $document->event;
 
-        // Check if user can view this event or is SSLG adviser
-        $sslgClub = Club::find(1);
+        // Check if user can view this event or is main club adviser
         if (
             !$event->canBeViewedBy(Auth::user()) &&
-            (!$sslgClub || Auth::id() !== $sslgClub->club_adviser)
+            !MainClubService::isMainClubAdviser(Auth::id())
         ) {
             abort(403, 'Unauthorized.');
         }

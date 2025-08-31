@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\User;
 use App\Models\Club;
 use App\Models\Post;
+use App\Services\MainClubService;
 use Illuminate\Auth\Access\Response;
 
 class EventPolicy
@@ -41,9 +42,8 @@ class EventPolicy
      */
     public function update(User $user, Event $event)
     {
-        // SSLG adviser (club ID 1) can update any event
-        $sslgClub = Club::find(1);
-        if ($sslgClub && $user->user_id === $sslgClub->club_adviser) {
+        // Main club adviser (SSLG) can update any event
+        if (MainClubService::isMainClubAdviser($user->user_id)) {
             return true;
         }
 

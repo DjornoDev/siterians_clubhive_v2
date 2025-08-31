@@ -243,8 +243,7 @@
 
                     {{-- Event Approvals for SSLG Adviser - moved under Events section --}}
                     @php
-                        $sslgClub = \App\Models\Club::find(1);
-                        $isSSLGAdviser = $sslgClub && auth()->id() === $sslgClub->club_adviser;
+                        $isSSLGAdviser = \App\Services\MainClubService::isMainClubAdviser(auth()->id());
                     @endphp
                     @if ($isSSLGAdviser)
                         <a href="{{ route('events.pending') }}"

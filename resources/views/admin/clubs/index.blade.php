@@ -83,7 +83,7 @@
                         <p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Hunting Day</p>
                         <h3 class="text-lg font-bold text-gray-800 mt-1">
                             @php
-                                $huntingDay = \App\Models\Club::find(1)?->is_club_hunting_day ?? false;
+                                $huntingDay = \App\Services\MainClubService::isHuntingDayActive();
                             @endphp
                             <span class="{{ $huntingDay ? 'text-green-600' : 'text-red-600' }}">
                                 {{ $huntingDay ? 'Active' : 'Inactive' }}

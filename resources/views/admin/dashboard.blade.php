@@ -908,8 +908,8 @@
                     // Get CSRF token from meta tag
                     const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-                    // Assumes the first club (ID 1) is the SSG club with hunting day control
-                    fetch('/clubs/1/toggle-hunting-day', {
+                    // Uses main club for hunting day control
+                    fetch('/clubs/' + {{ \App\Services\MainClubService::getMainClubId() }} + '/toggle-hunting-day', {
                             method: 'POST',
                             headers: {
                                 'X-CSRF-TOKEN': token,

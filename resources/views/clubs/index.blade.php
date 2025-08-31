@@ -61,7 +61,7 @@
     }" class="max-w-7xl mx-auto px-4 py-6">
         @php
             // Check if club hunting day is active
-            $isHuntingActive = \App\Models\Club::find(1)?->is_club_hunting_day ?? false;
+            $isHuntingActive = \App\Services\MainClubService::isHuntingDayActive();
 
             // Check if there's an active election for this specific club
 $activeElection = \App\Models\Election::where('club_id', $club->club_id)
@@ -124,7 +124,7 @@ $canAccessVotingPage =
                             <div class="ml-2 sm:ml-3">
                                 <p class="text-sm font-medium text-blue-800">Election Voting is ONGOING!</p>
                                 @if ($canAccessVotingPage)
-                                    @if (auth()->user()->role === 'TEACHER' && auth()->user()->user_id === \App\Models\Club::find(1)?->club_adviser)
+                                    @if (auth()->user()->role === 'TEACHER' && \App\Services\MainClubService::isMainClubAdviser(auth()->user()->user_id))
                                         <p class="text-xs text-blue-700 mt-0.5 sm:mt-1">{{ $activeElection->title }} is now
                                             active.
                                             As the club adviser, you can monitor the voting process at the <a

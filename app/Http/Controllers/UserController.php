@@ -12,6 +12,7 @@ use App\Models\SchoolClass;
 use App\Models\Club;
 use App\Models\Event;
 use App\Models\ClubMembership;
+use App\Services\MainClubService;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 
@@ -172,10 +173,10 @@ class UserController extends Controller
                 'password' => Hash::make($validated['password']),
             ]);
 
-            // Automatically add students to SSG club (ID 1)
+            // Automatically add students to main club (SSLG)
             if ($validated['role'] === 'STUDENT') {
                 ClubMembership::create([
-                    'club_id' => 1,
+                    'club_id' => MainClubService::getMainClubId(),
                     'user_id' => $user->user_id,
                     'club_role' => 'MEMBER',
                     'joined_date' => now(),
@@ -272,7 +273,7 @@ class UserController extends Controller
 
                 if ($user->role === 'STUDENT') {
                     ClubMembership::create([
-                        'club_id' => 1,
+                        'club_id' => MainClubService::getMainClubId(),
                         'user_id' => $user->user_id,
                         'club_role' => 'MEMBER',
                         'joined_date' => now(),

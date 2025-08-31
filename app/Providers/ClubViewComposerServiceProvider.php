@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Club;
 use App\Models\Event;
+use App\Services\MainClubService;
 
 class ClubViewComposerServiceProvider extends ServiceProvider
 {
@@ -43,9 +44,8 @@ class ClubViewComposerServiceProvider extends ServiceProvider
             $pendingEventsCount = 0;
 
             if (Auth::check()) {
-                // Check if user is SSLG adviser (club ID 1)
-                $sslgClub = Club::find(1);
-                if ($sslgClub && Auth::id() === $sslgClub->club_adviser) {
+                // Check if user is main club adviser (SSLG)
+                if (MainClubService::isMainClubAdviser(Auth::id())) {
                     $pendingEventsCount = \App\Models\Event::where('approval_status', 'pending')->count();
                 }
             }

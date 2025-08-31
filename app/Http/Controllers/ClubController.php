@@ -20,6 +20,7 @@ use App\Models\Election;
 use App\Models\Candidate;
 use App\Models\Vote;
 use App\Models\ClubJoinRequest;
+use App\Services\MainClubService;
 
 class ClubController extends Controller
 {
@@ -43,7 +44,7 @@ class ClubController extends Controller
         // Allow both the club adviser and any admin to toggle hunting day
         abort_if(
             (auth()->id() !== $club->club_adviser && auth()->user()->role !== 'ADMIN') ||
-                $club->club_id !== 1,
+                $club->club_id !== MainClubService::getMainClubId(),
             403
         );
 
@@ -379,6 +380,11 @@ class ClubController extends Controller
     public function destroy(Club $club)
     {
         try {
+            // Prevent deletion of protected clubs (main club)
+            if (MainClubService::isProtectedClub($club->club_id)) {
+                abort(403, 'Cannot delete the main club. This club is protected and essential for system operation.');
+            }
+
             $clubName = $club->club_name;
             $clubId = $club->club_id;
 
@@ -427,6 +433,11 @@ class ClubController extends Controller
 
         // Password verified, now delete the club
         try {
+            // Prevent deletion of protected clubs (main club)
+            if (MainClubService::isProtectedClub($club->club_id)) {
+                abort(403, 'Cannot delete the main club. This club is protected and essential for system operation.');
+            }
+
             // Delete associated files
             if ($club->club_logo) {
                 Storage::disk('public')->delete($club->club_logo);

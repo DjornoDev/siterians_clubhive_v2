@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Services\MainClubService;
 
 class Event extends Model
 {
@@ -104,9 +105,8 @@ class Event extends Model
                 return true;
             }
 
-            // SSLG adviser (club ID 1) can view all pending events
-            $sslgClub = Club::find(1);
-            if ($sslgClub && $user->user_id === $sslgClub->club_adviser) {
+            // Main club adviser (SSLG) can view all pending events
+            if (MainClubService::isMainClubAdviser($user->user_id)) {
                 return true;
             }
 

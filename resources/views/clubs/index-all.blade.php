@@ -137,7 +137,7 @@
 
 @section('content')
     @php
-        $isHuntingActive = \App\Models\Club::find(1)?->is_club_hunting_day ?? false;
+        $isHuntingActive = \App\Services\MainClubService::isHuntingDayActive();
     @endphp
     <div class="container mx-auto px-4 py-8">
         <h1 class="text-3xl font-bold mb-8 text-gray-800">Explore All Clubs</h1>
@@ -465,13 +465,14 @@
 
         async function toggleHuntingDay() {
             try {
-                const response = await fetch("{{ route('clubs.toggle-hunting-day', \App\Models\Club::find(1)) }}", {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json',
-                    },
-                });
+                const response = await fetch(
+                    "{{ route('clubs.toggle-hunting-day', \App\Services\MainClubService::getMainClubId()) }}", {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json',
+                        },
+                    });
 
                 if (response.ok) {
                     const data = await response.json();
@@ -599,7 +600,7 @@
                             // User already has a pending request
                             alert(
                                 'You already have a pending request for this club. Please wait for adviser approval.'
-                                );
+                            );
                         } else if (data.message && data.message.includes('already a member')) {
                             const joinButton = document.getElementById('joinClubButton');
                             const alreadyJoinedMessage = document.getElementById('alreadyJoinedMessage');
