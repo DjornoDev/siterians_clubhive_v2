@@ -3,6 +3,9 @@
 @section('title', 'Action Logs | ClubHive')
 
 @section('content')
+    <!-- Include Password Protection Modal -->
+    @include('admin.action-logs.partials.password-modal')
+
     <div class="p-4 sm:p-6">
         <!-- Header -->
         <div class="bg-gradient-to-r from-blue-700 to-indigo-800 rounded-xl shadow-lg p-6 mb-8 text-white">
@@ -24,10 +27,7 @@
                             <i class="fas fa-trash mr-2"></i>Cleanup Old Logs
                         </button>
                     </form>
-                    <button onclick="resetFilters()"
-                        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
-                        <i class="fas fa-undo mr-2"></i>Reset Filters
-                    </button>
+
                 </div>
             </div>
         </div>
@@ -37,6 +37,9 @@
             <h2 class="text-xl font-semibold text-gray-800 mb-4">Filters & Search</h2>
 
             <form method="GET" action="{{ route('admin.action-logs.index') }}" class="space-y-4">
+                <!-- Hidden inputs to preserve sorting -->
+                <input type="hidden" name="sort_column" value="{{ $sortColumn }}">
+                <input type="hidden" name="sort_direction" value="{{ $sortDirection }}">
                 <!-- Search Filters Row 1 -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -124,23 +127,18 @@
                         </select>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Sort Order</label>
-                        <select name="sort"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="newest" {{ request('sort') === 'newest' ? 'selected' : '' }}>Newest First
-                            </option>
-                            <option value="oldest" {{ request('sort') === 'oldest' ? 'selected' : '' }}>Oldest First
-                            </option>
-                        </select>
-                    </div>
+
                 </div>
 
                 <!-- Submit Button -->
-                <div class="flex justify-end">
+                <div class="flex justify-end space-x-3">
                     <button type="submit"
                         class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition duration-200">
                         <i class="fas fa-search mr-2"></i>Apply Filters
+                    </button>
+                    <button type="button" onclick="resetFilters()"
+                        class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition duration-200">
+                        <i class="fas fa-undo mr-2"></i>Reset Filters
                     </button>
                 </div>
             </form>
@@ -169,20 +167,84 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                    onclick="sortTable('created_at')">
+                                    <div class="flex items-center space-x-1">
+                                        <span>Date & Time</span>
+                                        @if ($sortColumn === 'created_at')
+                                            <i
+                                                class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} text-blue-500"></i>
+                                        @else
+                                            <i class="fas fa-sort text-gray-400"></i>
+                                        @endif
+                                    </div>
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                    onclick="sortTable('user_name')">
+                                    <div class="flex items-center space-x-1">
+                                        <span>User</span>
+                                        @if ($sortColumn === 'user_name')
+                                            <i
+                                                class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} text-blue-500"></i>
+                                        @else
+                                            <i class="fas fa-sort text-gray-400"></i>
+                                        @endif
+                                    </div>
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                    onclick="sortTable('user_role')">
+                                    <div class="flex items-center space-x-1">
+                                        <span>Role</span>
+                                        @if ($sortColumn === 'user_role')
+                                            <i
+                                                class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} text-blue-500"></i>
+                                        @else
+                                            <i class="fas fa-sort text-gray-400"></i>
+                                        @endif
+                                    </div>
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                    onclick="sortTable('action_category')">
+                                    <div class="flex items-center space-x-1">
+                                        <span>Action</span>
+                                        @if ($sortColumn === 'action_category')
+                                            <i
+                                                class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} text-blue-500"></i>
+                                        @else
+                                            <i class="fas fa-sort text-gray-400"></i>
+                                        @endif
+                                    </div>
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                    onclick="sortTable('action_type')">
+                                    <div class="flex items-center space-x-1">
+                                        <span>Action Type</span>
+                                        @if ($sortColumn === 'action_type')
+                                            <i
+                                                class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} text-blue-500"></i>
+                                        @else
+                                            <i class="fas fa-sort text-gray-400"></i>
+                                        @endif
+                                    </div>
+                                </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Date & Time</th>
+                                    Details
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                    onclick="sortTable('status')">
+                                    <div class="flex items-center space-x-1">
+                                        <span>Status</span>
+                                        @if ($sortColumn === 'status')
+                                            <i
+                                                class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} text-blue-500"></i>
+                                        @else
+                                            <i class="fas fa-sort text-gray-400"></i>
+                                        @endif
+                                    </div>
+                                </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    User</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Role</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Action</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Details</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Actions</th>
+                                    Actions
+                                </th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -218,7 +280,11 @@
                                             <span
                                                 class="font-medium">{{ ucfirst(str_replace('_', ' ', $log->action_category)) }}</span>
                                         </div>
-                                        <div class="text-xs text-gray-500">{{ $log->action_type }}</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm text-gray-900">
+                                            {{ $log->action_type }}
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="text-sm text-gray-900 max-w-xs truncate"
@@ -277,7 +343,28 @@
     @push('scripts')
         <script>
             function resetFilters() {
+                // Clear all filters and sorting
                 window.location.href = '{{ route('admin.action-logs.index') }}';
+            }
+
+            function sortTable(column) {
+                const currentUrl = new URL(window.location);
+                const currentSortColumn = currentUrl.searchParams.get('sort_column');
+                const currentSortDirection = currentUrl.searchParams.get('sort_direction');
+
+                let newDirection = 'asc';
+
+                // If clicking the same column, toggle direction
+                if (currentSortColumn === column) {
+                    newDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+                }
+
+                // Update URL parameters
+                currentUrl.searchParams.set('sort_column', column);
+                currentUrl.searchParams.set('sort_direction', newDirection);
+
+                // Navigate to new URL
+                window.location.href = currentUrl.toString();
             }
 
             // Auto-suggest functionality for user search
@@ -298,7 +385,7 @@
                     userSearchTimeout = setTimeout(() => {
                         fetch(
                                 `{{ route('admin.action-logs.user-suggestions') }}?q=${encodeURIComponent(query)}`
-                                )
+                            )
                             .then(response => response.json())
                             .then(data => {
                                 if (data.length > 0) {
@@ -345,7 +432,7 @@
                     actionSearchTimeout = setTimeout(() => {
                         fetch(
                                 `{{ route('admin.action-logs.action-suggestions') }}?q=${encodeURIComponent(query)}`
-                                )
+                            )
                             .then(response => response.json())
                             .then(data => {
                                 if (data.length > 0) {

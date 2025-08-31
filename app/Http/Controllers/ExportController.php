@@ -230,6 +230,8 @@ class ExportController extends Controller
                 'Mother Contact',
                 'Father Name',
                 'Father Contact',
+                'Guardian Name',
+                'Guardian Contact',
                 'Created At',
                 'Updated At'
             ]);
@@ -255,6 +257,8 @@ class ExportController extends Controller
                     $user->mother_contact_no ?? 'N/A',
                     $user->father_name ?? 'N/A',
                     $user->father_contact_no ?? 'N/A',
+                    $user->guardian_name ?? 'N/A',
+                    $user->guardian_contact_no ?? 'N/A',
                     $user->created_at,
                     $user->updated_at
                 ]);
@@ -818,6 +822,8 @@ class ExportController extends Controller
                     'mother_contact' => $user->mother_contact_no ?? 'N/A',
                     'father_name' => $user->father_name ?? 'N/A',
                     'father_contact' => $user->father_contact_no ?? 'N/A',
+                    'guardian_name' => $user->guardian_name ?? 'N/A',
+                    'guardian_contact' => $user->guardian_contact_no ?? 'N/A',
                     'created_at' => $user->created_at ? $user->created_at->toISOString() : null,
                     'updated_at' => $user->updated_at ? $user->updated_at->toISOString() : null
                 ];

@@ -157,6 +157,43 @@
             </div>
         </div>
 
+        <!-- Parent/Guardian Information Section -->
+        <div class="mt-6 bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+            <h4 class="text-md font-semibold text-gray-700 mb-3 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-red-500" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                Parent/Guardian Information
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Mother's Information -->
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase">Mother's Name</p>
+                    <p id="userMotherName" class="text-gray-800 font-medium mt-1">N/A</p>
+                    <p class="text-xs text-gray-500 uppercase mt-2">Contact Number</p>
+                    <p id="userMotherContact" class="text-gray-800 font-medium mt-1">N/A</p>
+                </div>
+                
+                <!-- Father's Information -->
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase">Father's Name</p>
+                    <p id="userFatherName" class="text-gray-800 font-medium mt-1">N/A</p>
+                    <p class="text-xs text-gray-500 uppercase mt-2">Contact Number</p>
+                    <p id="userFatherContact" class="text-gray-800 font-medium mt-1">N/A</p>
+                </div>
+                
+                <!-- Guardian's Information -->
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase">Guardian's Name</p>
+                    <p id="userGuardianName" class="text-gray-800 font-medium mt-1">N/A</p>
+                    <p class="text-xs text-gray-500 uppercase mt-2">Contact Number</p>
+                    <p id="userGuardianContact" class="text-gray-800 font-medium mt-1">N/A</p>
+                </div>
+            </div>
+        </div>
+
         <div class="flex justify-end mt-6">
             <button onclick="closeViewModal()"
                 class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-gray-300">

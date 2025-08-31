@@ -30,6 +30,15 @@
                         </svg>
                         Bulk Upload
                     </button>
+                    <button onclick="toggleBulkDeleteModal()" id="bulkDeleteBtn"
+                        class="bg-red-600 text-white px-5 py-2.5 rounded-lg hover:bg-red-700 transition-all duration-200 font-medium shadow-lg flex items-center gap-2 hidden animate-pulse">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        Delete Selected (<span id="selectedCount" class="font-bold">0</span>)
+                    </button>
                     <a href="{{ route('admin.users.export', request()->query()) }}"
                         class="bg-green-600 text-white px-5 py-2.5 rounded-lg hover:bg-green-700 transition-all duration-200 font-medium shadow-sm flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -230,6 +239,14 @@
                         <thead>
                             <tr class="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
                                 <th
+                                    class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-700">
+                                    <div class="flex flex-col items-center">
+                                        <input type="checkbox" id="selectAllUsers"
+                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 hover:border-blue-400 transition-colors">
+                                        <span class="text-xs mt-1">Select All</span>
+                                    </div>
+                                </th>
+                                <th
                                     class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-700">
                                     Name</th>
                                 <th
@@ -250,6 +267,11 @@
                             @forelse ($users as $user)
                                 <tr class="hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100"
                                     data-user-id="{{ $user->user_id }}">
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        <input type="checkbox" name="selectedUsers[]" value="{{ $user->user_id }}"
+                                            class="user-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500 hover:border-blue-400 transition-colors"
+                                            data-user-name="{{ $user->name }}" data-user-email="{{ $user->email }}">
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="h-10 w-10 flex-shrink-0 mr-3">
@@ -299,7 +321,7 @@
                                                 <i class="fas fa-eye"></i> View
                                             </button>
                                             <button
-                                                onclick="openEditModal('{{ $user->user_id }}', '{{ addslashes($user->name) }}', '{{ $user->email }}', '{{ $user->role }}', '{{ $user->sex ?? '' }}', '{{ addslashes($user->address ?? '') }}', '{{ $user->contact_no ?? '' }}', '{{ addslashes($user->mother_name ?? '') }}', '{{ $user->mother_contact_no ?? '' }}', '{{ addslashes($user->father_name ?? '') }}', '{{ $user->father_contact_no ?? '' }}', '{{ $user->section->class_id ?? '' }}', '{{ $user->section_id ?? '' }}')"
+                                                onclick="openEditModal('{{ $user->user_id }}', '{{ addslashes($user->name) }}', '{{ $user->email }}', '{{ $user->role }}', '{{ $user->sex ?? '' }}', '{{ addslashes($user->address ?? '') }}', '{{ $user->contact_no ?? '' }}', '{{ addslashes($user->mother_name ?? '') }}', '{{ $user->mother_contact_no ?? '' }}', '{{ addslashes($user->father_name ?? '') }}', '{{ $user->father_contact_no ?? '' }}', '{{ addslashes($user->guardian_name ?? '') }}', '{{ $user->guardian_contact_no ?? '' }}', '{{ $user->section->class_id ?? '' }}', '{{ $user->section_id ?? '' }}')"
                                                 class="text-blue-600 hover:text-blue-900 transition-colors duration-150 flex items-center gap-1 border border-blue-200 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded">
                                                 <i class="fas fa-edit"></i> Edit
                                             </button>
@@ -362,6 +384,74 @@
             <!-- User View Modal -->
             @include('admin.users.partials.view-user-modal')
 
+            <!-- Bulk Delete Modal -->
+            <div id="bulkDeleteModal"
+                class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+                <div class="bg-white rounded-lg p-6 w-full max-w-md mx-auto shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">Bulk Delete Users</h3>
+                        <button onclick="closeBulkDeleteModal()" class="text-gray-400 hover:text-gray-600">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd"
+                                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-red-800">Warning</h3>
+                                    <div class="mt-2 text-sm text-red-700">
+                                        <p>You are about to permanently delete <strong id="bulkDeleteCount">0</strong>
+                                            user(s). This action cannot be undone.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p class="text-sm text-gray-600 mb-3">Selected users for deletion:</p>
+                        <div id="bulkDeleteUserList"
+                            class="max-h-32 overflow-y-auto bg-gray-50 p-3 rounded text-sm border border-gray-200">
+                            <!-- User list will be populated here -->
+                        </div>
+                    </div>
+
+                    <form id="bulkDeleteForm" class="space-y-4">
+                        <div>
+                            <label for="bulkDeletePassword" class="block text-sm font-medium text-gray-700 mb-2">
+                                Enter your password to confirm deletion
+                            </label>
+                            <input type="password" id="bulkDeletePassword" name="password" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                placeholder="Your password">
+                        </div>
+
+                        <div id="bulkDeleteError" class="hidden text-sm text-red-600 bg-red-50 p-3 rounded"></div>
+
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" onclick="closeBulkDeleteModal()"
+                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                                Cancel
+                            </button>
+                            <button type="submit" id="bulkDeleteSubmitBtn"
+                                class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                Delete Users
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <!-- User Success Modal -->
             <div id="userSuccessModal"
                 class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
@@ -396,6 +486,57 @@
         </div>
 
         <script>
+            /**
+             * Admin Users Management JavaScript
+             * 
+             * This script handles all user management functionality including:
+             * - User CRUD operations (Create, Read, Update, Delete)
+             * - Password verification for sensitive operations
+             * - Modal management and state handling
+             * - Dynamic form validation and submission
+             * - Performance optimizations with DOM element caching
+             * 
+             * @author ClubHive Development Team
+             * @version 2.0
+             * @since 2024
+             */
+
+            // ========================================
+            // UTILITY FUNCTIONS
+            // ========================================
+
+            /**
+             * Logs messages only in development environment
+             * @param {string} message - The message to log
+             * @param {*} data - Optional data to log with the message
+             */
+            function devLog(message, data = null) {
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    if (data) {
+                        console.log(message, data);
+                    } else {
+                        console.log(message);
+                    }
+                }
+            }
+
+            /**
+             * Logs errors only in development environment
+             * @param {string} message - The error message to log
+             * @param {*} error - Optional error object to log with the message
+             */
+            function devError(message, error = null) {
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    if (error) {
+                        console.error(message, error);
+                        devLog(message, error);
+                    } else {
+                        console.error(message);
+                        devLog(message);
+                    }
+                }
+            }
+
             // User Modal Interactions
             function toggleUserModal() {
                 document.getElementById('addUserModal').classList.toggle('hidden');
@@ -459,13 +600,39 @@
                     });
             });
 
+            // ========================================
+            // DOM INITIALIZATION & EVENT HANDLERS
+            // ========================================
+
+            // Cache frequently used DOM elements for better performance
+            let cachedElements = {};
+
+            /**
+             * Gets or caches a DOM element to reduce DOM queries
+             * @param {string} elementId - The ID of the element to get
+             * @returns {HTMLElement|null} The cached element or null if not found
+             */
+            function getCachedElement(elementId) {
+                if (!cachedElements[elementId]) {
+                    cachedElements[elementId] = document.getElementById(elementId);
+                }
+                return cachedElements[elementId];
+            }
+
+            /**
+             * Clears the element cache (useful when DOM changes)
+             */
+            function clearElementCache() {
+                cachedElements = {};
+            }
+
             // Load sections on page load if class is already selected
             document.addEventListener('DOMContentLoaded', function() {
-                const classId = document.getElementById('filterClassId').value;
+                const classId = getCachedElement('filterClassId')?.value;
                 if (classId) {
                     // Set timeout to ensure the DOM is fully loaded
                     setTimeout(() => {
-                        document.getElementById('filterClassId').dispatchEvent(new Event('change'));
+                        getCachedElement('filterClassId')?.dispatchEvent(new Event('change'));
 
                         // Set the correct section if it was previously selected
                         const urlParams = new URLSearchParams(window.location.search);
@@ -473,12 +640,256 @@
 
                         if (sectionId) {
                             setTimeout(() => {
-                                document.getElementById('filterSectionId').value = sectionId;
+                                const sectionElement = getCachedElement('filterSectionId');
+                                if (sectionElement) {
+                                    sectionElement.value = sectionId;
+                                }
                             }, 300);
                         }
                     }, 100);
                 }
+
+                // Ensure modals are properly initialized
+                const userViewModal = getCachedElement('userViewModal');
+                const viewPasswordVerificationModal = getCachedElement('viewPasswordVerificationModal');
+
+                if (userViewModal) {
+                    // Ensure modal is hidden by default
+                    userViewModal.classList.add('hidden');
+                    userViewModal.style.display = 'none';
+                }
+
+                if (viewPasswordVerificationModal) {
+                    // Ensure modal is hidden by default
+                    viewPasswordVerificationModal.classList.add('hidden');
+                }
+
+                // Initialize bulk delete functionality
+                initializeBulkDelete();
             });
+
+            /**
+             * Initializes bulk delete functionality
+             */
+            function initializeBulkDelete() {
+                // Select all checkbox functionality
+                const selectAllCheckbox = document.getElementById('selectAllUsers');
+                if (selectAllCheckbox) {
+                    selectAllCheckbox.addEventListener('change', function() {
+                        const userCheckboxes = document.querySelectorAll('.user-checkbox');
+                        userCheckboxes.forEach(checkbox => {
+                            checkbox.checked = this.checked;
+                        });
+                        updateBulkDeleteButton();
+                    });
+                }
+
+                // Individual checkbox change handlers
+                document.addEventListener('change', function(e) {
+                    if (e.target.classList.contains('user-checkbox')) {
+                        updateBulkDeleteButton();
+                        updateSelectAllCheckbox();
+                    }
+                });
+
+                // Bulk delete form submission
+                const bulkDeleteForm = document.getElementById('bulkDeleteForm');
+                if (bulkDeleteForm) {
+                    bulkDeleteForm.addEventListener('submit', handleBulkDelete);
+                }
+
+                // Keyboard shortcuts
+                document.addEventListener('keydown', function(e) {
+                    // Ctrl/Cmd + A to select all
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+                        e.preventDefault();
+                        const selectAllCheckbox = document.getElementById('selectAllUsers');
+                        if (selectAllCheckbox) {
+                            selectAllCheckbox.checked = !selectAllCheckbox.checked;
+                            selectAllCheckbox.dispatchEvent(new Event('change'));
+                        }
+                    }
+
+                    // Escape key to close modal
+                    if (e.key === 'Escape') {
+                        const bulkDeleteModal = document.getElementById('bulkDeleteModal');
+                        if (bulkDeleteModal && !bulkDeleteModal.classList.contains('hidden')) {
+                            closeBulkDeleteModal();
+                        }
+                    }
+                });
+            }
+
+            /**
+             * Updates the bulk delete button visibility and count
+             */
+            function updateBulkDeleteButton() {
+                const selectedCheckboxes = document.querySelectorAll('.user-checkbox:checked');
+                const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+                const selectedCount = document.getElementById('selectedCount');
+
+                if (bulkDeleteBtn && selectedCount) {
+                    const count = selectedCheckboxes.length;
+                    selectedCount.textContent = count;
+
+                    if (count > 0) {
+                        bulkDeleteBtn.classList.remove('hidden');
+                    } else {
+                        bulkDeleteBtn.classList.add('hidden');
+                    }
+                }
+            }
+
+            /**
+             * Updates the select all checkbox state
+             */
+            function updateSelectAllCheckbox() {
+                const selectAllCheckbox = document.getElementById('selectAllUsers');
+                const userCheckboxes = document.querySelectorAll('.user-checkbox');
+                const checkedCheckboxes = document.querySelectorAll('.user-checkbox:checked');
+
+                if (selectAllCheckbox) {
+                    if (checkedCheckboxes.length === 0) {
+                        selectAllCheckbox.checked = false;
+                        selectAllCheckbox.indeterminate = false;
+                    } else if (checkedCheckboxes.length === userCheckboxes.length) {
+                        selectAllCheckbox.checked = true;
+                        selectAllCheckbox.indeterminate = false;
+                    } else {
+                        selectAllCheckbox.checked = false;
+                        selectAllCheckbox.indeterminate = true;
+                    }
+                }
+            }
+
+            /**
+             * Handles bulk delete form submission
+             */
+            async function handleBulkDelete(e) {
+                e.preventDefault();
+
+                const selectedCheckboxes = document.querySelectorAll('.user-checkbox:checked');
+                const password = document.getElementById('bulkDeletePassword').value;
+                const errorElement = document.getElementById('bulkDeleteError');
+                const submitBtn = document.getElementById('bulkDeleteSubmitBtn');
+
+                if (selectedCheckboxes.length === 0) {
+                    showBulkDeleteError('No users selected for deletion.');
+                    return;
+                }
+
+                if (!password.trim()) {
+                    showBulkDeleteError('Please enter your password to confirm deletion.');
+                    return;
+                }
+
+                // Final confirmation
+                const confirmMessage =
+                    `Are you absolutely sure you want to delete ${selectedCheckboxes.length} user(s)? This action cannot be undone.`;
+                if (!confirm(confirmMessage)) {
+                    return;
+                }
+
+                // Disable submit button and show loading state
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Deleting...';
+
+                try {
+                    const userIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+
+                    const response = await fetch('/admin/users/bulk-delete', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            user_ids: userIds,
+                            password: password
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Remove deleted users from the table
+                        userIds.forEach(userId => {
+                            const row = document.querySelector(`tr[data-user-id="${userId}"]`);
+                            if (row) {
+                                row.remove();
+                            }
+                        });
+
+                        // Reset checkboxes and close modal
+                        document.querySelectorAll('.user-checkbox:checked').forEach(cb => cb.checked = false);
+                        updateBulkDeleteButton();
+                        closeBulkDeleteModal();
+
+                        // Show success message
+                        showBulkDeleteSuccess(`Successfully deleted ${userIds.length} user(s).`);
+
+                        // Refresh page after a short delay to update counts
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
+                    } else {
+                        showBulkDeleteError(data.error || 'Failed to delete users. Please try again.');
+                    }
+                } catch (error) {
+                    devError('Bulk delete error:', error);
+                    showBulkDeleteError('An error occurred while deleting users. Please try again.');
+                } finally {
+                    // Re-enable submit button
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Delete Users';
+                }
+            }
+
+            /**
+             * Shows error message in bulk delete modal
+             */
+            function showBulkDeleteError(message) {
+                const errorElement = document.getElementById('bulkDeleteError');
+                if (errorElement) {
+                    errorElement.textContent = message;
+                    errorElement.classList.remove('hidden');
+                }
+            }
+
+            /**
+             * Shows success message for bulk delete
+             */
+            function showBulkDeleteSuccess(message) {
+                // Create a temporary success message
+                const successDiv = document.createElement('div');
+                successDiv.className =
+                    'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300 translate-x-full';
+                successDiv.innerHTML = `
+                     <div class="flex items-center">
+                         <svg class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                         </svg>
+                         ${message}
+                     </div>
+                 `;
+                document.body.appendChild(successDiv);
+
+                // Animate in
+                setTimeout(() => {
+                    successDiv.classList.remove('translate-x-full');
+                }, 100);
+
+                // Remove after 4 seconds with animation
+                setTimeout(() => {
+                    successDiv.classList.add('translate-x-full');
+                    setTimeout(() => {
+                        if (successDiv.parentNode) {
+                            successDiv.parentNode.removeChild(successDiv);
+                        }
+                    }, 300);
+                }, 4000);
+            }
 
             // Add this helper function
             function fetchSections(classId) {
@@ -523,10 +934,12 @@
                             }
                         } else {
                             // Handle validation errors
-                            console.error(data.errors);
+                            devError('Validation errors:', data.errors);
                         }
                     })
-                    .catch(error => console.error('Error:', error));
+                    .catch(error => {
+                        devError('Error:', error);
+                    });
             });
 
             // Success modal display functions
@@ -549,7 +962,7 @@
 
             // Edit Modal Functions
             function openEditModal(userId, name, email, role, sex, address, contactNo, motherName, motherContactNo, fatherName,
-                fatherContactNo, classId, sectionId) {
+                fatherContactNo, guardianName, guardianContactNo, classId, sectionId) {
                 const form = document.getElementById('editUserForm');
                 form.action = `/admin/users/${userId}`;
 
@@ -563,6 +976,8 @@
                 document.getElementById('editMotherContactNo').value = motherContactNo;
                 document.getElementById('editFatherName').value = fatherName;
                 document.getElementById('editFatherContactNo').value = fatherContactNo;
+                document.getElementById('editGuardianName').value = guardianName;
+                document.getElementById('editGuardianContactNo').value = guardianContactNo;
 
                 const classSection = document.getElementById('editClassSection');
                 if (role === 'STUDENT') {
@@ -675,7 +1090,9 @@
                         }
                     })
                     .catch(error => {
-                        console.error('Error:', error);
+                        // Log error for debugging (only in development)
+                        devError('Error:', error);
+
                         errorElement.textContent = 'An error occurred. Please try again.';
                         errorElement.classList.remove('hidden');
                     });
@@ -707,17 +1124,119 @@
                     });
             });
 
-            // View Modal Functions
+            // ========================================
+            // BULK DELETE FUNCTIONS
+            // ========================================
+
+            /**
+             * Toggles the bulk delete modal
+             */
+            function toggleBulkDeleteModal() {
+                const modal = document.getElementById('bulkDeleteModal');
+                if (modal) {
+                    modal.classList.toggle('hidden');
+                    if (!modal.classList.contains('hidden')) {
+                        populateBulkDeleteModal();
+                    }
+                }
+            }
+
+            /**
+             * Closes the bulk delete modal
+             */
+            function closeBulkDeleteModal() {
+                const modal = document.getElementById('bulkDeleteModal');
+                if (modal) {
+                    modal.classList.add('hidden');
+                    // Clear form
+                    document.getElementById('bulkDeleteForm').reset();
+                    document.getElementById('bulkDeleteError').classList.add('hidden');
+                }
+            }
+
+            /**
+             * Populates the bulk delete modal with selected users
+             */
+            function populateBulkDeleteModal() {
+                const selectedCheckboxes = document.querySelectorAll('.user-checkbox:checked');
+                const count = selectedCheckboxes.length;
+
+                document.getElementById('bulkDeleteCount').textContent = count;
+
+                const userList = document.getElementById('bulkDeleteUserList');
+                userList.innerHTML = '';
+
+                selectedCheckboxes.forEach(checkbox => {
+                    const userName = checkbox.getAttribute('data-user-name');
+                    const userEmail = checkbox.getAttribute('data-user-email');
+
+                    const userItem = document.createElement('div');
+                    userItem.className =
+                        'flex justify-between items-center py-1 border-b border-gray-200 last:border-b-0';
+                    userItem.innerHTML = `
+                         <span class="font-medium">${userName}</span>
+                         <span class="text-gray-500 text-xs">${userEmail}</span>
+                     `;
+                    userList.appendChild(userItem);
+                });
+            }
+
+            // ========================================
+            // VIEW MODAL FUNCTIONS
+            // ========================================
+
+            /**
+             * Opens the password verification modal for viewing user details
+             * @param {string} userId - The user ID to view
+             * @param {string} userName - The user's name
+             * @param {string} userEmail - The user's email
+             * @param {string} userRole - The user's role
+             */
             function openViewModal(userId, userName, userEmail, userRole) {
                 // Store the user ID for later
                 document.getElementById('viewUserId').value = userId;
+
+                // Reset any previous state
+                const errorElement = document.getElementById('viewPasswordError');
+                if (errorElement) {
+                    errorElement.classList.add('hidden');
+                    errorElement.textContent = '';
+                }
+
+                // Clear password input
+                const passwordInput = document.getElementById('viewPasswordInput');
+                if (passwordInput) {
+                    passwordInput.value = '';
+                    passwordInput.classList.remove('border-red-500');
+                }
 
                 // Show password verification modal
                 document.getElementById('viewPasswordVerificationModal').classList.remove('hidden');
             }
 
             function closeViewModal() {
-                document.getElementById('userViewModal').classList.add('hidden');
+                const userViewModal = document.getElementById('userViewModal');
+                if (userViewModal) {
+                    userViewModal.classList.add('hidden');
+                    // Reset display style
+                    userViewModal.style.display = 'none';
+                }
+
+                // Reset any dynamic content to prevent stale data
+                const resetElements = [
+                    'userName', 'userEmail', 'userCreated', 'userUpdated',
+                    'userCredName', 'userCredEmail', 'userAvatar', 'userRoleBadge',
+                    'userGradeLevel', 'userSection', 'userPostsCount', 'userEventsCount',
+                    'userMotherName', 'userMotherContact', 'userFatherName', 'userFatherContact',
+                    'userGuardianName', 'userGuardianContact'
+                ];
+
+                resetElements.forEach(elementId => {
+                    const element = document.getElementById(elementId);
+                    if (element) {
+                        element.textContent = '';
+                    }
+                });
             }
 
             function closeViewPasswordModal() {
@@ -732,137 +1251,248 @@
                 document.getElementById('viewPasswordInput').classList.remove('border-red-500');
             }
 
+            /**
+             * Displays user details in the view modal
+             * @param {Object} userData - The user data object containing all user information
+             */
             function showUserDetails(userData) {
-                // Fill in user basic details
-                document.getElementById('userName').textContent = userData.name;
-                document.getElementById('userEmail').textContent = userData.email;
-                document.getElementById('userCreated').textContent = formatDate(userData.created_at);
-                document.getElementById('userUpdated').textContent = formatDate(userData.updated_at);
+                try {
+                    // Check if the main modal exists
+                    const userViewModal = document.getElementById('userViewModal');
+                    if (!userViewModal) {
+                        throw new Error('User view modal not found');
+                    }
 
-                // Fill in user credentials section
-                document.getElementById('userCredName').textContent = userData.name;
-                document.getElementById('userCredEmail').textContent = userData.email;
+                    // Ensure the modal is in the DOM and accessible
+                    if (!document.body.contains(userViewModal)) {
+                        throw new Error('User view modal is not accessible');
+                    }
 
-                // Set avatar initial
-                const avatar = document.getElementById('userAvatar');
-                avatar.textContent = userData.name.charAt(0).toUpperCase();
+                    // Check if document is ready
+                    if (document.readyState !== 'complete') {
+                        // Only retry once to avoid infinite loops
+                        setTimeout(() => {
+                            if (document.readyState === 'complete') {
+                                showUserDetails(userData);
+                            } else {
+                                throw new Error('Document not ready after timeout');
+                            }
+                        }, 200);
+                        return;
+                    }
 
-                // Set role badge
-                const roleBadge = document.getElementById('userRoleBadge');
-                let badgeClass = '';
-                switch (userData.role) {
-                    case 'ADMIN':
-                        badgeClass = 'bg-purple-100 text-purple-800 border border-purple-200';
-                        break;
-                    case 'TEACHER':
-                        badgeClass = 'bg-blue-100 text-blue-800 border border-blue-200';
-                        break;
-                    case 'STUDENT':
-                        badgeClass = 'bg-emerald-100 text-emerald-800 border border-emerald-200';
-                        break;
-                }
-                roleBadge.innerHTML =
-                    `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium shadow-sm ${badgeClass}">${userData.role}</span>`;
+                    // Check if modal is accessible
+                    const testElement = userViewModal.querySelector('#userName');
+                    if (!testElement) {
+                        throw new Error('Modal content not accessible');
+                    }
 
-                // Set class and section info
-                if (userData.section) {
-                    document.getElementById('userGradeLevel').textContent =
-                        `Grade ${userData.section.school_class.grade_level}`;
-                    document.getElementById('userSection').textContent = userData.section.section_name;
-                } else {
-                    document.getElementById('userGradeLevel').textContent = 'N/A';
-                    document.getElementById('userSection').textContent = 'N/A';
-                }
+                    // Fill in user basic details
+                    const userName = document.getElementById('userName');
+                    const userEmail = document.getElementById('userEmail');
+                    const userCreated = document.getElementById('userCreated');
+                    const userUpdated = document.getElementById('userUpdated');
 
-                // Set activity statistics
-                document.getElementById('userPostsCount').textContent = userData.posts ? userData.posts.length : '0';
-                document.getElementById('userEventsCount').textContent = userData.organized_events ? userData.organized_events
-                    .length : '0';
+                    if (userName) userName.textContent = userData.name || 'N/A';
+                    if (userEmail) userEmail.textContent = userData.email || 'N/A';
+                    if (userCreated) userCreated.textContent = formatDate(userData.created_at);
+                    if (userUpdated) userUpdated.textContent = formatDate(userData.updated_at);
 
-                // Handle Club Section based on user role
-                const studentClubSection = document.getElementById('studentClubSection');
-                const teacherClubSection = document.getElementById('teacherClubSection');
-                const adminClubSection = document.getElementById('adminClubSection');
+                    // Fill in user credentials section
+                    const userCredName = document.getElementById('userCredName');
+                    const userCredEmail = document.getElementById('userCredEmail');
 
-                // Hide all sections first
-                studentClubSection.classList.add('hidden');
-                teacherClubSection.classList.add('hidden');
-                adminClubSection.classList.add('hidden');
+                    if (userCredName) userCredName.textContent = userData.name || 'N/A';
+                    if (userCredEmail) userCredEmail.textContent = userData.email || 'N/A';
 
-                // Update section title based on role
-                const clubSectionTitle = document.getElementById('clubSectionTitle').querySelector('span');
+                    // Set avatar initial
+                    const avatar = document.getElementById('userAvatar');
+                    if (avatar && userData.name) {
+                        avatar.textContent = userData.name.charAt(0).toUpperCase();
+                    }
 
-                // Show appropriate section based on role
-                switch (userData.role) {
-                    case 'STUDENT':
-                        // For students, show club memberships
-                        clubSectionTitle.textContent = 'Club Memberships';
-                        studentClubSection.classList.remove('hidden');
-
-                        const clubMembershipsContainer = document.getElementById('clubMemberships');
-                        const noClubsMessage = document.getElementById('noClubsMessage');
-
-                        clubMembershipsContainer.innerHTML = ''; // Clear existing content
-
-                        if (userData.club_memberships && userData.club_memberships.length > 0) {
-                            noClubsMessage.style.display = 'none';
-
-                            userData.club_memberships.forEach(membership => {
-                                const membershipElement = document.createElement('div');
-                                membershipElement.className =
-                                    'p-2 bg-gray-50 rounded-lg flex justify-between items-center';
-                                membershipElement.innerHTML = `
-                                    <div>
-                                        <span class="font-medium text-sm">${membership.club.club_name}</span>
-                                        <p class="text-xs text-gray-500">Joined: ${formatDate(membership.joined_date)}</p>
-                                    </div>
-                                    <span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">${membership.club_role}</span>
-                                `;
-                                clubMembershipsContainer.appendChild(membershipElement);
-                            });
-                        } else {
-                            noClubsMessage.style.display = 'block';
+                    // Set role badge
+                    const roleBadge = document.getElementById('userRoleBadge');
+                    if (roleBadge) {
+                        let badgeClass = '';
+                        switch (userData.role) {
+                            case 'ADMIN':
+                                badgeClass = 'bg-purple-100 text-purple-800 border border-purple-200';
+                                break;
+                            case 'TEACHER':
+                                badgeClass = 'bg-blue-100 text-blue-800 border border-blue-200';
+                                break;
+                            case 'STUDENT':
+                                badgeClass = 'bg-emerald-100 text-emerald-800 border border-emerald-200';
+                                break;
+                            default:
+                                badgeClass = 'bg-gray-100 text-gray-800 border border-gray-200';
                         }
-                        break;
+                        roleBadge.innerHTML =
+                            `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium shadow-sm ${badgeClass}">${userData.role || 'N/A'}</span>`;
+                    }
 
-                    case 'TEACHER':
-                        // For teachers, show clubs advised
-                        clubSectionTitle.textContent = 'Clubs Advised';
-                        teacherClubSection.classList.remove('hidden');
-
-                        const clubsAdvisedContainer = document.getElementById('clubsAdvised');
-                        const noAdvisedClubsMessage = document.getElementById('noAdvisedClubsMessage');
-
-                        clubsAdvisedContainer.innerHTML = ''; // Clear existing content
-
-                        if (userData.advised_clubs && userData.advised_clubs.length > 0) {
-                            noAdvisedClubsMessage.style.display = 'none';
-
-                            userData.advised_clubs.forEach(club => {
-                                const clubElement = document.createElement('div');
-                                clubElement.className = 'p-2 bg-gray-50 rounded-lg flex justify-between items-center';
-                                clubElement.innerHTML = `
-                                    <div>
-                                        <span class="font-medium text-sm">${club.club_name}</span>
-                                    </div>
-                                    <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">${club.memberships_count} Members</span>
-                                `;
-                                clubsAdvisedContainer.appendChild(clubElement);
-                            });
+                    // Set class and section info
+                    const userGradeLevel = document.getElementById('userGradeLevel');
+                    const userSection = document.getElementById('userSection');
+                    if (userGradeLevel && userSection) {
+                        if (userData.section && userData.section.school_class) {
+                            userGradeLevel.textContent = `Grade ${userData.section.school_class.grade_level || 'N/A'}`;
+                            userSection.textContent = userData.section.section_name || 'N/A';
                         } else {
-                            noAdvisedClubsMessage.style.display = 'block';
+                            userGradeLevel.textContent = 'N/A';
+                            userSection.textContent = 'N/A';
                         }
-                        break;
+                    }
 
-                    case 'ADMIN':
-                        // For admins, show admin message
-                        clubSectionTitle.textContent = 'Club Information';
-                        adminClubSection.classList.remove('hidden');
-                        break;
+                    // Set activity statistics
+                    const userPostsCount = document.getElementById('userPostsCount');
+                    const userEventsCount = document.getElementById('userEventsCount');
+                    if (userPostsCount) {
+                        userPostsCount.textContent = userData.posts ? userData.posts.length : '0';
+                    }
+                    if (userEventsCount) {
+                        userEventsCount.textContent = userData.organized_events ? userData.organized_events.length : '0';
+                    }
+
+                    // Set parent/guardian information
+                    const userMotherName = document.getElementById('userMotherName');
+                    const userMotherContact = document.getElementById('userMotherContact');
+                    const userFatherName = document.getElementById('userFatherName');
+                    const userFatherContact = document.getElementById('userFatherContact');
+                    const userGuardianName = document.getElementById('userGuardianName');
+                    const userGuardianContact = document.getElementById('userGuardianContact');
+
+                    if (userMotherName) userMotherName.textContent = userData.mother_name || 'N/A';
+                    if (userMotherContact) userMotherContact.textContent = userData.mother_contact_no || 'N/A';
+                    if (userFatherName) userFatherName.textContent = userData.father_name || 'N/A';
+                    if (userFatherContact) userFatherContact.textContent = userData.father_contact_no || 'N/A';
+                    if (userGuardianName) userGuardianName.textContent = userData.guardian_name || 'N/A';
+                    if (userGuardianContact) userGuardianContact.textContent = userData.guardian_contact_no || 'N/A';
+
+                    // Handle Club Section based on user role
+                    const studentClubSection = document.getElementById('studentClubSection');
+                    const teacherClubSection = document.getElementById('teacherClubSection');
+                    const adminClubSection = document.getElementById('adminClubSection');
+
+                    // Hide all sections first
+                    if (studentClubSection) studentClubSection.classList.add('hidden');
+                    if (teacherClubSection) teacherClubSection.classList.add('hidden');
+                    if (adminClubSection) adminClubSection.classList.add('hidden');
+
+                    // Update section title based on role
+                    const clubSectionTitle = document.getElementById('clubSectionTitle');
+                    if (clubSectionTitle) {
+                        const titleSpan = clubSectionTitle.querySelector('span');
+                        if (titleSpan) {
+                            // Show appropriate section based on role
+                            switch (userData.role) {
+                                case 'STUDENT':
+                                    // For students, show club memberships
+                                    titleSpan.textContent = 'Club Memberships';
+                                    if (studentClubSection) studentClubSection.classList.remove('hidden');
+
+                                    const clubMembershipsContainer = document.getElementById('clubMemberships');
+                                    const noClubsMessage = document.getElementById('noClubsMessage');
+
+                                    if (clubMembershipsContainer && noClubsMessage) {
+                                        clubMembershipsContainer.innerHTML = ''; // Clear existing content
+
+                                        if (userData.club_memberships && userData.club_memberships.length > 0) {
+                                            noClubsMessage.style.display = 'none';
+
+                                            userData.club_memberships.forEach(membership => {
+                                                const membershipElement = document.createElement('div');
+                                                membershipElement.className =
+                                                    'p-2 bg-gray-50 rounded-lg flex justify-between items-center';
+                                                membershipElement.innerHTML = `
+                                                    <div>
+                                                        <span class="font-medium text-sm">${membership.club.club_name}</span>
+                                                        <p class="text-xs text-gray-500">Joined: ${formatDate(membership.joined_date)}</p>
+                                                    </div>
+                                                    <span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">${membership.club_role}</span>
+                                                `;
+                                                clubMembershipsContainer.appendChild(membershipElement);
+                                            });
+                                        } else {
+                                            noClubsMessage.style.display = 'block';
+                                        }
+                                    }
+                                    break;
+
+                                case 'TEACHER':
+                                    // For teachers, show clubs advised
+                                    titleSpan.textContent = 'Clubs Advised';
+                                    if (teacherClubSection) teacherClubSection.classList.remove('hidden');
+
+                                    const clubsAdvisedContainer = document.getElementById('clubsAdvised');
+                                    const noAdvisedClubsMessage = document.getElementById('noAdvisedClubsMessage');
+
+                                    if (clubsAdvisedContainer && noAdvisedClubsMessage) {
+                                        clubsAdvisedContainer.innerHTML = ''; // Clear existing content
+
+                                        if (userData.advised_clubs && userData.advised_clubs.length > 0) {
+                                            noAdvisedClubsMessage.style.display = 'none';
+
+                                            userData.advised_clubs.forEach(club => {
+                                                const clubElement = document.createElement('div');
+                                                clubElement.className =
+                                                    'p-2 bg-gray-50 rounded-lg flex justify-between items-center';
+                                                clubElement.innerHTML = `
+                                                    <div>
+                                                        <span class="font-medium text-sm">${club.club_name}</span>
+                                                    </div>
+                                                    <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">${club.memberships_count} Members</span>
+                                                `;
+                                                clubsAdvisedContainer.appendChild(clubElement);
+                                            });
+                                        } else {
+                                            noAdvisedClubsMessage.style.display = 'block';
+                                        }
+                                    }
+                                    break;
+
+                                case 'ADMIN':
+                                    // For admins, show admin message
+                                    titleSpan.textContent = 'Club Information';
+                                    if (adminClubSection) adminClubSection.classList.remove('hidden');
+                                    break;
+                            }
+                        }
+                    }
+
+                    // Show the modal - ensure it's visible
+                    if (userViewModal) {
+                        // Remove hidden class and ensure visibility
+                        userViewModal.classList.remove('hidden');
+
+                        // Set explicit display style to ensure visibility
+                        userViewModal.style.display = 'flex';
+                        userViewModal.style.zIndex = '50';
+                    } else {
+                        throw new Error('User view modal not found');
+                    }
+
+                } catch (error) {
+                    // Log error for debugging (only in development)
+                    devError('Error in showUserDetails:', error);
+
+                    // Show user-friendly error message
+                    const errorMessage = 'Unable to display user details. Please try again.';
+
+                    // Try to show error in the password verification modal
+                    const errorElement = document.getElementById('viewPasswordError');
+                    if (errorElement) {
+                        errorElement.textContent = errorMessage;
+                        errorElement.classList.remove('hidden');
+                    } else {
+                        // Fallback to alert if error element not found
+                        alert(errorMessage);
+                    }
+
+                    // Close any open modals
+                    closeViewPasswordModal();
                 }
-
-                // Show the modal
-                document.getElementById('userViewModal').classList.remove('hidden');
             }
 
             // Helper function to format dates
@@ -883,9 +1513,28 @@
                 const userId = document.getElementById('viewUserId').value;
                 const errorElement = document.getElementById('viewPasswordError');
 
+                // Validate inputs
+                if (!password.trim()) {
+                    errorElement.textContent = 'Please enter your password';
+                    errorElement.classList.remove('hidden');
+                    return;
+                }
+
+                if (!userId) {
+                    errorElement.textContent = 'User ID is missing. Please try again.';
+                    errorElement.classList.remove('hidden');
+                    return;
+                }
+
                 // Hide any previous error
                 errorElement.classList.add('hidden');
                 errorElement.textContent = '';
+
+                // Disable the form during submission
+                const submitButton = this.querySelector('button[type="submit"]');
+                const originalText = submitButton.textContent;
+                submitButton.disabled = true;
+                submitButton.textContent = 'Verifying...';
 
                 // Make AJAX request to verify password and fetch user details
                 fetch(`/admin/users/${userId}/details`, {
@@ -899,11 +1548,31 @@
                             password: password
                         })
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.success) {
+                            // Close password verification modal first
                             closeViewPasswordModal();
-                            showUserDetails(data.user);
+
+                            // Show user details immediately after closing password modal
+                            try {
+                                showUserDetails(data.user);
+                            } catch (error) {
+                                // Log error for debugging (only in development)
+                                devError('Error showing user details:', error);
+
+                                // Reopen password modal if there's an error
+                                document.getElementById('viewPasswordVerificationModal').classList
+                                    .remove('hidden');
+                                errorElement.textContent =
+                                    'Error displaying user details. Please try again.';
+                                errorElement.classList.remove('hidden');
+                            }
                         } else {
                             // Show error message in the form
                             errorElement.textContent = data.error || 'Password verification failed';
@@ -913,9 +1582,16 @@
                         }
                     })
                     .catch(error => {
-                        console.error('Error:', error);
+                        // Log error for debugging (only in development)
+                        devError('Error:', error);
+
                         errorElement.textContent = 'An error occurred. Please try again.';
                         errorElement.classList.remove('hidden');
+                    })
+                    .finally(() => {
+                        // Re-enable the form
+                        submitButton.disabled = false;
+                        submitButton.textContent = originalText;
                     });
             });
 
@@ -931,7 +1607,9 @@
                 try {
                     formData = JSON.parse(formDataStr);
                 } catch (error) {
-                    console.error('Error parsing form data:', error);
+                    // Log error for debugging (only in development)
+                    devError('Error parsing form data:', error);
+
                     errorElement.textContent = 'An error occurred with the form data. Please try again.';
                     errorElement.classList.remove('hidden');
                     return;
@@ -984,7 +1662,9 @@
                         }
                     })
                     .catch(error => {
-                        console.error('Error:', error);
+                        // Log error for debugging (only in development)
+                        devError('Error:', error);
+
                         errorElement.textContent = 'An error occurred. Please try again.';
                         errorElement.classList.remove('hidden');
                     });

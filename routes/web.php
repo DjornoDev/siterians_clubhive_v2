@@ -52,128 +52,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('dashboard');
 
     // Role-specific dashboards
-    Route::get('/admin/dashboard', function () {
-        $clubCount = Club::count();
-
-        // Get current month counts
-        $userCounts = User::groupBy('role')
-            ->selectRaw('role, count(*) as count')
-            ->pluck('count', 'role')
-            ->toArray();
-
-        // Calculate trend percentages by comparing with last month
-        $now = now();
-        $lastMonth = $now->copy()->subMonth();
-
-        // Get last month's club count
-        $lastMonthClubCount = Club::where('created_at', '<', $lastMonth)
-            ->count();
-
-        // Get last month's user counts by role
-        $lastMonthUserCounts = User::where('created_at', '<', $lastMonth)
-            ->groupBy('role')
-            ->selectRaw('role, count(*) as count')
-            ->pluck('count', 'role')
-            ->toArray();
-
-        // Calculate percentage changes
-        $clubTrend = $lastMonthClubCount > 0
-            ? round((($clubCount - $lastMonthClubCount) / $lastMonthClubCount) * 100, 1)
-            : 0;
-
-        $userTrends = [];
-        foreach (['ADMIN', 'TEACHER', 'STUDENT'] as $role) {
-            $current = $userCounts[$role] ?? 0;
-            $previous = $lastMonthUserCounts[$role] ?? 0;
-            $userTrends[$role] = $previous > 0
-                ? round((($current - $previous) / $previous) * 100, 1)
-                : 0;
-        }
-
-        // We still need post statistics for export functionality
-        $postStatistics = [
-            'total' => Post::count(),
-            'public' => Post::where('post_visibility', 'PUBLIC')->count(),
-            'today' => Post::whereDate('created_at', today())->count(),
-        ];
-
-        // Add event statistics for upcoming events section
-        $eventStatistics = [
-            'total' => Event::count(),
-            'upcoming' => Event::where('event_date', '>', today())->count(),
-            'today' => Event::whereDate('event_date', today())->count(),
-        ];
-
-        // Get recent activities
-        $recentActivities = [];
-
-        // Recent club creations
-        $recentClubs = Club::with('adviser')
-            ->orderBy('created_at', 'desc')
-            ->take(2)
-            ->get()
-            ->map(function ($club) {
-                return [
-                    'user' => $club->adviser->name,
-                    'action' => 'created club "' . $club->club_name . '"',
-                    'time' => $club->created_at->diffForHumans(),
-                    'timestamp' => $club->created_at->timestamp,
-                    'icon' => 'fa-users',
-                ];
-            });
-
-        // Recent posts
-        $recentPosts = Post::with(['author', 'club'])
-            ->orderBy('created_at', 'desc')
-            ->take(2)
-            ->get()
-            ->map(function ($post) {
-                return [
-                    'user' => $post->author->name,
-                    'action' => 'posted in "' . $post->club->club_name . '"',
-                    'time' => $post->created_at->diffForHumans(),
-                    'timestamp' => $post->created_at->timestamp,
-                    'icon' => 'fa-comment',
-                ];
-            });
-
-        // Recent events
-        $recentEvents = Event::with(['club', 'organizer'])
-            ->orderBy('created_at', 'desc')
-            ->take(2)
-            ->get()
-            ->map(function ($event) {
-                return [
-                    'user' => $event->organizer->name,
-                    'action' => 'created event "' . $event->event_name . '" in ' . $event->club->club_name,
-                    'time' => $event->created_at->diffForHumans(),
-                    'timestamp' => $event->created_at->timestamp,
-                    'icon' => 'fa-calendar',
-                ];
-            });
-
-        // Merge and sort activities by time
-        $recentActivities = $recentClubs->concat($recentPosts)
-            ->concat($recentEvents)
-            ->sortByDesc('timestamp')
-            ->take(10)
-            ->values()
-            ->all();
-
-        // Check club hunting day status
-        $clubHuntingDay = Club::where('club_id', 1)->value('is_club_hunting_day') ?? false;
-
-        return view('admin.dashboard', compact(
-            'clubCount',
-            'userCounts',
-            'postStatistics',
-            'eventStatistics',
-            'recentActivities',
-            'clubHuntingDay',
-            'clubTrend',
-            'userTrends'
-        ));
-    })->middleware('role:ADMIN')->name('admin.dashboard');
+    Route::get('/admin/dashboard', [App\Http\Controllers\AdminController::class, 'index'])->middleware('role:ADMIN')->name('admin.dashboard');
 
     // Place your new admin routes inside the existing admin middleware group
     Route::middleware(['role:ADMIN'])->prefix('admin')->group(function () {
@@ -186,6 +65,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/users/{user}', [UserController::class, 'update'])->name('admin.users.update');
         Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
         Route::post('/users/{user}/details', [UserController::class, 'getUserDetails'])->name('admin.users.details');
+        Route::post('/users/bulk-delete', [UserController::class, 'bulkDestroy'])->name('admin.users.bulk-destroy');
 
         // Sections
         Route::post('/sections', [App\Http\Controllers\SectionController::class, 'store'])->name('admin.sections.store');
@@ -215,6 +95,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/action-logs/{actionLog}', [App\Http\Controllers\Admin\ActionLogController::class, 'show'])->name('admin.action-logs.show');
         Route::get('/api/users/suggestions', [App\Http\Controllers\Admin\ActionLogController::class, 'getUserSuggestions'])->name('admin.action-logs.user-suggestions');
         Route::get('/api/actions/suggestions', [App\Http\Controllers\Admin\ActionLogController::class, 'getActionSuggestions'])->name('admin.action-logs.action-suggestions');
+
+        // Password verification routes for action logs
+        Route::post('/action-logs/verify-password', [App\Http\Controllers\Admin\ActionLogController::class, 'verifyPassword'])->name('admin.action-logs.verify-password');
+        Route::post('/action-logs/verify-archives-password', [App\Http\Controllers\Admin\ActionLogController::class, 'verifyArchivesPassword'])->name('admin.action-logs.verify-archives-password');
 
         // Enhanced Export Routes
         Route::prefix('export')->group(function () {

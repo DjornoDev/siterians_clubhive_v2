@@ -147,19 +147,38 @@
                     class="bg-white rounded-lg shadow-md hover:shadow-xl overflow-hidden transform transition-all duration-300 hover:scale-102 flex flex-col h-full border border-gray-100">
                     <!-- Banner Section - Slightly shorter -->
                     <div class="relative h-40 bg-gray-100">
-                        @if ($club->club_banner)
+                        @if ($club->club_banner && Storage::disk('public')->exists($club->club_banner))
                             <img src="{{ asset(Storage::url($club->club_banner)) }}" alt="{{ $club->club_name }} Banner"
                                 class="w-full h-full object-cover">
+                        @else
+                            <div
+                                class="w-full h-full bg-gradient-to-br from-blue-100 to-indigo-200 flex items-center justify-center">
+                                <svg class="w-16 h-16 text-blue-400" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                            </div>
                         @endif
 
                         <!-- Logo Overlay - Smaller -->
                         <div class="absolute -bottom-10 left-4">
                             <div
                                 class="w-20 h-20 rounded-full border-3 border-white shadow-md bg-white flex items-center justify-center">
-                                @if ($club->club_logo)
+                                @if ($club->club_logo && Storage::disk('public')->exists($club->club_logo))
                                     <img src="{{ asset(Storage::url($club->club_logo)) }}"
                                         alt="{{ $club->club_name }} Logo"
                                         class="w-full h-full rounded-full object-cover">
+                                @else
+                                    <div class="w-full h-full bg-gray-100 rounded-full flex items-center justify-center">
+                                        <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
+                                            </path>
+                                        </svg>
+                                    </div>
                                 @endif
                             </div>
                         </div>
@@ -193,8 +212,8 @@
                                 data-id="{{ $club->club_id }}" data-name="{{ $club->club_name }}"
                                 data-description="{{ $club->club_description }}"
                                 data-adviser="{{ $club->adviser->name ?? 'No Adviser Assigned' }}"
-                                data-logo="{{ $club->club_logo ? asset(Storage::url($club->club_logo)) : '' }}"
-                                data-banner="{{ $club->club_banner ? asset(Storage::url($club->club_banner)) : '' }}"
+                                data-logo="{{ $club->club_logo && Storage::disk('public')->exists($club->club_logo) ? asset(Storage::url($club->club_logo)) : '' }}"
+                                data-banner="{{ $club->club_banner && Storage::disk('public')->exists($club->club_banner) ? asset(Storage::url($club->club_banner)) : '' }}"
                                 data-category="{{ $club->category ?? 'academic' }}"
                                 data-requires-approval="{{ $club->requires_approval ? '1' : '0' }}">
                                 <span>View Details</span>

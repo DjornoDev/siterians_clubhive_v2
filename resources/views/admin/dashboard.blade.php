@@ -277,16 +277,36 @@
                         <div class="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
                         <span class="text-gray-600">Teachers ({{ $userCounts['TEACHER'] ?? 0 }})</span>
                     </div>
-                    <div class="flex items-center">
-                        <div class="w-3 h-3 bg-indigo-500 rounded-full mr-2"></div>
-                        <span class="text-gray-600">Admins ({{ $userCounts['ADMIN'] ?? 0 }})</span>
+                </div>
+            </div>
+
+            <!-- Grade Level Distribution -->
+            <div
+                class="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg transition-shadow duration-300">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Grade Level Distribution</h3>
+                    <div class="bg-purple-50 p-2 rounded-full">
+                        <i class="fas fa-graduation-cap text-purple-600"></i>
                     </div>
                 </div>
+                <div class="relative h-48">
+                    <canvas id="gradeLevelDistributionChart"></canvas>
+                </div>
+                <div class="mt-4 flex flex-wrap justify-center gap-3 text-sm">
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
+                        <span class="text-gray-600">Student users by grade level</span>
+                    </div>
+                </div>
+                <div class="mt-2 text-xs text-gray-500 text-center">
+                    Distribution of student users across different grade levels
+                </div>
+
             </div>
 
             <!-- Monthly Active Users -->
             <div
-                class="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg transition-shadow duration-300">
+                class="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg transition-shadow duration-300 lg:col-span-2 xl:col-span-1">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-gray-800">Monthly Active Users</h3>
                     <div class="bg-green-50 p-2 rounded-full">
@@ -294,7 +314,7 @@
                     </div>
                 </div>
                 <div class="relative h-48">
-                    <canvas id="growthTrendsChart"></canvas>
+                    <canvas id="monthlyActiveUsersChart"></canvas>
                 </div>
                 <div class="mt-4 flex flex-wrap justify-center gap-3 text-sm">
                     <div class="flex items-center">
@@ -304,38 +324,6 @@
                 </div>
                 <div class="mt-2 text-xs text-gray-500 text-center">
                     Based on actual user actions: posts, club activities, events, and system logs
-                </div>
-            </div>
-
-            <!-- Activity Overview -->
-            <div
-                class="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg transition-shadow duration-300 lg:col-span-2 xl:col-span-1">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Weekly Activity</h3>
-                    <div class="bg-yellow-50 p-2 rounded-full">
-                        <i class="fas fa-chart-bar text-yellow-600"></i>
-                    </div>
-                </div>
-                <div class="relative h-48">
-                    <canvas id="activityOverviewChart"></canvas>
-                </div>
-                <div class="mt-4 flex flex-wrap justify-center gap-3 text-sm">
-                    <div class="flex items-center">
-                        <div class="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                        <span class="text-gray-600">Posts</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                        <span class="text-gray-600">Events</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
-                        <span class="text-gray-600">New Members</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
-                        <span class="text-gray-600">New Users</span>
-                    </div>
                 </div>
             </div>
         </div>
@@ -356,168 +344,24 @@
                 </div>
             </div>
 
-            <!-- Event Timeline -->
+            <!-- Events Per Month -->
             <div
                 class="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg transition-shadow duration-300">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Events This Month</h3>
+                    <h3 class="text-lg font-semibold text-gray-800">Events Per Month</h3>
                     <div class="bg-pink-50 p-2 rounded-full">
-                        <i class="fas fa-calendar-check text-pink-600"></i>
+                        <i class="fas fa-chart-bar text-pink-600"></i>
                     </div>
                 </div>
                 <div class="relative h-64">
-                    <canvas id="eventsTimelineChart"></canvas>
+                    <canvas id="eventsPerMonthChart"></canvas>
                 </div>
                 <div class="mt-4 text-center">
-                    <span class="text-sm text-gray-500">Event creation dates for {{ now()->format('F Y') }}</span>
-                    @php
-                        $totalEventsThisMonth = \App\Models\Event::whereMonth('created_at', now()->month)
-                            ->whereYear('created_at', now()->year)
-                            ->count();
-                    @endphp
+                    <span class="text-sm text-gray-500">Events created per month (last 12 months)</span>
                     <div class="mt-2">
-                        <span class="text-lg font-semibold text-gray-800">{{ $totalEventsThisMonth }}</span>
-                        <span class="text-sm text-gray-500 ml-1">events created this month</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Upcoming Events and Recent Activities Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <!-- LEFT SIDE: Upcoming Events -->
-            <div class="lg:col-span-2">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    <!-- Header -->
-                    <div class="bg-gray-50 border-b border-gray-200 px-6 py-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h2 class="text-lg font-semibold text-gray-800">Upcoming Events</h2>
-                                <p class="text-sm text-gray-600 mt-1">Events scheduled for the coming days</p>
-                            </div>
-                            <a href="{{ route('admin.events.index') }}"
-                                class="text-sm text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors flex items-center">
-                                View all <i class="fas fa-chevron-right ml-1 text-xs"></i>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Content -->
-                    <div class="p-6">
-                        @if ($eventStatistics['upcoming'] > 0)
-                            @php
-                                $upcomingEvents = \App\Models\Event::with(['club', 'organizer'])
-                                    ->where('event_date', '>', today())
-                                    ->orderBy('event_date')
-                                    ->take(5)
-                                    ->get();
-                            @endphp
-
-                            @if ($upcomingEvents->count() > 0)
-                                <div class="space-y-4">
-                                    @foreach ($upcomingEvents as $event)
-                                        <div
-                                            class="flex items-center justify-between p-4 bg-gray-50 hover:bg-blue-50 rounded-lg border border-gray-100 hover:border-blue-200 transition-all duration-200">
-                                            <div class="flex items-center space-x-4 flex-1 min-w-0">
-                                                <div class="bg-blue-100 p-2.5 rounded-full">
-                                                    <i class="fas fa-calendar text-blue-600"></i>
-                                                </div>
-                                                <div class="min-w-0 flex-1">
-                                                    <h4 class="font-medium text-gray-800 truncate">
-                                                        {{ $event->event_name }}
-                                                    </h4>
-                                                    <p class="text-sm text-gray-600 truncate">
-                                                        {{ $event->club->club_name ?? 'No Club' }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="text-right ml-4 flex-shrink-0">
-                                                <div class="text-sm font-medium text-gray-800">
-                                                    {{ $event->event_date ? $event->event_date->format('M d, Y') : 'No Date' }}
-                                                </div>
-                                                @if ($event->event_time)
-                                                    <div class="text-xs text-gray-500 mt-1">
-                                                        {{ $event->event_time }}
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @else
-                                <div class="text-center py-12">
-                                    <div
-                                        class="bg-blue-50 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                                        <i class="fas fa-calendar text-blue-500 text-xl"></i>
-                                    </div>
-                                    <h3 class="text-lg font-medium text-gray-800 mb-2">No Upcoming Events</h3>
-                                    <p class="text-gray-600">Events will appear here once scheduled.</p>
-                                </div>
-                            @endif
-                        @else
-                            <div class="text-center py-12">
-                                <div
-                                    class="bg-blue-50 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                                    <i class="fas fa-calendar text-blue-500 text-xl"></i>
-                                </div>
-                                <h3 class="text-lg font-medium text-gray-800 mb-2">No Upcoming Events</h3>
-                                <p class="text-gray-600">Events will appear here once scheduled.</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <!-- RIGHT SIDE: Recent Activities -->
-            <div class="lg:col-span-1">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden h-full">
-                    <!-- Header -->
-                    <div class="bg-gray-50 border-b border-gray-200 px-6 py-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h2 class="text-lg font-semibold text-gray-800">Recent Activities</h2>
-                                <p class="text-sm text-gray-600 mt-1">Latest system activities</p>
-                            </div>
-                            <span class="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full font-medium">
-                                Live
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Content -->
-                    <div class="p-6">
-                        @if (count($recentActivities ?? []) > 0)
-                            <div class="space-y-4">
-                                @foreach ($recentActivities as $activity)
-                                    <div
-                                        class="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                                        <div class="bg-blue-100 p-2 rounded-full flex-shrink-0">
-                                            <i class="fas {{ $activity['icon'] ?? 'fa-bell' }} text-blue-600 text-sm"></i>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm text-gray-800 leading-relaxed">
-                                                <span
-                                                    class="font-medium text-blue-700">{{ $activity['user'] ?? 'Unknown User' }}</span>
-                                                <span
-                                                    class="text-gray-600">{{ $activity['action'] ?? 'performed an action' }}</span>
-                                            </p>
-                                            <p class="text-xs text-gray-500 mt-1">
-                                                {{ $activity['time'] ?? 'Recently' }}
-                                            </p>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <div class="text-center py-12">
-                                <div
-                                    class="bg-blue-50 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                                    <i class="fas fa-history text-blue-500 text-xl"></i>
-                                </div>
-                                <h3 class="text-lg font-medium text-gray-800 mb-2">No Recent Activities</h3>
-                                <p class="text-gray-600 text-center">Activities will appear here as users interact with the
-                                    system.</p>
-                            </div>
-                        @endif
+                        <span
+                            class="text-lg font-semibold text-gray-800">{{ array_sum($monthlyEventsData['counts']) }}</span>
+                        <span class="text-sm text-gray-500 ml-1">total events in the last year</span>
                     </div>
                 </div>
             </div>
@@ -720,17 +564,20 @@
 
                 // User Distribution Pie Chart
                 const userDistributionCtx = document.getElementById('userDistributionChart').getContext('2d');
+                @php
+                    $studentCount = $userCounts['STUDENT'] ?? 0;
+                    $teacherCount = $userCounts['TEACHER'] ?? 0;
+                @endphp
                 new Chart(userDistributionCtx, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Students', 'Teachers', 'Admins'],
+                        labels: ['Students', 'Teachers'],
                         datasets: [{
                             data: [
-                                {{ $userCounts['STUDENT'] ?? 0 }},
-                                {{ $userCounts['TEACHER'] ?? 0 }},
-                                {{ $userCounts['ADMIN'] ?? 0 }}
+                                {{ $studentCount }},
+                                {{ $teacherCount }}
                             ],
-                            backgroundColor: ['#3B82F6', '#8B5CF6', '#6366F1'],
+                            backgroundColor: ['#3B82F6', '#8B5CF6'],
                             borderWidth: 2,
                             borderColor: '#ffffff'
                         }]
@@ -747,8 +594,8 @@
                     }
                 });
 
-                // Monthly Active Users Line Chart
-                const growthTrendsCtx = document.getElementById('growthTrendsChart').getContext('2d');
+                // Monthly Active Users Line Chart (Now in the larger section)
+                const monthlyActiveUsersCtx = document.getElementById('monthlyActiveUsersChart').getContext('2d');
                 @php
                     // Get monthly active users data - unique users who logged in or used the system per month
                     $months = [];
@@ -758,9 +605,7 @@
                         $date = now()->subMonths($i);
                         $months[] = $date->format('M');
 
-                        // Count unique users who were active in this month using REAL data sources
-                        // Primary: action_logs table (actual user actions)
-                        // Fallback: posts, club memberships, events (user activities)
+                        // Count unique users who were active in this month
                         $activeUsersFromLogs = \App\Models\ActionLog::whereBetween('created_at', [$date->startOfMonth()->copy(), $date->endOfMonth()->copy()])
                             ->whereNotNull('user_id')
                             ->distinct('user_id')
@@ -783,9 +628,6 @@
 
                         $activeUsersThisMonth = $allActiveUserIds->count();
 
-                        // Debug: Log the breakdown for this month (remove in production)
-                        // \Log::info("Month: " . $date->format('M Y') . " - Logs: " . $activeUsersFromLogs->count() . ", Posts: " . $activeUsersFromPosts->count() . ", Memberships: " . $activeUsersFromMemberships->count() . ", Events: " . $activeUsersFromEvents->count() . ", Total Unique: " . $activeUsersThisMonth);
-
                         $monthlyActiveUsers[] = $activeUsersThisMonth;
                     }
                 @endphp
@@ -796,7 +638,7 @@
                     activeUsers: [{{ implode(',', $monthlyActiveUsers) }}]
                 };
 
-                window.growthChart = new Chart(growthTrendsCtx, {
+                window.monthlyActiveUsersChart = new Chart(monthlyActiveUsersCtx, {
                     type: 'line',
                     data: {
                         labels: {!! json_encode($months) !!},
@@ -851,101 +693,47 @@
                     }
                 });
 
-                // Filter function for charts
-                function updateCharts() {
-                    const months = parseInt(document.getElementById('chartTimeFilter').value);
-
-                    // Update Monthly Active Users Chart with filtered data
-                    const filteredMonths = window.originalChartData.months.slice(-months);
-                    const filteredActiveUsers = window.originalChartData.activeUsers.slice(-months);
-
-                    window.growthChart.data.labels = filteredMonths;
-                    window.growthChart.data.datasets[0].data = filteredActiveUsers;
-                    window.growthChart.update();
-                }
-
-
-
-                // Activity Overview Bar Chart - Real Data from Last 7 Days
-                const activityOverviewCtx = document.getElementById('activityOverviewChart').getContext('2d');
+                // Grade Level Distribution Chart
+                const gradeLevelDistributionCtx = document.getElementById('gradeLevelDistributionChart').getContext('2d');
                 @php
-                    // Get real activity data for the last 7 days
-                    $weeklyActivityData = [];
-                    $dayLabels = [];
+                    // Get grade level distribution for student users
+                    $gradeLevels = [];
+                    $gradeLevelCounts = [];
 
-                    for ($i = 6; $i >= 0; $i--) {
-                        $date = now()->subDays($i);
-                        $dayLabels[] = $date->format('D'); // Mon, Tue, Wed, etc.
+                    try {
+                        // Get real data from the database using proper joins
+                        $gradeLevelData = \DB::table('tbl_users as u')->join('tbl_sections as s', 'u.section_id', '=', 's.section_id')->join('tbl_classes as c', 's.class_id', '=', 'c.class_id')->where('u.role', 'STUDENT')->whereNotNull('u.section_id')->select('c.grade_level', \DB::raw('count(*) as student_count'))->groupBy('c.grade_level')->orderBy('c.grade_level')->get();
 
-                        // Count posts created on this day
-                        $postsCount = \App\Models\Post::whereDate('created_at', $date->format('Y-m-d'))->count();
-
-                        // Count events created on this day
-                        $eventsCount = \App\Models\Event::whereDate('created_at', $date->format('Y-m-d'))->count();
-
-                        // Count new club memberships on this day
-                        $membershipsCount = \DB::table('tbl_club_membership')->whereDate('created_at', $date->format('Y-m-d'))->count();
-
-                        // Count new user registrations on this day
-                        $usersCount = \App\Models\User::whereDate('created_at', $date->format('Y-m-d'))->count();
-
-                        $weeklyActivityData[] = [
-                            'posts' => $postsCount,
-                            'events' => $eventsCount,
-                            'memberships' => $membershipsCount,
-                            'users' => $usersCount,
-                        ];
+                        if ($gradeLevelData->count() > 0) {
+                            foreach ($gradeLevelData as $data) {
+                                $gradeLevels[] = 'Grade ' . $data->grade_level;
+                                $gradeLevelCounts[] = $data->student_count;
+                            }
+                        } else {
+                            // Fallback to default data if no grade level data found
+                            $gradeLevels = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
+                            $gradeLevelCounts = [0, 0, 0, 0, 0, 0];
+                        }
+                    } catch (\Exception $e) {
+                        // Fallback to default data on error
+                        $gradeLevels = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
+                        $gradeLevelCounts = [0, 0, 0, 0, 0, 0];
                     }
                 @endphp
-                new Chart(activityOverviewCtx, {
-                    type: 'bar',
+
+                new Chart(gradeLevelDistributionCtx, {
+                    type: 'doughnut',
                     data: {
-                        labels: {!! json_encode($dayLabels) !!},
+                        labels: {!! json_encode($gradeLevels) !!},
                         datasets: [{
-                                label: 'Posts',
-                                data: [
-                                    @foreach ($weeklyActivityData as $data)
-                                        {{ $data['posts'] }}{{ !$loop->last ? ',' : '' }}
-                                    @endforeach
-                                ],
-                                backgroundColor: '#3B82F6',
-                                borderRadius: 4,
-                                borderSkipped: false,
-                            },
-                            {
-                                label: 'Events',
-                                data: [
-                                    @foreach ($weeklyActivityData as $data)
-                                        {{ $data['events'] }}{{ !$loop->last ? ',' : '' }}
-                                    @endforeach
-                                ],
-                                backgroundColor: '#10B981',
-                                borderRadius: 4,
-                                borderSkipped: false,
-                            },
-                            {
-                                label: 'New Members',
-                                data: [
-                                    @foreach ($weeklyActivityData as $data)
-                                        {{ $data['memberships'] }}{{ !$loop->last ? ',' : '' }}
-                                    @endforeach
-                                ],
-                                backgroundColor: '#8B5CF6',
-                                borderRadius: 4,
-                                borderSkipped: false,
-                            },
-                            {
-                                label: 'New Users',
-                                data: [
-                                    @foreach ($weeklyActivityData as $data)
-                                        {{ $data['users'] }}{{ !$loop->last ? ',' : '' }}
-                                    @endforeach
-                                ],
-                                backgroundColor: '#F59E0B',
-                                borderRadius: 4,
-                                borderSkipped: false,
-                            }
-                        ]
+                            data: [{{ implode(',', $gradeLevelCounts) }}],
+                            backgroundColor: [
+                                '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4',
+                                '#84CC16', '#F97316', '#EC4899', '#6366F1', '#14B8A6', '#F43F5E'
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
                     },
                     options: {
                         responsive: true,
@@ -956,48 +744,49 @@
                             },
                             tooltip: {
                                 callbacks: {
-                                    title: function(tooltipItems) {
-                                        const dayIndex = tooltipItems[0].dataIndex;
-                                        const date = new Date();
-                                        date.setDate(date.getDate() - (6 - dayIndex));
-                                        return date.toLocaleDateString('en-US', {
-                                            weekday: 'long',
-                                            month: 'short',
-                                            day: 'numeric'
-                                        });
+                                    label: function(context) {
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                        return context.label + ': ' + context.parsed + ' students (' + percentage +
+                                            '%)';
                                     }
                                 }
                             }
                         },
-                        scales: {
-                            x: {
-                                stacked: true,
-                                grid: {
-                                    display: false
-                                }
-                            },
-                            y: {
-                                stacked: true,
-                                beginAtZero: true,
-                                grid: {
-                                    color: '#F3F4F6'
-                                },
-                                ticks: {
-                                    stepSize: 1
-                                }
-                            }
-                        }
+                        cutout: '50%'
                     }
                 });
+
+                // Filter function for charts
+                function updateCharts() {
+                    const months = parseInt(document.getElementById('chartTimeFilter').value);
+
+                    // Update Monthly Active Users Chart with filtered data
+                    const filteredMonths = window.originalChartData.months.slice(-months);
+                    const filteredActiveUsers = window.originalChartData.activeUsers.slice(-months);
+
+                    window.monthlyActiveUsersChart.data.labels = filteredMonths;
+                    window.monthlyActiveUsersChart.data.datasets[0].data = filteredActiveUsers;
+                    window.monthlyActiveUsersChart.update();
+                }
+
+
+
+
 
                 // Top Clubs Horizontal Bar Chart
                 const topClubsCtx = document.getElementById('topClubsChart').getContext('2d');
                 @php
-                    // Get top 5 clubs by member count
-                    $topClubs = \App\Models\Club::withCount('members')->orderByDesc('members_count')->take(5)->get();
+                    try {
+                        // Get top 5 clubs by member count
+                        $topClubs = \App\Models\Club::withCount('members')->orderByDesc('members_count')->take(5)->get();
 
-                    // Fallback data if no clubs exist
-                    if ($topClubs->isEmpty()) {
+                        // Fallback data if no clubs exist
+                        if ($topClubs->isEmpty()) {
+                            $topClubs = collect([(object) ['club_name' => 'No clubs yet', 'members_count' => 0]]);
+                        }
+                    } catch (\Exception $e) {
+                        // Fallback data on error
                         $topClubs = collect([(object) ['club_name' => 'No clubs yet', 'members_count' => 0]]);
                     }
                 @endphp
@@ -1046,39 +835,20 @@
                     }
                 });
 
-                // Events Timeline Chart - Real Data for Current Month
-                const eventsTimelineCtx = document.getElementById('eventsTimelineChart').getContext('2d');
-                @php
-                    // Get event creation data for each day of current month
-                    $daysInMonth = now()->daysInMonth;
-                    $eventCreationByDay = [];
-                    $monthDays = [];
-
-                    for ($i = 1; $i <= $daysInMonth; $i++) {
-                        $date = now()->day($i);
-                        $monthDays[] = $i;
-
-                        // Count events CREATED on this day this month (not scheduled for this day)
-                        $count = \App\Models\Event::whereDate('created_at', $date->format('Y-m-d'))->count();
-                        $eventCreationByDay[] = $count;
-                    }
-                @endphp
-                new Chart(eventsTimelineCtx, {
-                    type: 'line',
+                // Events Per Month Chart
+                const eventsPerMonthCtx = document.getElementById('eventsPerMonthChart').getContext('2d');
+                new Chart(eventsPerMonthCtx, {
+                    type: 'bar',
                     data: {
-                        labels: [{{ implode(',', $monthDays) }}],
+                        labels: {!! json_encode($monthlyEventsData['months']) !!},
                         datasets: [{
                             label: 'Events Created',
-                            data: [{{ implode(',', $eventCreationByDay) }}],
+                            data: [{{ implode(',', $monthlyEventsData['counts']) }}],
+                            backgroundColor: 'rgba(236, 72, 153, 0.8)',
                             borderColor: '#EC4899',
-                            backgroundColor: 'rgba(236, 72, 153, 0.1)',
-                            fill: true,
-                            tension: 0.4,
-                            pointBackgroundColor: '#EC4899',
-                            pointBorderColor: '#ffffff',
-                            pointBorderWidth: 2,
-                            pointRadius: 4,
-                            pointHoverRadius: 6
+                            borderWidth: 2,
+                            borderRadius: 6,
+                            borderSkipped: false
                         }]
                     },
                     options: {
@@ -1091,14 +861,7 @@
                             tooltip: {
                                 callbacks: {
                                     title: function(tooltipItems) {
-                                        const day = tooltipItems[0].label;
-                                        const date = new Date();
-                                        date.setDate(day);
-                                        return date.toLocaleDateString('en-US', {
-                                            month: 'long',
-                                            day: 'numeric',
-                                            year: 'numeric'
-                                        });
+                                        return tooltipItems[0].label;
                                     },
                                     label: function(context) {
                                         const value = context.parsed.y;
@@ -1115,6 +878,10 @@
                                 },
                                 ticks: {
                                     stepSize: 1
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Number of Events'
                                 }
                             },
                             x: {
@@ -1123,7 +890,7 @@
                                 },
                                 title: {
                                     display: true,
-                                    text: 'Day of Month'
+                                    text: 'Month'
                                 }
                             }
                         }

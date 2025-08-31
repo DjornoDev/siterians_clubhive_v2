@@ -3,7 +3,10 @@
 @section('title', 'Action Log Archives | ClubHive')
 
 @section('content')
-    <div class="p-4 sm:p-6">
+    <!-- Include Archives Password Protection Modal -->
+    @include('admin.action-logs.partials.archives-password-modal')
+
+    <div class="p-4 sm:p-2">
         <!-- Header -->
         <div class="bg-gradient-to-r from-indigo-700 to-purple-800 rounded-xl shadow-lg p-6 mb-8 text-white">
             <div class="flex items-center justify-between">

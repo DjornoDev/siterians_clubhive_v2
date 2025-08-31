@@ -32,6 +32,8 @@ class ProfileUpdateRequest extends FormRequest
             'mother_contact_no' => ['nullable', 'string', 'max:20'],
             'father_name' => ['nullable', 'string', 'max:255'],
             'father_contact_no' => ['nullable', 'string', 'max:20'],
+            'guardian_name' => ['nullable', 'string', 'max:255'],
+            'guardian_contact_no' => ['nullable', 'string', 'max:20'],
             'profile_picture' => [
                 'nullable',
                 'image',

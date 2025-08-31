@@ -8,7 +8,7 @@
                 <!-- Basic Information -->
                 <div class="space-y-4">
                     <h4 class="text-lg font-semibold text-gray-700 border-b pb-2">Basic Information</h4>
-                    
+
                     <div>
                         <label class="block text-sm font-medium mb-1">Name <span class="text-red-500">*</span></label>
                         <input type="text" name="name" id="editName" required
@@ -49,15 +49,14 @@
 
                     <div>
                         <label class="block text-sm font-medium mb-1">Address</label>
-                        <textarea name="address" id="editAddress" rows="3"
-                            class="w-full px-3 py-2 border rounded-lg"></textarea>
+                        <textarea name="address" id="editAddress" rows="3" class="w-full px-3 py-2 border rounded-lg"></textarea>
                     </div>
                 </div>
 
                 <!-- Parent Information & School Details -->
                 <div class="space-y-4">
                     <h4 class="text-lg font-semibold text-gray-700 border-b pb-2">Parent Information</h4>
-                    
+
                     <div>
                         <label class="block text-sm font-medium mb-1">Mother's Name</label>
                         <input type="text" name="mother_name" id="editMotherName"
@@ -70,23 +69,46 @@
                             class="w-full px-3 py-2 border rounded-lg">
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Father's Name</label>
-                        <input type="text" name="father_name" id="editFatherName"
-                            class="w-full px-3 py-2 border rounded-lg">
+                    <!-- Father's Information -->
+                    <div class="space-y-4">
+                        <h4 class="text-lg font-semibold text-gray-700 border-b pb-2">Father's Information</h4>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Father's Name</label>
+                            <input type="text" name="father_name" id="editFatherName"
+                                class="w-full px-3 py-2 border rounded-lg">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Father's Contact Number</label>
+                            <input type="tel" name="father_contact_no" id="editFatherContactNo"
+                                class="w-full px-3 py-2 border rounded-lg" placeholder="09XXXXXXXXX">
+                        </div>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Father's Contact No.</label>
-                        <input type="text" name="father_contact_no" id="editFatherContactNo"
-                            class="w-full px-3 py-2 border rounded-lg">
+                    <!-- Guardian's Information -->
+                    <div class="space-y-4">
+                        <h4 class="text-lg font-semibold text-gray-700 border-b pb-2">Guardian's Information</h4>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Guardian's Name</label>
+                            <input type="text" name="guardian_name" id="editGuardianName"
+                                class="w-full px-3 py-2 border rounded-lg">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Guardian's Contact Number</label>
+                            <input type="tel" name="guardian_contact_no" id="editGuardianContactNo"
+                                class="w-full px-3 py-2 border rounded-lg" placeholder="09XXXXXXXXX">
+                        </div>
                     </div>
 
                     <div id="editClassSection" class="hidden">
                         <h4 class="text-lg font-semibold text-gray-700 border-b pb-2 mt-6">School Information</h4>
                         <div class="grid grid-cols-2 gap-4 mt-4">
                             <div>
-                                <label class="block text-sm font-medium mb-1">Class <span class="text-red-500">*</span></label>
+                                <label class="block text-sm font-medium mb-1">Class <span
+                                        class="text-red-500">*</span></label>
                                 <select name="class_id" id="editClassId" class="w-full px-3 py-2 border rounded-lg">
                                     <option value="">Select Class</option>
                                     @foreach ($classes as $class)
@@ -96,8 +118,10 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium mb-1">Section <span class="text-red-500">*</span></label>
-                                <select name="section_id" id="editSectionId" class="w-full px-3 py-2 border rounded-lg">
+                                <label class="block text-sm font-medium mb-1">Section <span
+                                        class="text-red-500">*</span></label>
+                                <select name="section_id" id="editSectionId"
+                                    class="w-full px-3 py-2 border rounded-lg">
                                     <option value="">Select Section</option>
                                 </select>
                             </div>
@@ -106,8 +130,8 @@
 
                     <div class="mt-6">
                         <label class="block text-sm font-medium mb-1">Password</label>
-                        <input type="password" name="password" id="editPassword" class="w-full px-3 py-2 border rounded-lg"
-                            placeholder="Leave blank to keep current">
+                        <input type="password" name="password" id="editPassword"
+                            class="w-full px-3 py-2 border rounded-lg" placeholder="Leave blank to keep current">
                     </div>
                 </div>
             </div>
@@ -266,12 +290,12 @@
         editClassSelect.addEventListener('change', function() {
             const classId = this.value;
             editSectionSelect.innerHTML = '<option value="">Select Section</option>';
-            
+
             if (classId) {
                 // Find the selected class and populate its sections
                 const classes = @json($classes);
                 const selectedClass = classes.find(cls => cls.class_id == classId);
-                
+
                 if (selectedClass && selectedClass.sections) {
                     selectedClass.sections.forEach(section => {
                         const option = document.createElement('option');

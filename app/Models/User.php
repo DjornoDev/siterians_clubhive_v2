@@ -33,6 +33,8 @@ class User extends Authenticatable
         'mother_contact_no',
         'father_name',
         'father_contact_no',
+        'guardian_name',
+        'guardian_contact_no',
         'profile_picture',
     ];
 

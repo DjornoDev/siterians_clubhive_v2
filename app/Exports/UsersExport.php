@@ -28,6 +28,8 @@ class UsersExport
                 'Mother Contact' => $user->mother_contact_no,
                 'Father Name' => $user->father_name,
                 'Father Contact' => $user->father_contact_no,
+                'Guardian Name' => $user->guardian_name,
+                'Guardian Contact' => $user->guardian_contact_no,
                 'Created At' => $user->created_at->format('Y-m-d H:i:s'),
             ];
         });

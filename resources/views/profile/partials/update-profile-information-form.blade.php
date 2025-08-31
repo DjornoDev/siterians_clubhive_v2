@@ -156,6 +156,25 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Guardian's Information -->
+                    <div class="bg-white rounded-lg p-4 border border-green-200">
+                        <h4 class="font-medium text-green-800 mb-3">Guardian's Information</h4>
+                        <div class="space-y-3">
+                            <div>
+                                <x-input-label for="guardian_name" :value="__('Guardian\'s Full Name')" />
+                                <x-text-input id="guardian_name" name="guardian_name" type="text"
+                                    class="mt-1 block w-full" :value="old('guardian_name', $user->guardian_name)" />
+                                <x-input-error class="mt-2" :messages="$errors->get('guardian_name')" />
+                            </div>
+                            <div>
+                                <x-input-label for="guardian_contact_no" :value="__('Guardian\'s Contact Number')" />
+                                <x-text-input id="guardian_contact_no" name="guardian_contact_no" type="tel"
+                                    class="mt-1 block w-full" :value="old('guardian_contact_no', $user->guardian_contact_no)" placeholder="09XXXXXXXXX" />
+                                <x-input-error class="mt-2" :messages="$errors->get('guardian_contact_no')" />
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -195,6 +214,8 @@
             <input type="hidden" id="modal_mother_contact_no" name="mother_contact_no">
             <input type="hidden" id="modal_father_name" name="father_name">
             <input type="hidden" id="modal_father_contact_no" name="father_contact_no">
+            <input type="hidden" id="modal_guardian_name" name="guardian_name">
+            <input type="hidden" id="modal_guardian_contact_no" name="guardian_contact_no">
             <input id="confirm_email_change" name="confirm_email_change" type="hidden" value="1">
             <!-- Include profile_picture if it's been uploaded -->
             <input type="hidden" id="modal_has_profile_picture" name="modal_has_profile_picture" value="0">
@@ -255,6 +276,10 @@
                     'father_name').value;
                 document.getElementById('modal_father_contact_no').value = document.getElementById(
                     'father_contact_no').value;
+                document.getElementById('modal_guardian_name').value = document.getElementById(
+                    'guardian_name').value;
+                document.getElementById('modal_guardian_contact_no').value = document.getElementById(
+                    'guardian_contact_no').value;
 
                 // Check if a new profile picture was selected
                 if (profilePictureInput.files && profilePictureInput.files[0]) {

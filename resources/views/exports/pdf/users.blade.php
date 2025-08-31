@@ -240,22 +240,12 @@
                         @endif
                     </td>
                     <td class="col-parent tiny-text">
-                        @if ($user->mother_name || $user->father_name)
-                            @if ($user->mother_name)
-                                <strong>M:</strong> {{ $user->mother_name }}<br>
-                                @if ($user->mother_contact_no)
-                                    <span style="font-size: 5px;">{{ $user->mother_contact_no }}</span><br>
-                                @endif
-                            @endif
-                            @if ($user->father_name)
-                                <strong>F:</strong> {{ $user->father_name }}<br>
-                                @if ($user->father_contact_no)
-                                    <span style="font-size: 5px;">{{ $user->father_contact_no }}</span>
-                                @endif
-                            @endif
-                        @else
-                            N/A
-                        @endif
+                        <strong>Mother:</strong> {{ $user->mother_name ?? 'N/A' }}<br>
+                        <em>{{ $user->mother_contact_no ?? 'N/A' }}</em><br>
+                        <strong>Father:</strong> {{ $user->father_name ?? 'N/A' }}<br>
+                        <em>{{ $user->father_contact_no ?? 'N/A' }}</em><br>
+                        <strong>Guardian:</strong> {{ $user->guardian_name ?? 'N/A' }}<br>
+                        <em>{{ $user->guardian_contact_no ?? 'N/A' }}</em>
                     </td>
                     <td class="col-created tiny-text">
                         {{ $user->created_at ? $user->created_at->format('M j, Y') : 'N/A' }}</td>

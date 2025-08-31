@@ -323,8 +323,8 @@
                                 <div class="mx-2 text-gray-300">•</div>
                                 <div class="text-xs text-[#4A6CF7]">{{ $post->author->name }}</div>
                             </div>
-                            <h3 class="font-medium text-lg text-[#2B34C9] mb-2">{{ $post->post_title }}</h3>
-                            <p class="text-gray-600 text-sm line-clamp-3">{{ strip_tags($post->post_content) }}</p>
+                            <h3 class="font-medium text-lg text-[#2B34C9] mb-2">{{ $post->post_caption }}</h3>
+                            <p class="text-gray-600 text-sm line-clamp-3">{{ strip_tags($post->post_caption) }}</p>
                             <a href="{{ route('login') }}"
                                 class="mt-4 inline-block text-[#4A6CF7] hover:text-opacity-80 text-sm font-medium transition-colors duration-300 group">
                                 Read more <span

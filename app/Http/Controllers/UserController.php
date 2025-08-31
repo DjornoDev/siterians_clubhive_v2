@@ -97,6 +97,8 @@ class UserController extends Controller
                 'Mother\'s Contact No.',
                 'Father\'s Name',
                 'Father\'s Contact No.',
+                'Guardian\'s Name',
+                'Guardian\'s Contact No.',
                 'Created At',
                 'Updated At'
             ]);
@@ -117,6 +119,8 @@ class UserController extends Controller
                     $user->mother_contact_no ?? '',
                     $user->father_name ?? '',
                     $user->father_contact_no ?? '',
+                    $user->guardian_name ?? '',
+                    $user->guardian_contact_no ?? '',
                     $user->created_at ? $user->created_at->format('Y-m-d H:i:s') : '',
                     $user->updated_at ? $user->updated_at->format('Y-m-d H:i:s') : ''
                 ]);
@@ -145,6 +149,8 @@ class UserController extends Controller
                 'mother_contact_no' => 'nullable|string|max:20',
                 'father_name' => 'nullable|string|max:255',
                 'father_contact_no' => 'nullable|string|max:20',
+                'guardian_name' => 'nullable|string|max:255',
+                'guardian_contact_no' => 'nullable|string|max:20',
                 'password' => 'required|min:8',
             ]);
 
@@ -161,6 +167,8 @@ class UserController extends Controller
                 'mother_contact_no' => $validated['mother_contact_no'] ?? null,
                 'father_name' => $validated['father_name'] ?? null,
                 'father_contact_no' => $validated['father_contact_no'] ?? null,
+                'guardian_name' => $validated['guardian_name'] ?? null,
+                'guardian_contact_no' => $validated['guardian_contact_no'] ?? null,
                 'password' => Hash::make($validated['password']),
             ]);
 
@@ -208,7 +216,7 @@ class UserController extends Controller
         $header = array_shift($csvData);
 
         // Validate CSV header
-        $expectedHeader = ['name', 'email', 'role', 'sex', 'address', 'contact_no', 'mother_name', 'mother_contact_no', 'father_name', 'father_contact_no', 'password', 'class_id', 'section_id'];
+        $expectedHeader = ['name', 'email', 'role', 'sex', 'address', 'contact_no', 'mother_name', 'mother_contact_no', 'father_name', 'father_contact_no', 'guardian_name', 'guardian_contact_no', 'password', 'class_id', 'section_id'];
         if ($header !== $expectedHeader) {
             return redirect()->back()
                 ->withErrors(['users_file' => 'Invalid CSV format. Please use the provided template.']);
@@ -232,6 +240,8 @@ class UserController extends Controller
                 'mother_contact_no' => 'nullable|string|max:20',
                 'father_name' => 'nullable|string|max:255',
                 'father_contact_no' => 'nullable|string|max:20',
+                'guardian_name' => 'nullable|string|max:255',
+                'guardian_contact_no' => 'nullable|string|max:20',
                 'password' => 'required|min:8',
                 'class_id' => 'nullable|required_if:role,STUDENT|exists:tbl_classes,class_id',
                 'section_id' => 'nullable|required_if:role,STUDENT|exists:tbl_sections,section_id',
@@ -254,6 +264,8 @@ class UserController extends Controller
                     'mother_contact_no' => $data['mother_contact_no'] ?? null,
                     'father_name' => $data['father_name'] ?? null,
                     'father_contact_no' => $data['father_contact_no'] ?? null,
+                    'guardian_name' => $data['guardian_name'] ?? null,
+                    'guardian_contact_no' => $data['guardian_contact_no'] ?? null,
                     'section_id' => $data['role'] === 'STUDENT' ? $data['section_id'] : null,
                     'password' => Hash::make($data['password']),
                 ]);
@@ -318,6 +330,8 @@ class UserController extends Controller
                 'mother_contact_no' => 'nullable|string|max:20',
                 'father_name' => 'nullable|string|max:255',
                 'father_contact_no' => 'nullable|string|max:20',
+                'guardian_name' => 'nullable|string|max:255',
+                'guardian_contact_no' => 'nullable|string|max:20',
                 'class_id' => 'nullable|required_if:role,STUDENT|exists:tbl_classes,class_id',
                 'section_id' => 'nullable|required_if:role,STUDENT|exists:tbl_sections,section_id',
                 'password' => 'nullable|min:8',
@@ -335,6 +349,8 @@ class UserController extends Controller
                 'mother_contact_no' => $validated['mother_contact_no'] ?? null,
                 'father_name' => $validated['father_name'] ?? null,
                 'father_contact_no' => $validated['father_contact_no'] ?? null,
+                'guardian_name' => $validated['guardian_name'] ?? null,
+                'guardian_contact_no' => $validated['guardian_contact_no'] ?? null,
                 'section_id' => $validated['section_id'] ?? null,
             ];
 
@@ -354,6 +370,8 @@ class UserController extends Controller
                 'mother_contact_no' => $user->mother_contact_no,
                 'father_name' => $user->father_name,
                 'father_contact_no' => $user->father_contact_no,
+                'guardian_name' => $user->guardian_name,
+                'guardian_contact_no' => $user->guardian_contact_no,
                 'section_id' => $user->section_id,
             ];
 
@@ -489,5 +507,87 @@ class UserController extends Controller
             'success' => true,
             'user' => $user
         ]);
+    }
+
+    /**
+     * Bulk delete multiple users with password verification
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'user_ids' => 'required|array|min:1',
+            'user_ids.*' => 'required|integer|exists:users,user_id',
+            'password' => 'required|string'
+        ]);
+
+        // Verify admin password
+        if (!Hash::check($request->password, auth()->user()->password)) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Incorrect password'
+            ], 401);
+        }
+
+        try {
+            $userIds = $request->user_ids;
+            $deletedUsers = [];
+            $failedUsers = [];
+
+            foreach ($userIds as $userId) {
+                try {
+                    $user = User::find($userId);
+                    if ($user) {
+                        // Store user data for logging before deletion
+                        $userData = [
+                            'user_id' => $user->user_id,
+                            'user_name' => $user->name,
+                            'user_email' => $user->email,
+                            'user_role' => $user->role,
+                            'deleted_by' => auth()->user()->name ?? 'System'
+                        ];
+
+                        $user->delete();
+
+                        // Log user deletion action
+                        ActionLog::create_log(
+                            'user_management',
+                            'deleted',
+                            "Bulk deleted user account for {$userData['user_name']}",
+                            $userData
+                        );
+
+                        $deletedUsers[] = $userData;
+                    }
+                } catch (\Exception $e) {
+                    $failedUsers[] = [
+                        'user_id' => $userId,
+                        'error' => $e->getMessage()
+                    ];
+                }
+            }
+
+            if (empty($failedUsers)) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Successfully deleted ' . count($deletedUsers) . ' user(s)',
+                    'deleted_count' => count($deletedUsers)
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Some users could not be deleted',
+                    'deleted_count' => count($deletedUsers),
+                    'failed_users' => $failedUsers
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Error during bulk deletion: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -7,6 +7,7 @@ use App\Models\ActionLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 
 class ActionLogController extends Controller
 {
@@ -17,7 +18,7 @@ class ActionLogController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $query = ActionLog::with('user')->orderBy('created_at', 'desc');
+        $query = ActionLog::with('user');
 
         // Apply filters
         if ($request->filled('user_search')) {
@@ -44,14 +45,22 @@ class ActionLogController extends Controller
             $query->status($request->status);
         }
 
-        // Sort
-        if ($request->filled('sort')) {
-            if ($request->sort === 'oldest') {
-                $query->orderBy('created_at', 'asc');
-            } else {
-                $query->orderBy('created_at', 'desc');
-            }
+        // Enhanced sorting
+        $sortColumn = $request->get('sort_column', 'created_at');
+        $sortDirection = $request->get('sort_direction', 'desc');
+
+        // Validate sort column to prevent SQL injection
+        $allowedColumns = ['created_at', 'user_name', 'user_role', 'action_category', 'action_type', 'status'];
+        if (!in_array($sortColumn, $allowedColumns)) {
+            $sortColumn = 'created_at';
         }
+
+        // Validate sort direction
+        if (!in_array($sortDirection, ['asc', 'desc'])) {
+            $sortDirection = 'desc';
+        }
+
+        $query->orderBy($sortColumn, $sortDirection);
 
         $logs = $query->paginate(25)->appends($request->query());
 
@@ -60,7 +69,7 @@ class ActionLogController extends Controller
         $categories = ActionLog::distinct()->pluck('action_category')->filter();
         $actionTypes = ActionLog::distinct()->pluck('action_type')->filter();
 
-        return view('admin.action-logs.index', compact('logs', 'users', 'categories', 'actionTypes'));
+        return view('admin.action-logs.index', compact('logs', 'users', 'categories', 'actionTypes', 'sortColumn', 'sortDirection'));
     }
 
     public function getUserSuggestions(Request $request)
@@ -183,6 +192,50 @@ class ActionLogController extends Controller
         }
 
         return response()->download($filePath);
+    }
+
+    /**
+     * Verify admin password for viewing action logs
+     */
+    public function verifyPassword(Request $request)
+    {
+        // Ensure only admin can access
+        if (auth()->user()->role !== 'ADMIN') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized access'], 403);
+        }
+
+        $password = $request->input('password');
+
+        // Verify the password against the authenticated user's password
+        if (Hash::check($password, auth()->user()->password)) {
+            return response()->json(['success' => true, 'message' => 'Password verified successfully']);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Invalid password. Please try again.'], 401);
+    }
+
+    /**
+     * Verify admin password for downloading archives
+     */
+    public function verifyArchivesPassword(Request $request)
+    {
+        // Ensure only admin can access
+        if (auth()->user()->role !== 'ADMIN') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized access'], 403);
+        }
+
+        $password = $request->input('password');
+
+        // Verify the password against the authenticated user's password
+        if (Hash::check($password, auth()->user()->password)) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Password verified successfully',
+                'downloadUrl' => $request->input('downloadUrl')
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Invalid password. Please try again.'], 401);
     }
 
     /**

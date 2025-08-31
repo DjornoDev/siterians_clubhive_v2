@@ -36,4 +36,9 @@ class Election extends Model
     {
         return $this->hasMany(Vote::class, 'election_id');
     }
+
+    public function club()
+    {
+        return $this->belongsTo(Club::class, 'club_id');
+    }
 }

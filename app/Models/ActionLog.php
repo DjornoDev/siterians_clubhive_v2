@@ -269,9 +269,9 @@ class ActionLog extends Model
     public static function create_post_log($action, $post, $details = [])
     {
         $descriptions = [
-            'created' => "Created new post: " . substr($post->content, 0, 50) . (strlen($post->content) > 50 ? '...' : ''),
-            'updated' => "Updated post: " . substr($post->content, 0, 50) . (strlen($post->content) > 50 ? '...' : ''),
-            'deleted' => "Deleted post: " . substr($post->content, 0, 50) . (strlen($post->content) > 50 ? '...' : ''),
+            'created' => "Created new post: " . substr($post->post_caption, 0, 50) . (strlen($post->post_caption) > 50 ? '...' : ''),
+            'updated' => "Updated post: " . substr($post->post_caption, 0, 50) . (strlen($post->post_caption) > 50 ? '...' : ''),
+            'deleted' => "Deleted post: " . substr($post->post_caption, 0, 50) . (strlen($post->post_caption) > 50 ? '...' : ''),
         ];
 
         return self::create_log(
@@ -280,7 +280,7 @@ class ActionLog extends Model
             $descriptions[$action] ?? "Performed {$action} on post",
             array_merge([
                 'post_id' => $post->post_id,
-                'post_content_preview' => substr($post->content, 0, 100),
+                'post_content_preview' => substr($post->post_caption, 0, 100),
             ], $details)
         );
     }

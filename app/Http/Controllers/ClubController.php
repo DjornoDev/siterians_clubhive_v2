@@ -435,6 +435,61 @@ class ClubController extends Controller
                 Storage::disk('public')->delete($club->club_banner);
             }
 
+            // Manually delete related records in the correct order to avoid foreign key constraint issues
+            // Start with the most dependent tables and work backwards
+
+            // 1. Delete vote details first (they reference candidates)
+            \App\Models\VoteDetail::whereHas('vote', function ($query) use ($club) {
+                $query->whereHas('election', function ($electionQuery) use ($club) {
+                    $electionQuery->where('club_id', $club->club_id);
+                });
+            })->delete();
+
+            // 2. Delete votes (they reference elections)
+            \App\Models\Vote::whereHas('election', function ($query) use ($club) {
+                $query->where('club_id', $club->club_id);
+            })->delete();
+
+            // 3. Delete candidates (they reference elections)
+            \App\Models\Candidate::whereHas('election', function ($query) use ($club) {
+                $query->where('club_id', $club->club_id);
+            })->delete();
+
+            // 4. Delete elections
+            $club->elections()->delete();
+
+            // 5. Delete club questions and answers
+            \App\Models\ClubQuestionAnswer::whereHas('clubQuestion', function ($query) use ($club) {
+                $query->where('club_id', $club->club_id);
+            })->delete();
+            $club->questions()->delete();
+
+            // 6. Delete club join requests
+            $club->joinRequests()->delete();
+
+            // 7. Delete club memberships
+            $club->memberships()->delete();
+
+            // 8. Delete event documents
+            \App\Models\EventDocument::whereHas('event', function ($query) use ($club) {
+                $query->where('club_id', $club->club_id);
+            })->delete();
+
+            // 9. Delete events
+            $club->events()->delete();
+
+            // 10. Delete post documents and images
+            \App\Models\PostDocument::whereHas('post', function ($query) use ($club) {
+                $query->where('club_id', $club->club_id);
+            })->delete();
+            \App\Models\PostImage::whereHas('post', function ($query) use ($club) {
+                $query->where('club_id', $club->club_id);
+            })->delete();
+
+            // 11. Delete posts
+            $club->posts()->delete();
+
+            // 12. Finally delete the club
             $club->delete();
 
             return response()->json([
