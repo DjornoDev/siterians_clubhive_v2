@@ -259,6 +259,17 @@ class ClubController extends Controller
             'manage_events' => 'nullable|boolean',
         ]);
 
+        // Check if user is being assigned a position and already has one in another club
+        if (!empty($validated['club_position']) && $validated['club_position'] !== '') {
+            if ($user->hasClubPosition($club->club_id)) {
+                $currentPosition = $user->getCurrentClubPosition();
+                return response()->json([
+                    'success' => false,
+                    'message' => "This student already holds the position '{$currentPosition->club_position}' in {$currentPosition->club->club_name}. A student can only hold one position across all clubs."
+                ], 422);
+            }
+        }
+
         // Explicitly cast to boolean for JSON storage
         $club->members()->updateExistingPivot($user->user_id, [
             'club_position' => $validated['club_position'],
@@ -438,6 +449,9 @@ class ClubController extends Controller
                 abort(403, 'Cannot delete the main club. This club is protected and essential for system operation.');
             }
 
+            $clubName = $club->club_name;
+            $clubId = $club->club_id;
+
             // Delete associated files
             if ($club->club_logo) {
                 Storage::disk('public')->delete($club->club_logo);
@@ -502,6 +516,17 @@ class ClubController extends Controller
 
             // 12. Finally delete the club
             $club->delete();
+
+            // Log club deletion
+            ActionLog::create_log(
+                'club_management',
+                'deleted',
+                "Deleted club: {$clubName}",
+                [
+                    'club_id' => $clubId,
+                    'club_name' => $clubName
+                ]
+            );
 
             return response()->json([
                 'message' => 'Club deleted successfully'

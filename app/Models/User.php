@@ -145,4 +145,37 @@ class User extends Authenticatable
     {
         return $this->hasMany(ClubJoinRequest::class, 'user_id');
     }
+
+    /**
+     * Check if the user already holds a position in any club
+     *
+     * @param int|null $excludeClubId Club ID to exclude from the check (for updates)
+     * @return bool
+     */
+    public function hasClubPosition($excludeClubId = null)
+    {
+        $query = ClubMembership::where('user_id', $this->user_id)
+            ->whereNotNull('club_position')
+            ->where('club_position', '!=', '');
+
+        if ($excludeClubId) {
+            $query->where('club_id', '!=', $excludeClubId);
+        }
+
+        return $query->exists();
+    }
+
+    /**
+     * Get the club where the user currently holds a position
+     *
+     * @return \App\Models\ClubMembership|null
+     */
+    public function getCurrentClubPosition()
+    {
+        return ClubMembership::with('club')
+            ->where('user_id', $this->user_id)
+            ->whereNotNull('club_position')
+            ->where('club_position', '!=', '')
+            ->first();
+    }
 }

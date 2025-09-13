@@ -212,12 +212,44 @@ class PostController extends Controller
             }
         }
 
+        // Log post update
+        ActionLog::create_log(
+            'post_management',
+            'updated',
+            "Updated post in club: {$club->club_name}",
+            [
+                'post_id' => $post->post_id,
+                'club_id' => $club->club_id,
+                'club_name' => $club->club_name,
+                'post_visibility' => $post->post_visibility,
+                'has_new_images' => $request->hasFile('images'),
+                'has_new_documents' => $request->hasFile('file_attachments'),
+                'has_new_file_attachment' => $request->hasFile('file_attachment'),
+                'removed_images' => !empty($validated['delete_images']) ? count($validated['delete_images']) : 0,
+                'removed_documents' => !empty($validated['remove_documents']) ? count($validated['remove_documents']) : 0,
+                'removed_file_attachment' => !empty($validated['remove_file_attachment'])
+            ]
+        );
+
         return redirect()->back()->with('success', 'Post updated successfully');
     }
 
     public function destroy(Club $club, Post $post)
     {
         $this->authorize('delete', $post);
+
+        // Store post details for logging before deletion
+        $postDetails = [
+            'post_id' => $post->post_id,
+            'club_id' => $club->club_id,
+            'club_name' => $club->club_name,
+            'post_visibility' => $post->post_visibility,
+            'had_images' => $post->images->count() > 0,
+            'had_documents' => $post->documents->count() > 0,
+            'had_file_attachment' => !empty($post->file_attachment),
+            'images_count' => $post->images->count(),
+            'documents_count' => $post->documents->count()
+        ];
 
         // Delete all images associated with the post
         foreach ($post->images as $image) {
@@ -231,6 +263,15 @@ class PostController extends Controller
         }
 
         $post->delete();
+
+        // Log post deletion
+        ActionLog::create_log(
+            'post_management',
+            'deleted',
+            "Deleted post from club: {$club->club_name}",
+            $postDetails
+        );
+
         return redirect()->route('clubs.show', $club)
             ->with('success', 'Post deleted successfully');
     }

@@ -53,6 +53,7 @@ class LogUserActions
             'admin.clubs.store',
             'admin.clubs.update',
             'admin.clubs.destroy',
+            'admin.clubs.verify-delete',
             'clubs.events.store',
             'clubs.events.update',
             'clubs.events.delete',

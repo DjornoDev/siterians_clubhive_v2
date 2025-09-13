@@ -64,14 +64,14 @@
                     </div>
                 </a>
 
-                <a href="#" onclick="document.getElementById('csvUploadModal').classList.remove('hidden')"
+                <a href="#" onclick="document.getElementById('excelUploadModal').classList.remove('hidden')"
                     class="bg-white rounded-xl shadow-md p-5 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 flex items-center space-x-3 border border-gray-100">
                     <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 p-3 rounded-full text-white shadow-sm">
                         <i class="fas fa-file-import"></i>
                     </div>
                     <div>
                         <h3 class="font-medium text-gray-800">Bulk Upload</h3>
-                        <p class="text-sm text-gray-500">Import users via CSV</p>
+                        <p class="text-sm text-gray-500">Import users via Excel</p>
                     </div>
                 </a>
 
@@ -367,8 +367,8 @@
             </div>
         </div>
 
-        <!-- CSV Upload Modal -->
-        <div id="csvUploadModal"
+        <!-- Excel Upload Modal -->
+        <div id="excelUploadModal"
             class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden backdrop-blur-sm transition-all duration-300">
             <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 border border-gray-200 transform transition-all">
                 <div class="flex justify-between items-center mb-4">
@@ -378,7 +378,7 @@
                         </span>
                         Bulk Upload Users
                     </h3>
-                    <button onclick="document.getElementById('csvUploadModal').classList.add('hidden')"
+                    <button onclick="document.getElementById('excelUploadModal').classList.add('hidden')"
                         class="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-200 rounded-full p-1">
                         <i class="fas fa-times"></i>
                     </button>
@@ -386,21 +386,33 @@
                 <form action="{{ route('admin.users.bulk.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="mb-4">
-                        <label for="users_file" class="block text-sm font-medium text-gray-700 mb-1">Upload CSV
+                        <label for="users_file" class="block text-sm font-medium text-gray-700 mb-1">Upload Excel
                             File</label>
                         <div
                             class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
-                            <input type="file" name="users_file" id="users_file" accept=".csv"
+                            <input type="file" name="users_file" id="users_file" accept=".xlsx,.xls"
                                 class="w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium
                                 file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100 focus:outline-none">
                             <p class="text-xs text-gray-500 mt-2">
                                 <i class="fas fa-info-circle mr-1"></i>
-                                CSV Format: name, email, role, password, class_id, section_id
+                                Download <a href="{{ route('admin.users.template.download') }}"
+                                    class="text-blue-600 hover:underline">Excel template</a> for proper formatting
                             </p>
                         </div>
                     </div>
+
+                    <!-- Quick Reference -->
+                    <div class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <p class="text-xs text-blue-800">
+                            <i class="fas fa-lightbulb mr-1"></i>
+                            <strong>Tip:</strong> Use the full modal in Users page for detailed class/section reference and
+                            validation tips.
+                        </p>
+                    </div>
+
                     <div class="flex justify-end space-x-3">
-                        <button type="button" onclick="document.getElementById('csvUploadModal').classList.add('hidden')"
+                        <button type="button"
+                            onclick="document.getElementById('excelUploadModal').classList.add('hidden')"
                             class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200">
                             Cancel
                         </button>

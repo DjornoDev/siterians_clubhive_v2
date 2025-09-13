@@ -205,98 +205,221 @@ class UserController extends Controller
     }
 
     // Add this method to UserController
-    // This method handles the bulk upload of users from a CSV file
+    // This method handles the bulk upload of users from an Excel file
     public function bulkStore(Request $request)
     {
         $request->validate([
-            'users_file' => 'required|file|mimes:csv,txt'
+            'users_file' => 'required|file|mimes:xlsx,xls'
         ]);
 
         $file = $request->file('users_file');
-        $csvData = array_map('str_getcsv', file($file->getRealPath()));
-        $header = array_shift($csvData);
 
-        // Validate CSV header
-        $expectedHeader = ['name', 'email', 'role', 'sex', 'address', 'contact_no', 'mother_name', 'mother_contact_no', 'father_name', 'father_contact_no', 'guardian_name', 'guardian_contact_no', 'password', 'class_id', 'section_id'];
-        if ($header !== $expectedHeader) {
-            return redirect()->back()
-                ->withErrors(['users_file' => 'Invalid CSV format. Please use the provided template.']);
-        }
+        try {
+            // Use FastExcel to read the Excel file
+            $users = (new \Rap2hpoutre\FastExcel\FastExcel)->import($file->getRealPath());
 
-        $errors = [];
-        $successCount = 0;
+            $errors = [];
+            $successCount = 0;
 
-        foreach ($csvData as $index => $row) {
-            $data = array_combine($header, $row);
-            $rowNumber = $index + 2; // Account for header row
+            foreach ($users as $index => $row) {
+                $rowNumber = $index + 2; // Account for header row
 
-            $validator = Validator::make($data, [
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:tbl_users,email',
-                'role' => 'required|in:TEACHER,STUDENT',
-                'sex' => 'nullable|in:MALE,FEMALE',
-                'address' => 'nullable|string|max:500',
-                'contact_no' => 'nullable|string|max:20',
-                'mother_name' => 'nullable|string|max:255',
-                'mother_contact_no' => 'nullable|string|max:20',
-                'father_name' => 'nullable|string|max:255',
-                'father_contact_no' => 'nullable|string|max:20',
-                'guardian_name' => 'nullable|string|max:255',
-                'guardian_contact_no' => 'nullable|string|max:20',
-                'password' => 'required|min:8',
-                'class_id' => 'nullable|required_if:role,STUDENT|exists:tbl_classes,class_id',
-                'section_id' => 'nullable|required_if:role,STUDENT|exists:tbl_sections,section_id',
-            ]);
-
-            if ($validator->fails()) {
-                $errors["Row $rowNumber"] = $validator->errors()->all();
-                continue;
-            }
-
-            try {
-                $user = User::create([
-                    'name' => $data['name'],
-                    'email' => $data['email'],
-                    'role' => $data['role'],
-                    'sex' => $data['sex'] ?? null,
-                    'address' => $data['address'] ?? null,
-                    'contact_no' => $data['contact_no'] ?? null,
-                    'mother_name' => $data['mother_name'] ?? null,
-                    'mother_contact_no' => $data['mother_contact_no'] ?? null,
-                    'father_name' => $data['father_name'] ?? null,
-                    'father_contact_no' => $data['father_contact_no'] ?? null,
-                    'guardian_name' => $data['guardian_name'] ?? null,
-                    'guardian_contact_no' => $data['guardian_contact_no'] ?? null,
-                    'section_id' => $data['role'] === 'STUDENT' ? $data['section_id'] : null,
-                    'password' => Hash::make($data['password']),
+                // Validate required fields
+                $validator = Validator::make($row, [
+                    'name' => 'required|string|max:255',
+                    'email' => 'required|email|unique:tbl_users,email',
+                    'role' => 'required|in:TEACHER,STUDENT',
+                    'sex' => 'nullable|in:MALE,FEMALE',
+                    'address' => 'nullable|string|max:500',
+                    'contact_no' => 'nullable|string|max:20',
+                    'mother_name' => 'nullable|string|max:255',
+                    'mother_contact_no' => 'nullable|string|max:20',
+                    'father_name' => 'nullable|string|max:255',
+                    'father_contact_no' => 'nullable|string|max:20',
+                    'guardian_name' => 'nullable|string|max:255',
+                    'guardian_contact_no' => 'nullable|string|max:20',
+                    'password' => 'required|min:8',
+                    'class' => 'nullable|required_if:role,STUDENT|string',
+                    'section' => 'nullable|required_if:role,STUDENT|string',
                 ]);
 
-                if ($user->role === 'STUDENT') {
-                    ClubMembership::create([
-                        'club_id' => MainClubService::getMainClubId(),
-                        'user_id' => $user->user_id,
-                        'club_role' => 'MEMBER',
-                        'joined_date' => now(),
-                        'club_accessibility' => null
-                    ]);
+                if ($validator->fails()) {
+                    $errors["Row $rowNumber"] = $validator->errors()->all();
+                    continue;
                 }
 
-                $successCount++;
-            } catch (\Exception $e) {
-                $errors["Row $rowNumber"] = ["Error creating user: " . $e->getMessage()];
-            }
-        }
+                try {
+                    // Find class and section by name instead of ID
+                    $sectionId = null;
+                    if ($row['role'] === 'STUDENT') {
+                        $class = SchoolClass::where('grade_level', $row['class'])->first();
+                        if (!$class) {
+                            $errors["Row $rowNumber"] = ["Class '{$row['class']}' not found. Please check the reference table below."];
+                            continue;
+                        }
 
-        if (!empty($errors)) {
+                        $section = Section::where('class_id', $class->class_id)
+                            ->where('section_name', $row['section'])
+                            ->first();
+                        if (!$section) {
+                            $errors["Row $rowNumber"] = ["Section '{$row['section']}' not found in class '{$row['class']}'. Please check the reference table below."];
+                            continue;
+                        }
+                        $sectionId = $section->section_id;
+                    }
+
+                    $user = User::create([
+                        'name' => $row['name'],
+                        'email' => $row['email'],
+                        'role' => $row['role'],
+                        'sex' => $row['sex'] ?? null,
+                        'address' => $row['address'] ?? null,
+                        'contact_no' => $row['contact_no'] ?? null,
+                        'mother_name' => $row['mother_name'] ?? null,
+                        'mother_contact_no' => $row['mother_contact_no'] ?? null,
+                        'father_name' => $row['father_name'] ?? null,
+                        'father_contact_no' => $row['father_contact_no'] ?? null,
+                        'guardian_name' => $row['guardian_name'] ?? null,
+                        'guardian_contact_no' => $row['guardian_contact_no'] ?? null,
+                        'section_id' => $sectionId,
+                        'password' => Hash::make($row['password']),
+                    ]);
+
+                    if ($user->role === 'STUDENT') {
+                        ClubMembership::create([
+                            'club_id' => MainClubService::getMainClubId(),
+                            'user_id' => $user->user_id,
+                            'club_role' => 'MEMBER',
+                            'joined_date' => now(),
+                            'club_accessibility' => null
+                        ]);
+                    }
+
+                    $successCount++;
+                } catch (\Exception $e) {
+                    $errors["Row $rowNumber"] = ["Error creating user: " . $e->getMessage()];
+                }
+            }
+
+            if (!empty($errors)) {
+                return redirect()->back()
+                    ->with('bulk_errors', $errors)
+                    ->withInput();
+            }
+
+            return redirect()->route('admin.users.index')
+                ->with('success', "Successfully imported $successCount users");
+        } catch (\Exception $e) {
             return redirect()->back()
-                ->with('bulk_errors', $errors)
+                ->withErrors(['users_file' => 'Error reading Excel file: ' . $e->getMessage()])
                 ->withInput();
         }
-
-        return redirect()->route('admin.users.index')
-            ->with('success', "Successfully imported $successCount users");
     }
 
+    /**
+     * Download Excel template for bulk user upload
+     */
+    public function downloadTemplate()
+    {
+        $classes = SchoolClass::with('sections')->get();
+
+        // Create sample data for the template
+        $sampleData = [
+            [
+                'name' => 'Juan Dela Cruz',
+                'email' => 'juan@example.com',
+                'role' => 'STUDENT',
+                'sex' => 'MALE',
+                'address' => '123 Main St Quezon City',
+                'contact_no' => '09123456789',
+                'mother_name' => 'Maria Dela Cruz',
+                'mother_contact_no' => '09234567890',
+                'father_name' => 'Jose Dela Cruz',
+                'father_contact_no' => '09345678901',
+                'guardian_name' => 'Guardian Name',
+                'guardian_contact_no' => '09456789012',
+                'password' => 'Pass1234',
+                'class' => 'Grade 7',
+                'section' => 'A'
+            ],
+            [
+                'name' => 'Maria Santos',
+                'email' => 'maria@example.com',
+                'role' => 'TEACHER',
+                'sex' => 'FEMALE',
+                'address' => '456 Teacher Ave Manila',
+                'contact_no' => '09111222333',
+                'mother_name' => '',
+                'mother_contact_no' => '',
+                'father_name' => '',
+                'father_contact_no' => '',
+                'guardian_name' => '',
+                'guardian_contact_no' => '',
+                'password' => 'TeacherPass',
+                'class' => '',
+                'section' => ''
+            ],
+            [
+                'name' => 'Sofia Gomez',
+                'email' => 'sofia@example.com',
+                'role' => 'STUDENT',
+                'sex' => 'FEMALE',
+                'address' => '789 Student Rd Makati',
+                'contact_no' => '09444555666',
+                'mother_name' => 'Ana Gomez',
+                'mother_contact_no' => '09555666777',
+                'father_name' => 'Carlos Gomez',
+                'father_contact_no' => '09666777888',
+                'guardian_name' => 'Guardian Gomez',
+                'guardian_contact_no' => '09777888999',
+                'password' => 'Student2024',
+                'class' => 'Grade 8',
+                'section' => 'B'
+            ]
+        ];
+
+        // Create Excel file with sample data
+        $filename = 'users_bulk_upload_template_' . date('Y-m-d') . '.xlsx';
+
+        return (new \Rap2hpoutre\FastExcel\FastExcel($sampleData))
+            ->download($filename, function ($item) {
+                return [
+                    'Name' => $item['name'],
+                    'Email' => $item['email'],
+                    'Role' => $item['role'],
+                    'Sex' => $item['sex'],
+                    'Address' => $item['address'],
+                    'Contact No.' => $item['contact_no'],
+                    'Mother Name' => $item['mother_name'],
+                    'Mother Contact No.' => $item['mother_contact_no'],
+                    'Father Name' => $item['father_name'],
+                    'Father Contact No.' => $item['father_contact_no'],
+                    'Guardian Name' => $item['guardian_name'],
+                    'Guardian Contact No.' => $item['guardian_contact_no'],
+                    'Password' => $item['password'],
+                    'Class' => $item['class'],
+                    'Section' => $item['section']
+                ];
+            });
+    }
+
+    /**
+     * Get current valid class and section combinations for reference
+     */
+    public function getClassSectionReference()
+    {
+        $classes = SchoolClass::with('sections')->get();
+
+        $reference = [];
+        foreach ($classes as $class) {
+            $reference[] = [
+                'class' => $class->grade_level,
+                'sections' => $class->sections->pluck('section_name')->toArray()
+            ];
+        }
+
+        return response()->json($reference);
+    }
 
 
     public function update(Request $request, User $user)

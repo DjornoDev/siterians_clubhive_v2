@@ -1,0 +1,164 @@
+
+Siterians ClubHive: Development of a Web-Based School Organization Management System
+ For Sitero Francisco Memorial National High School
+
+An Undergraduate Capstone Project
+Presented to the Faculty of College of Engineering and Information Technology
+Submitted in Partial Fulfillment of the Requirements
+for the Degree of  Bachelor of Science in Information Technology 
+
+
+
+Abay, Jean Ann P.
+Mangaoang, Daron F.
+Oira, Anita Varga Renel R.
+Salic, Jovince M.
+Vinluan, Jasper James N.
+CHAPTER 1
+THE PROBLEM AND ITS BACKGROUND
+1.1 Background of the Study
+School organizations are structured groups within educational institutions that provide students with opportunities to take part in extracurricular activities, explore their interests, and develop essential skills beyond the classroom. While academic subjects focus on learning theories and concepts, school organizations offer practical experiences that help students become better leaders, work well with others, and manage their time effectively (Bentley University, 2023). By actively participating in clubs and extracurricular activities, students can boost their confidence, express their creativity, and develop a sense of responsibility that will prepare them for their future academic and professional endeavors. This aligns with the study of Wong and Hoskins (2022), which discusses how developing a strong professional profile involves more than academic qualifications or just having a good grades, as it also includes the skills and experiences students gain through social involvement and extracurricular participation.
+
+While there are many benefits in joining a school organization, keeping these groups running smoothly is not as easy as it seems. Managing school organizations requires careful planning and coordination of various tasks to make sure everything functions properly. This means that multiple administrative tasks must be handled systematically to maintain order and effectiveness within the organization. These include membership registration, event scheduling, dissemination of announcements and updates, record-keeping, and overall club management. If these tasks are not handled properly,  student organizations can become disorganized, making it harder for members to stay engaged and participate actively. 
+	Sitero Francisco Memorial National High School (SFMNHS) is a public school in Valenzuela City that actively supports student engagement through extracurricular activities. The school strongly encourages students to join clubs as a way to enhance their learning experience, develop essential life skills, and have a sense of belonging within the school community. Currently, they have multiple active clubs that provide students with various opportunities to participate in academic, cultural, and social activities, contributing to their overall growth and development. To ensure that every student finds a club that suits their interests, the school holds a Club Hunting Day once per school year. During this event, all clubs gather in the school court and interested students simply sign their names on paper to join. While this method has been followed for years, it presents some challenges, such as misplaced registration lists, long lines, and difficulty in organizing and tracking member information. Moreover, to adapt to the digital age, they integrated social media into its club operations. The clubs use Facebook pages to post announcements, promote upcoming events, and engage with their members. While this approach allows for easier communication and wider reach compared to traditional bulletin board postings, important updates can easily get buried under other posts, making it difficult for students to stay informed. Additionally, the school conducts Supreme Secondary Learner Government (SSLG) elections using Google Forms. While it can be useful, it lacks advanced security features to prevent multiple submissions from the same student, which can raise concerns about the integrity of the voting system.
+
+Given the challenges in managing student organizations at Sitero Francisco Memorial National High School (SFMNHS), there is a growing need for a centralized, digital solution that will make club operations more organized, efficient, and accessible for everyone involved. As a result, we are proposing Siterians ClubHive, a web-based student organization management system specifically for Sitero Francisco Memorial National High School (SFMNHS), which will serve as a centralized platform for all club-related activities.
+1.1.2 Project Context
+	Managing school organizations efficiently is important because it keeps everything organized, making events and activities run smoothly, and it also makes it easier for students and teachers to stay involved and informed. When school organizations are well-managed, students are more likely to stay engaged and participate in events, all of which contribute to their personal growth. However, many schools still rely on traditional, manual processes that present various challenges. At Sitero Francisco Memorial National High School (SFMNHS), club registration, event management, and communication are conducted through paper-based and social media platforms such as Facebook. While these methods are familiar and easy to access, they often lead to problems like lost or damaged records, difficulty organizing member lists, and delays in sharing important updates. For instance, announcements made on social media can easily get buried under other posts, making it hard for members to stay informed and up to date. Moreover, the school currently uses Google Forms to conduct Supreme Secondary Learner Government (SSLG) elections. However, this method raises concerns about the fairness and accuracy of the results. Students can potentially vote multiple times using different email accounts, compromising the integrity of the election. Manually verifying each vote by cross-checking student names and email addresses by class is not only tedious but also time-consuming, making the process inefficient and prone to errors.
+To address these challenges, the proponents propose the development of Siterians ClubHive, a Web-Based School Organization Management System designed to enhance the management of student organizations at Sitero Francisco Memorial National High School (SFMNHS). This system aims to provide a centralized and structured approach to handling club-related activities, including club membership registration, event scheduling, announcements and updates postings, and SSLG voting system.
+1.2 Problem Statement
+To address the issues faced by Sitero Francisco Memorial National High School (SFMNHS) in managing student organizations efficiently, the objectives of this study are:
+1.2.1 General Objectives    
+The aim of the study is to develop Siterians ClubHive, a web-based school organization management system for Sitero Francisco Memorial National High School (SFMNHS). This system is designed to make the management of school organizations more efficient by having a centralized platform, digitizing essential processes such as club membership registration, event scheduling, announcements and updates postings, and Supreme Secondary Learner Government (SSLG) voting system. 
+1.2.2 Specific Objectives
+To ensure the success of the web-based system, the proponents aim to implement the design, develop the system, and thoroughly evaluate its effectiveness.
+
+To develop a web-based school organization management system with the following privileges:
+1.1 Allows the Admin to:
+Log In
+View Dashboard
+Create, View, Update, and Delete Users’ Accounts
+Create Bulk Users’ Accounts
+Search User Account
+Create, View, Update, and Delete Clubs
+Search Club
+View Action Logs
+Export Users Data, Clubs Data, and Action Logs
+Log Out
+1.2 Allows the Teachers to:
+Log In
+Manage Assigned Club
+Add, View, and Remove Club Members
+Edit Club Member Permissions
+Search Club Member
+Create, View, Edit, and Delete Post
+Create, View, Edit, and Delete Event
+Create, Edit, and Delete Voting Event 
+Export Club Membership Data, Events Data, and Voting Event
+Log Out
+1.3 Allows the Students to:
+Log In
+Join Club
+Search Club
+Search Club Member
+Create, View, Edit, and Delete Post
+Create, View, Edit, and Delete Event
+Submit Vote
+Log Out
+To develop a web-based school organization management system by using the following technologies:
+Laravel 12 Framework
+PHP 8.2.12
+Composer 2.8.5
+Tailwind CSS v4.0
+Axios with Alpine Js
+Bootstrap
+MySQL
+To evaluate and test the system for its conformity using ISO 25010 Standards, focusing on:
+Functionality
+Completeness
+Correctness
+Appropriateness
+Performance Efficiency
+Time Behavior
+Compatibility
+Co-existence
+Usability
+Appropriateness Recognizability
+Learnability
+Operability
+Reliability
+Availability
+Security
+Confidentiality
+Integrity
+Accountability
+Authenticity
+Maintainability
+Testability
+Flexibility
+Adaptability
+Safety
+Operational Constraint
+Fail Safe
+Hazard Warning
+
+1.3 Purpose and Description
+	The purpose of this study is to develop Siterians ClubHive, a web-based school organization management system specifically designed for Sitero Francisco Memorial National High School (SFMNHS). The system aims to improve the way student organizations are managed by moving from traditional, manual methods to a more organized and accessible digital platform. By using this system, club advisers and club members will be able to manage their activities more efficiently, stay informed, and participate in school organizations with greater ease.
+
+User Management
+Allows the Admin to fully manage all user accounts, including creating, updating, and deleting users as needed. Admin can also assign roles to each user, ensuring the right access and responsibilities are given.
+
+User Login System
+A login feature where users access the system using their unique credentials. Each role has its own set of permissions and access levels. This ensures that users only see and manage what they’re supposed to.
+
+Dashboard Access
+Displays an overview of statistics which  gives admin a quick glance at what’s happening in the system.
+
+Club Management
+Makes it easy to manage all aspects of their organizations, including editing club details, assigning roles, and maintaining member lists.
+
+Membership Joining
+During Club Hunting Day, students can instantly join their preferred clubs through the system.
+
+Post Announcements or Updates
+Allow authorized users to create and share announcements, reminders, or updates. Posts can be posted  publicly or kept exclusive to specific clubs.
+
+
+Event Viewing
+Students and club members can view upcoming school events and activities through the system. This encourages better participation and helps students manage their time.
+
+Voting System
+Offers a secure and fair voting feature for voting elections. Each student can vote only once, helping maintain the integrity of the results.
+
+Search and Filter Functionality
+Makes it easy to find users, clubs, or members using a quick search bar. Users can also filter results by role, class, section, or club. 
+
+Data Summary Reports
+Allows the Admin and Teachers to download summary reports based on various types of data in the system, such as  user data, club data, action logs, event records, and voting results.
+
+1.3.1 Significance of the Study
+	The development and evaluation of Siterians ClubHIve, a Web-Based School Organization Management System, will benefit the following:
+
+Administrators 
+	The system provides the Admin with a centralized and efficient way to manage school organizations, ensuring a smooth and organized operation. With a comprehensive dashboard, they can easily monitor the total number of clubs, admins, teachers, students, and the upcoming club activities, allowing for better oversight and decision-making.
+
+Club Advisers
+Club Advisers will be able to manage their clubs more efficiently. They can organize member lists, post announcements, create events, and monitor club activities without having to deal with paper records.
+
+Club Members
+Students who are part of school organizations will benefit from an accessible and user-friendly platform where they can join clubs, stay informed about the announcements, updates and upcoming events.
+
+Future Researchers
+	This study serves as a valuable reference for future researchers who wish to explore web-based management systems, particularly in the context of school organizations. The findings and development process documented in this paper can provide insights into system design, implementation challenges, and best practices, serving as a foundation for further improvements or related studies in the future.
+1.4 Scope and Delimitations
+	Siterians ClubHive is a web-based school organization management system developed to enhance the efficiency of managing school organizations at Sitero Francisco Memorial National High School (SFMNHS). The system digitizes various aspects of club operations, including club registration, membership management, event scheduling, announcement and updates posting, and SSLG voting system. It is accessible via modern web browsers on both desktop and mobile devices with an internet connection. The system assigns functionalities based on user roles, which are classified as Admin, Teacher that can be a Club Adviser in a club, and Student that can be a Club Member with or without position in  a club, ensuring that each user has access only to tools and information relevant to their responsibilities. 
+
+The Admin has full control over the system. They are responsible for managing all user accounts, including creating, updating, and deleting them as needed. They also have exclusive access to a dashboard that displays important statistics and insights, such as the total number of clubs registered in the system, the total number of teachers and students, the total number of events made, and an overview of recent activities done in the system. Additionally, the Admin is responsible for managing all clubs in the system. This includes adding new clubs, editing or updating existing club information, and removing clubs that are no longer active or have been officially disbanded.
+
+The Teachers, when assigned as Club Advisers, are granted permissions specific to the clubs they handle. They can edit the details of their clubs, such as updating the club name, description, logo, and banner. They are responsible for managing the membership list within their club, including the ability to add and remove students, and modify the roles or permissions of each student. They are also given the ability to create posts which are not limited to announcements and updates, either publicly or within their assigned club. They are also given the ability to schedule an event by giving event-specific details such as event name, event description, date, time, and location. For the Supreme Secondary Learner Government (SSLG), the assigned SSLG Adviser is responsible for creating and managing the voting system, ensuring a secure and fair election process. Once the voting period ends, the system will generate a summary report of the results that is available to download.
+
+	Students also play active roles in the system, depending on whether they are general members or hold officer positions. During Club Hunting Day, students can browse the list of active clubs and instantly join their preferred ones with a single click, eliminating the need for manual sign-ups or paperwork. Once they are members of a club, they can view announcements, upcoming events, and other updates specific to their organization. Students holding officer positions, such as President, Vice President, etc. can be granted more permissions that allow them to help manage the club by scheduling events and posting updates or announcements. All students, regardless of their position or role, are eligible to participate in elections hosted within the platform, and the voting system is designed to ensure each student can only cast one vote per election, preserving fairness and credibility in the electoral process.
+
+In addition to these role-based features, the system offers utilities that enhance the user experience and navigation. One such tool is the search and filter function, which allows users to quickly find users, clubs, club members, etc. based on criteria such as name, class, section, or user role. Furthermore, the system includes an Events tab that serves as a centralized space for viewing all upcoming activities. While it is not a traditional calendar interface, this section allows students to easily browse and keep track of all events created by the clubs they are members of. This is especially useful for students who belong to multiple organizations, as it helps them stay organized and aware of overlapping schedules or upcoming responsibilities within their different clubs.
+
+While the system brings significant improvements in club organization and management, it is also bounded by a few delimitations. Since it is web-based, an active and stable internet connection is required at all times to use any of its features. The system does not include a built-in messaging or chat system, which means real-time communication among users must be conducted through external applications or platforms. Additionally, it does not offer features for attendance tracking during events or meetings. Financial functionalities such as tracking membership fees, budget allocations, or managing club expenses are also beyond the scope of the system. Furthermore, user authentication is limited to standard login credentials issued by the Admin so integration with third-party logins like Google or Facebook accounts is not currently supported.

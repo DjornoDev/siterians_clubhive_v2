@@ -12,17 +12,17 @@
                         <div class="flex space-x-6">
                             <a href="{{ route('clubs.show', $club) }}"
                                 class="py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200
-                                {{ request()->routeIs('clubs.show') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                                    {{ request()->routeIs('clubs.show') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                                 Home
                             </a>
                             <a href="{{ route('clubs.events.index', $club) }}"
                                 class="py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200
-                                {{ request()->routeIs('clubs.events.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                                    {{ request()->routeIs('clubs.events.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                                 Events
                             </a>
                             <a href="{{ route('clubs.people.index', $club) }}"
                                 class="py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center gap-2
-                                {{ request()->routeIs('clubs.people.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                                    {{ request()->routeIs('clubs.people.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                                 People
                                 @if (isset($pendingRequestsCount) && $pendingRequestsCount > 0)
                                     <span
@@ -33,26 +33,49 @@
                             </a>
                             <a href="{{ route('clubs.about.index', $club) }}"
                                 class="py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200
-                                {{ request()->routeIs('clubs.about.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                                    {{ request()->routeIs('clubs.about.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                                 About
                             </a>
                             @if (auth()->user()->user_id == $club->club_adviser)
                                 <a href="{{ route('clubs.questions.index', $club) }}"
                                     class="py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200
-                                    {{ request()->routeIs('clubs.questions.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                                        {{ request()->routeIs('clubs.questions.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                                     Questions
                                 </a>
                                 <a href="{{ route('clubs.voting.index', $club) }}"
                                     class="py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200
-                                    {{ request()->routeIs('clubs.voting.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                                        {{ request()->routeIs('clubs.voting.index') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                                     Voting
                                 </a>
+                                <a href="{{ route('clubs.voting.responses', $club) }}"
+                                    class="py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200
+                                        {{ request()->routeIs('clubs.voting.responses') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                                    Results
+                                </a>
+                            @elseif (auth()->user()->role === 'STUDENT' &&
+                                    $club->members()->where('tbl_club_membership.user_id', auth()->id())->exists())
+                                @php
+                                    $hasActiveElection = App\Models\Election::where('club_id', $club->club_id)
+                                        ->where('is_published', true)
+                                        ->where('end_date', '>', now())
+                                        ->exists();
+                                @endphp
+                                @if ($hasActiveElection)
+                                    <a href="{{ route('clubs.voting.index', $club) }}"
+                                        class="py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200
+                                            {{ request()->routeIs('clubs.voting.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                                        Voting
+                                    </a>
+                                @endif
                             @endif
                         </div>
 
                         <!-- Right side controls -->
                         <div class="flex items-center space-x-6">
-                            @if (auth()->user()->user_id == $club->club_adviser)
+                            @if (
+                                (auth()->user()->user_id == $club->club_adviser &&
+                                    $club->club_id == \App\Services\MainClubService::getMainClubId()) ||
+                                    auth()->user()->role === 'ADMIN')
                                 <!-- Club Hunting Day Toggle -->
                                 <div class="flex items-center space-x-2">
                                     <span class="text-sm text-gray-600">Club Hunting Day</span>
@@ -141,13 +164,34 @@
                                     Questions
                                 </a>
                                 <a href="{{ route('clubs.voting.index', $club) }}"
-                                    class="block py-2 px-4 text-base font-medium {{ request()->routeIs('clubs.voting.*') ? 'text-blue-600 bg-blue-50' : 'text-gray-500 hover:bg-gray-50' }} rounded-md">
+                                    class="block py-2 px-4 text-base font-medium {{ request()->routeIs('clubs.voting.index') ? 'text-blue-600 bg-blue-50' : 'text-gray-500 hover:bg-gray-50' }} rounded-md">
                                     Voting
                                 </a>
+                                <a href="{{ route('clubs.voting.responses', $club) }}"
+                                    class="block py-2 px-4 text-base font-medium {{ request()->routeIs('clubs.voting.responses') ? 'text-blue-600 bg-blue-50' : 'text-gray-500 hover:bg-gray-50' }} rounded-md">
+                                    Results
+                                </a>
+                            @elseif (auth()->user()->role === 'STUDENT' &&
+                                    $club->members()->where('tbl_club_membership.user_id', auth()->id())->exists())
+                                @php
+                                    $hasActiveElection = App\Models\Election::where('club_id', $club->club_id)
+                                        ->where('is_published', true)
+                                        ->where('end_date', '>', now())
+                                        ->exists();
+                                @endphp
+                                @if ($hasActiveElection)
+                                    <a href="{{ route('clubs.voting.index', $club) }}"
+                                        class="block py-2 px-4 text-base font-medium {{ request()->routeIs('clubs.voting.*') ? 'text-blue-600 bg-blue-50' : 'text-gray-500 hover:bg-gray-50' }} rounded-md">
+                                        Voting
+                                    </a>
+                                @endif
                             @endif
 
                             <!-- Controls for Mobile -->
-                            @if (auth()->user()->user_id == $club->club_adviser)
+                            @if (
+                                (auth()->user()->user_id == $club->club_adviser &&
+                                    $club->club_id == \App\Services\MainClubService::getMainClubId()) ||
+                                    auth()->user()->role === 'ADMIN')
                                 <div class="flex items-center justify-between py-2 px-4 border-t border-gray-100 mt-2">
                                     <span class="text-sm text-gray-600">Club Hunting Day</span>
                                     <form id="mobileToggleHuntingDayForm" class="m-0">

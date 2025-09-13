@@ -53,6 +53,11 @@ class ClubQuestionController extends Controller
             'order' => 'nullable|integer|min:0'
         ]);
 
+        // Clear options for text and textarea questions
+        if (in_array($request->question_type, ['text', 'textarea'])) {
+            $request->merge(['options' => null]);
+        }
+
         $options = null;
         if (in_array($request->question_type, ['select', 'radio']) && $request->options) {
             // Filter out empty options
@@ -125,6 +130,11 @@ class ClubQuestionController extends Controller
             'order' => 'integer|min:0',
             'is_active' => 'boolean'
         ]);
+
+        // Clear options for text and textarea questions
+        if (in_array($request->question_type, ['text', 'textarea'])) {
+            $request->merge(['options' => null]);
+        }
 
         $options = null;
         if (in_array($request->question_type, ['select', 'radio']) && $request->options) {

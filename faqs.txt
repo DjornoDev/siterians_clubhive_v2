@@ -1,0 +1,378 @@
+COMPREHENSIVE FAQs FOR INFOGRAPHICS WEBSITE
+=====================================================
+
+📚 ABOUT SITERO FRANCISCO MEMORIAL NATIONAL HIGH SCHOOL
+========================================================
+
+1. What is Sitero Francisco Memorial National High School?
+Sitero Francisco Memorial National High School (SFMNHS) is a public educational institution located in Sta. Monica Subdivision, Ugong, Valenzuela City, Metro Manila. Founded in 2002, the school has been providing quality basic education for 23 years, serving over 3,260 students with 91 dedicated teachers.
+
+2. When was SFMNHS established and who was the first principal?
+SFMNHS was established by virtue of Republic Act 8842 on August 22, 2000, and officially opened in 2002. Mrs. Victoria C. Nicodemus served as the first Officer-In-Charge and later became the first principal (2002-2006).
+
+3. Who is the current principal and what is their vision?
+Dr. Benilda B. Santos is the current School Principal IV, serving since 2019. Her vision emphasizes providing quality education that develops academic excellence, strong character, and values, creating a safe and challenging environment for globally competitive learners.
+
+4. What are the core values of SFMNHS?
+The school follows four core values:
+- MAKA-DIYOS (God-loving): Developing spiritual values and moral character
+- MAKATAO (Humane): Fostering compassion and respect for human dignity  
+- MAKA-KALIKASAN (Nature-loving): Environmental stewardship and sustainability
+- MAKA-BANSA (Patriotic): Love of country and commitment to serve the Philippines
+
+5. What educational programs does SFMNHS offer?
+SFMNHS offers both Junior and Senior High School programs. For Senior High School, they provide:
+- Academic Tracks: ABM (Accountancy, Business & Management) and GAS (General Academic Strand)
+- TVL Tracks: ICT - Computer System Servicing, and Industrial Arts - Electrical Installations and Maintenance
+
+6. What makes SFMNHS unique in terms of achievements?
+SFMNHS is known for several pioneering achievements:
+- First school in the Philippines to conduct electronic voting (e-voting) in 2009
+- Solar School - First classrooms powered by solar panels in Metro Manila
+- Strong Campus Journalism program with consistent awards at Division, Regional, and National levels
+- Active Culture and Arts program featuring the renowned Angklung Ensemble
+- ICT-oriented school with advanced technology integration
+
+7. How many students and staff does SFMNHS have?
+The school serves 3,260 total students (2,847 Junior High and 413 Senior High students) with 91 teaching staff, maintaining a student-teacher ratio of 36:1. The campus spans 9,136 square meters with 65 classrooms across 5 buildings.
+
+8. What extracurricular activities are available?
+SFMNHS offers diverse clubs and organizations including:
+- Culture and Arts Club (CAC) with Angklung Ensemble
+- Campus Journalism (publications: Altiora Peto and Ang Antipara)
+- Sports programs under "Sitero Huskies"
+- Teatro Sitero (STAGE - Theatrical Arts Guild)
+- Special Inclusive Education Program
+- Various academic and special interest clubs
+
+9. What is Club Hunting Day?
+Club Hunting Day is SFMNHS's annual event where all student clubs gather in the school court to recruit new members. Students can explore different organizations and join clubs that match their interests by simply signing up on paper lists (traditionally) or through the new digital platform.
+
+10. How does SFMNHS support students with special needs?
+SFMNHS has a dedicated Special Inclusive Education Program that provides quality education for students with intellectual disabilities, autism, behavioral problems, orthopedic handicaps, speech defects, and learning disabilities. The program aims to help these students become independent, self-reliant, and socially accepted members of society.
+
+11. Who are the past principals of SFMNHS?
+The leadership timeline includes:
+1. Victoria C. Nicodemus (2002 - 2006) - First Principal & Officer-In-Charge
+2. Dr. Cesar C. Villareal (2006 - 2011) - Second Principal
+3. Dr. Brian E. Ilan (2011) - Third Principal (Education Supervisor)
+4. Marciana A. Daet (2011 - 2019) - Fourth Principal
+5. Dr. Benilda B. Santos (2019 - Present) - Current Principal IV
+
+12. What is the school's physical infrastructure?
+The campus consists of:
+- Building A: Administrative (12 rooms)
+- Building B: LSB Building (12 rooms)  
+- Building C: Newest SHS (8 rooms)
+- Building D: Oldest SHS (8 rooms)
+- Building E: Present SHS
+- Total: 65 classrooms across 5 buildings on 9,136 SQM campus
+
+13. What is the school anthem and who composed it?
+The school anthem is "Himig ng SFMNHS" with lyrics and music by Virgilio T. Santos Jr. The anthem reflects the school's values and commitment to excellence in education.
+
+14. What special programs distinguish SFMNHS?
+- Electronic Voting (E-Voting) - Pioneer in computerized student elections
+- Solar School - Renewable energy integration in education
+- Culture and Arts - Angklung Ensemble performances
+- Campus Journalism - Award-winning publications
+- Sitero Huskies - Comprehensive sports programs
+- Teatro Sitero - Theatrical arts development
+- Inclusive Education - Special needs support program
+- ICT Integration - Technology-enhanced learning environment
+
+15. What is the DepEd Vision and Mission that guides SFMNHS?
+DepEd Vision: "We dream of Filipinos who passionately love their country and whose values and competencies enable them to realize their full potential and contribute meaningfully to building the nation."
+
+DepEd Mission: "To protect and promote the right of every Filipino to quality, equitable, culture-based, and complete basic education" with child-friendly, gender-sensitive, safe, and motivating environment.
+
+💻 ABOUT SITERIANS CLUBHIVE - WEB-BASED MANAGEMENT SYSTEM
+=========================================================
+
+16. What is Siterians ClubHive?
+Siterians ClubHive is a comprehensive web-based school organization management system specifically developed for SFMNHS. It digitalizes club operations, replacing traditional paper-based methods with a centralized platform for club registration, membership management, event scheduling, announcements, and secure student government elections.
+
+17. Why was Siterians ClubHive developed?
+The system was created to address challenges in traditional club management including:
+- Lost or damaged paper registration forms
+- Difficulty organizing member information
+- Communication delays through social media
+- Security concerns with Google Forms voting system
+- Inefficient manual verification processes
+
+18. What technologies power Siterians ClubHive?
+The system is built using modern web technologies:
+- Backend: Laravel 12 Framework with PHP 8.2.12
+- Frontend: Tailwind CSS v4.0, Alpine.js, Bootstrap
+- Database: MySQL
+- API: Axios for seamless data exchange
+- Package Management: Composer 2.8.5
+
+19. Who can use the system and what are their roles?
+The system supports three user types:
+- Admin: Full system control, user management, club oversight, data exports
+- Teachers (Club Advisers): Manage assigned clubs, member management, event creation, post announcements
+- Students: Join clubs, view events/announcements, create posts (if officers), participate in elections
+
+20. What are the key features for students?
+Students can:
+- Browse and instantly join clubs during Club Hunting Day
+- View club-specific announcements and updates
+- Access upcoming events calendar
+- Participate in secure SSLG elections (one vote per student)
+- Create posts and events (if holding officer positions)
+- Search for clubs, members, and content easily
+
+21. How does the club management system work?
+Club Advisers can:
+- Edit club details (name, description, logo, banner)
+- Add/remove members and assign roles
+- Create and manage posts/announcements
+- Schedule events with detailed information
+- Set up custom registration questions for new members
+- Export membership data and reports
+
+22. What makes the voting system secure?
+The SSLG election system ensures:
+- One student, one vote policy strictly enforced
+- User authentication prevents unauthorized voting
+- Secure ballot submission with digital verification
+- Automatic result tabulation and report generation
+- Audit trail for transparency and accountability
+
+23. How does the event management feature work?
+The system provides:
+- Centralized event calendar showing all upcoming activities
+- Club-specific event creation by advisers and officers
+- Detailed event information (date, time, location, description)
+- Event notifications to relevant club members
+- Cross-club event viewing for students in multiple organizations
+
+24. What search and filter capabilities are available?
+Users can search and filter by:
+- User names, emails, and roles
+- Club names and categories
+- Class and section information
+- Member positions and status
+- Event dates and types
+- Post content and announcements
+
+25. How does data export and reporting work?
+Administrators and Teachers can export:
+- User data with detailed demographics
+- Club membership lists and analytics
+- Event attendance and participation records
+- Voting results with comprehensive breakdowns
+- Action logs for system activity tracking
+- Custom reports based on specific criteria
+
+26. Is the system mobile-friendly?
+Yes! Siterians ClubHive is fully responsive and accessible on:
+- Desktop computers for full administrative functionality
+- Tablets for convenient mobile management
+- Smartphones for quick access to announcements and events
+- All modern web browsers with active internet connection
+
+27. How does the system handle club registration questions?
+Club Advisers can create custom registration questions:
+- Multiple question types: Text, textarea, multiple choice, radio buttons
+- Required/optional question settings
+- Ordered display for logical flow
+- Automatic answer collection during club joining
+- Answer review system for membership approval
+
+28. What security measures are in place?
+The system implements multiple security layers:
+- Role-based access control with proper authorization
+- User authentication with secure login credentials
+- Data validation for all inputs and forms
+- Protected club data with adviser-only access
+- Audit logging for all system activities
+- MAIN_CLUB_ID protection preventing SSLG club deletion
+
+29. How is the system different from using Facebook or Google Forms?
+Unlike social media platforms, Siterians ClubHive offers:
+- Centralized information in one secure location
+- Role-based permissions with proper access control
+- Professional interface designed specifically for school use
+- Comprehensive reporting and data analytics
+- Secure voting system with fraud prevention
+- No external platform dependence or distractions
+
+30. What are the system's limitations?
+Current limitations include:
+- Internet connection required for all functions
+- No built-in messaging system (external communication needed)
+- No attendance tracking for events or meetings
+- No financial management features (fees, budgets, expenses)
+- Standard login only (no third-party authentication integration)
+
+31. How can the system be accessed?
+Access Siterians ClubHive through:
+- Any modern web browser (Chrome, Firefox, Safari, Edge)
+- School network or personal internet connection
+- Provided login credentials issued by system administrators
+- Responsive interface that adapts to any screen size
+
+32. What evaluation standards does the system meet?
+Siterians ClubHive is evaluated using ISO 25010 Standards for:
+- Functionality: Completeness, correctness, appropriateness
+- Performance Efficiency: Time behavior and resource utilization
+- Compatibility: Co-existence with other systems
+- Usability: Recognizability, learnability, operability
+- Reliability: Availability and fault tolerance
+- Security: Confidentiality, integrity, accountability, authenticity
+- Maintainability: Testability, flexibility, adaptability
+- Safety: Operational constraint compliance
+
+33. Who developed Siterians ClubHive?
+The system was developed by BSIT students from the College of Engineering and Information Technology:
+- Jean Ann P. Abay
+- Daron F. Mangaoang (Lead Developer)
+- Anita Varga Renel R. Oira
+- Jovince M. Salic
+- Jasper James N. Vinluan
+
+34. How does this benefit the school community?
+Siterians ClubHive benefits:
+- Administrators: Centralized oversight and efficient monitoring
+- Club Advisers: Streamlined management and better organization
+- Students: Enhanced participation and easy access to information
+- Future Researchers: Reference for web-based management systems
+
+35. What is the future vision for Siterians ClubHive?
+The system aims to:
+- Enhance digital literacy among students and staff
+- Improve organizational efficiency across all school clubs
+- Foster greater student participation in extracurricular activities
+- Serve as a model for other educational institutions
+- Continuously evolve with user feedback and technological advances
+
+TECHNICAL SPECIFICATIONS
+========================
+
+36. What are the system requirements?
+- Modern web browser with JavaScript enabled
+- Stable internet connection
+- Device with minimum 4GB RAM for optimal performance
+- Screen resolution of 1024x768 or higher recommended
+
+37. How does the system handle data privacy?
+- User data encrypted during transmission
+- Role-based access ensures data confidentiality
+- Regular security audits and updates
+- Compliance with data protection standards
+- Secure storage of student information
+
+38. What backup and recovery measures are in place?
+- Automated daily database backups
+- Redundant storage systems
+- Quick recovery procedures
+- Data integrity checks
+- Version control for system updates
+
+39. How is the system maintained and updated?
+- Regular security patches and updates
+- Performance monitoring and optimization
+- User feedback integration
+- Bug fixes and feature enhancements
+- Continuous improvement based on school needs
+
+40. What support is available for users?
+- User manuals and documentation
+- Training sessions for administrators and advisers
+- Technical support for system issues
+- Regular system maintenance notifications
+- Feedback channels for improvements
+
+SCHOOL CULTURE & TRADITIONS
+===========================
+
+41. What is the significance of "Siterians"?
+"Siterians" refers to the students, faculty, and alumni of Sitero Francisco Memorial National High School. It represents the school identity and community spirit that binds everyone connected to SFMNHS.
+
+42. What special events does SFMNHS celebrate?
+- Annual Club Hunting Day
+- SSLG Elections
+- Intramural Sports Competitions
+- Academic Competitions
+- Cultural Presentations
+- Recognition Programs
+- Graduation Ceremonies
+- Foundation Day Celebrations
+
+43. How does SFMNHS promote student leadership?
+Through various programs including:
+- Supreme Secondary Learner Government (SSLG)
+- Club officer positions
+- Student council participation
+- Leadership training programs
+- Peer mentoring opportunities
+- Community service projects
+
+44. What community partnerships does SFMNHS have?
+- Local Government of Valenzuela City
+- Department of Education partnerships
+- NGO collaborations for special programs
+- Community service initiatives
+- Environmental protection projects
+- Cultural preservation activities
+
+45. How does SFMNHS integrate technology in education?
+- Computer laboratories with 200+ computer sets
+- LCD projectors in classrooms
+- Electronic voting systems
+- Digital learning platforms
+- Internet connectivity throughout campus
+- Technology-enhanced teaching methods
+
+ADDITIONAL INFORMATION
+=====================
+
+46. What are the school's contact details?
+Address: Sta. Monica Subdivision, Ugong, Valenzuela City, Metro Manila, Philippines
+Official Contact: 0922 625 1196 / (02)288-1695
+Email: sfmnhs@gmail.com / siterohigh@yahoo.com
+Coordinates: 14.6904181 Latitude, 121.00891550000006 Longitude
+
+47. What makes SFMNHS a model institution?
+- Pioneer in educational technology adoption
+- Strong academic and extracurricular programs
+- Inclusive education initiatives
+- Environmental consciousness
+- Community engagement
+- Alumni success stories
+- Innovation in student services
+
+48. How can prospective students enroll at SFMNHS?
+- Follow DepEd enrollment procedures
+- Meet age and grade requirements
+- Submit required documents
+- Participate in school orientation
+- Attend Club Hunting Day to join organizations
+- Complete registration through proper channels
+
+49. What career pathways do SFMNHS graduates pursue?
+Graduates often pursue:
+- Higher education in colleges and universities
+- Technical and vocational training
+- Employment in various industries
+- Entrepreneurship opportunities
+- Public service careers
+- Creative and artistic fields
+- Technology and engineering sectors
+
+50. How does Siterians ClubHive support the school's mission?
+The system directly supports SFMNHS's educational mission by:
+- Enhancing student engagement in extracurricular activities
+- Providing transparent and efficient organizational management
+- Fostering digital literacy and 21st-century skills
+- Encouraging active participation in school governance
+- Creating a more organized and accessible learning environment
+- Building stronger school community connections
+
+=====================================================
+© 2025 Siterians ClubHive | Comprehensive FAQ Guide
+For Sitero Francisco Memorial National High School
+Developed by: Daron F. Mangaoang and Team
+=====================================================

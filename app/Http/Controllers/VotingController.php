@@ -40,7 +40,7 @@ class VotingController extends Controller
         }
 
         // Check if user is a student and club member
-        if ($user->role === 'STUDENT' && $club->members()->where('user_id', $user->user_id)->exists()) {
+        if ($user->role === 'STUDENT' && $club->members()->where('tbl_club_membership.user_id', $user->user_id)->exists()) {
             return view('voting.student.index', compact('club'));
         }
 
@@ -102,37 +102,7 @@ class VotingController extends Controller
         }
     }
 
-    /**
-     * Search for students who are members of a specific club
-     * 
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\Club $club
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function searchStudents(Request $request, Club $club)
-    {
-        // Authorization check - only club advisers can search students
-        if (Auth::user()->role !== 'TEACHER' || Auth::user()->user_id !== $club->club_adviser) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
 
-        $query = $request->input('query');
-
-        // Get members of the specific club
-        $students = User::whereHas('clubMemberships', function ($q) use ($club) {
-            $q->where('club_id', $club->club_id);
-        })
-            ->where('role', 'STUDENT')
-            ->where(function ($q) use ($query) {
-                $q->where('name', 'like', "%{$query}%")
-                    ->orWhere('email', 'like', "%{$query}%");
-            })
-            ->select('user_id', 'name', 'email')
-            ->limit(10)
-            ->get();
-
-        return response()->json($students);
-    }
     /**
      * Display voting responses for a specific club
      * 
@@ -157,134 +127,173 @@ class VotingController extends Controller
      */
     public function saveCandidate(Request $request, Club $club)
     {
-        // Authorization check - only club advisers can save candidates
-        if (Auth::user()->role !== 'TEACHER' || Auth::user()->user_id !== $club->club_adviser) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+        try {
+            // Authorization check - only club advisers can save candidates
+            if (Auth::user()->role !== 'TEACHER' || Auth::user()->user_id !== $club->club_adviser) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
 
-        // Handle voting creation
-        if ($request->has('title')) {
+            // Log the incoming request for debugging
+            Log::info('saveCandidate request received', [
+                'club_id' => $club->club_id,
+                'request_data' => $request->all()
+            ]);
+
+            // Handle voting creation
+            if ($request->has('title')) {
+                $validated = $request->validate([
+                    'title' => 'required|string|max:255',
+                    'description' => 'required|string',
+                    'end_date' => 'required|date|after:today',
+                ]);
+
+                try {
+                    // Create the election
+                    $election = Election::create([
+                        'title' => $validated['title'],
+                        'description' => $validated['description'],
+                        'start_date' => now(),
+                        'end_date' => $validated['end_date'],
+                        'club_id' => $club->club_id,
+                        'is_published' => false,
+                    ]);
+
+                    // Log election creation
+                    ActionLog::create_log(
+                        'voting_management',
+                        'created',
+                        "Created new voting election: {$election->title}",
+                        [
+                            'election_id' => $election->election_id,
+                            'title' => $election->title,
+                            'end_date' => $validated['end_date'],
+                            'club_id' => $club->club_id
+                        ]
+                    );
+
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Voting created successfully! You can now add candidates.',
+                        'election_id' => $election->election_id
+                    ]);
+                } catch (\Exception $e) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'An error occurred while creating the voting: ' . $e->getMessage()
+                    ], 500);
+                }
+            }
+
+            // Handle candidate creation
+
             $validated = $request->validate([
-                'title' => 'required|string|max:255',
-                'description' => 'required|string',
-                'end_date' => 'required|date|after:today',
+                'election_id' => 'nullable|exists:tbl_elections,election_id',
+                'candidates' => 'required|array',
+                'candidates.*.position' => 'required|string|max:100',
+                'candidates.*.user_id' => 'required|exists:tbl_users,user_id',
+                'candidates.*.partylist' => 'required|string|max:100',
             ]);
 
             try {
-                // Create the election
-                $election = Election::create([
-                    'title' => $validated['title'],
-                    'description' => $validated['description'],
-                    'start_date' => now(),
-                    'end_date' => $validated['end_date'],
-                    'club_id' => $club->club_id,
-                    'is_published' => false,
-                ]);
+                DB::beginTransaction();
 
-                // Log election creation
-                ActionLog::create_log(
-                    'voting_management',
-                    'created',
-                    "Created new voting election: {$election->title}",
-                    [
-                        'election_id' => $election->election_id,
-                        'title' => $election->title,
-                        'end_date' => $validated['end_date'],
-                        'club_id' => $club->club_id
-                    ]
-                );
+                // Get current election or create one if none exists
+                $election = null;
+                if (!empty($validated['election_id'])) {
+                    $election = Election::find($validated['election_id']);
+                } else {
+                    // If no election_id provided, get the latest active election for this club
+                    $election = Election::where('club_id', $club->club_id)
+                        ->where('end_date', '>', now())
+                        ->latest()
+                        ->first();
+                }
 
-                return redirect()->route('clubs.voting.index', $club)->with('success', 'Voting created successfully! You can now add candidates.');
-            } catch (\Exception $e) {
-                return redirect()->back()
-                    ->withInput()
-                    ->with('error', 'An error occurred while creating the voting: ' . $e->getMessage());
-            }
-        }        // Handle candidate creation
-        // First, preprocess the candidates array since it's coming as JSON strings
-        $candidates = [];
-        if ($request->has('candidates')) {
-            foreach ($request->candidates as $candidateJson) {
-                $candidates[] = json_decode($candidateJson, true);
-            }
-            $request->merge(['candidates' => $candidates]);
-        }
-
-        $validated = $request->validate([
-            'election_id' => 'nullable|exists:tbl_elections,election_id',
-            'candidates' => 'required|array',
-            'candidates.*.position' => 'required|string|max:100',
-            'candidates.*.user_id' => 'required|exists:tbl_users,user_id',
-            'candidates.*.partylist' => 'required|string|max:100',
-        ]);
-
-        try {
-            DB::beginTransaction();
-
-            // Get current election or create one if none exists
-            $election = null;
-            if (!empty($validated['election_id'])) {
-                $election = Election::find($validated['election_id']);
-            } else {
-                // If no election_id provided, get the latest active election for this club
-                $election = Election::where('club_id', $club->club_id)
-                    ->where('end_date', '>', now())
-                    ->latest()
-                    ->first();
-            }
-
-            if (!$election) {
-                DB::rollBack();
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No active election found. Please create an election first.',
-                ], 404);
-            }
-
-            // Get the position from the first candidate (all candidates have the same position)
-            $position = $validated['candidates'][0]['position'];
-
-            // First, remove existing candidates for this position to start fresh
-            Candidate::where('election_id', $election->election_id)
-                ->where('position', $position)
-                ->delete();
-
-            // Process each candidate
-            foreach ($validated['candidates'] as $candidateData) {
-                // Check if this user is already a candidate for any position in this election
-                $existingCandidate = Candidate::where('election_id', $election->election_id)
-                    ->where('user_id', $candidateData['user_id'])
-                    ->first();
-
-                if ($existingCandidate) {
+                if (!$election) {
                     DB::rollBack();
                     return response()->json([
                         'success' => false,
-                        'message' => 'This student is already a candidate for another position',
-                        'errors' => ['candidates' => ['A student can only be a candidate for one position']]
+                        'message' => 'No active election found. Please create an election first.',
+                    ], 404);
+                }
+
+                // Get the position from the first candidate (all candidates have the same position)
+                $position = $validated['candidates'][0]['position'];
+
+                // Check if there are already candidates for this position
+                $existingCandidatesCount = Candidate::where('election_id', $election->election_id)
+                    ->where('position', $position)
+                    ->count();
+
+                if ($existingCandidatesCount > 0) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Candidates already exist for the position '{$position}'. Cannot add new candidates to a position that already has candidates.",
+                        'errors' => ['position' => ['This position already has candidates']]
                     ], 422);
                 }
 
-                // Create candidate
-                Candidate::create([
-                    'election_id' => $election->election_id,
-                    'user_id' => $candidateData['user_id'],
-                    'position' => $position,
-                    'partylist' => $candidateData['partylist'],
-                ]);
+                // Process each candidate
+                foreach ($validated['candidates'] as $candidateData) {
+                    // Check if this user is already a candidate for any position in this election
+                    $existingCandidate = Candidate::where('election_id', $election->election_id)
+                        ->where('user_id', $candidateData['user_id'])
+                        ->first();
+
+                    if ($existingCandidate) {
+                        DB::rollBack();
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'This student is already a candidate for another position',
+                            'errors' => ['candidates' => ['A student can only be a candidate for one position']]
+                        ], 422);
+                    }
+
+                    // Check if this user already holds a position in any club
+                    $candidateUser = User::find($candidateData['user_id']);
+                    if ($candidateUser && $candidateUser->hasClubPosition()) {
+                        $currentPosition = $candidateUser->getCurrentClubPosition();
+                        DB::rollBack();
+                        return response()->json([
+                            'success' => false,
+                            'message' => "This student already holds the position '{$currentPosition->club_position}' in {$currentPosition->club->club_name}. Students with existing positions cannot run for new positions.",
+                            'errors' => ['candidates' => ['Students with existing club positions cannot be candidates']]
+                        ], 422);
+                    }
+
+                    // Create candidate
+                    Candidate::create([
+                        'election_id' => $election->election_id,
+                        'user_id' => $candidateData['user_id'],
+                        'position' => $position,
+                        'partylist' => $candidateData['partylist'],
+                    ]);
+                }
+
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'Database error: ' . $e->getMessage()], 500);
             }
 
-            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => 'Candidates saved successfully',
+                'election_id' => $election->election_id
+            ]);
         } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['success' => false, 'message' => 'Database error: ' . $e->getMessage()], 500);
-        }
+            Log::error('Error in saveCandidate method', [
+                'club_id' => $club->club_id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Candidates saved successfully',
-            'election_id' => $election->election_id
-        ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while saving candidates: ' . $e->getMessage()
+            ], 500);
+        }
     }
     /**
      * Toggle the published status of an election for a specific club
@@ -361,7 +370,7 @@ class VotingController extends Controller
 
             if (!$election) {
                 // Log that no active election was found
-                \Log::info('No active election found in getCandidates');
+                Log::info('No active election found in getCandidates');
 
                 return response()->json([
                     'success' => false,
@@ -370,7 +379,7 @@ class VotingController extends Controller
             }
 
             // Log the found election
-            \Log::info('Found active election', ['election_id' => $election->election_id, 'title' => $election->title]);
+            Log::info('Found active election', ['election_id' => $election->election_id, 'title' => $election->title]);
 
             // Get candidates grouped by position
             $candidates = Candidate::where('election_id', $election->election_id)
@@ -381,7 +390,7 @@ class VotingController extends Controller
                 ->groupBy('position');
 
             // Log candidates count
-            \Log::info('Candidates found', [
+            Log::info('Candidates found', [
                 'count' => $candidates->count(),
                 'positions' => $candidates->keys()
             ]);
@@ -392,7 +401,7 @@ class VotingController extends Controller
                 'candidates' => $candidates
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error in getCandidates: ' . $e->getMessage(), [
+            Log::error('Error in getCandidates: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
             ]);
 
@@ -418,7 +427,7 @@ class VotingController extends Controller
         }
 
         // Verify the user is a member of this club
-        if (!$club->members()->where('user_id', Auth::id())->exists()) {
+        if (!$club->members()->where('tbl_club_membership.user_id', Auth::id())->exists()) {
             return response()->json(['success' => false, 'message' => 'You are not a member of this club'], 403);
         }
         try {
@@ -665,7 +674,7 @@ class VotingController extends Controller
         }
 
         // Verify the user is a member of this club
-        if (!$club->members()->where('user_id', Auth::id())->exists()) {
+        if (!$club->members()->where('tbl_club_membership.user_id', Auth::id())->exists()) {
             return response()->json(['success' => false, 'message' => 'You are not a member of this club'], 403);
         }
 
@@ -694,7 +703,7 @@ class VotingController extends Controller
         }
 
         // Verify the user is a member of this club
-        if (!$club->members()->where('user_id', Auth::id())->exists()) {
+        if (!$club->members()->where('tbl_club_membership.user_id', Auth::id())->exists()) {
             return response()->json(['success' => false, 'message' => 'You are not a member of this club'], 403);
         }
 
@@ -906,6 +915,115 @@ class VotingController extends Controller
     }
 
     /**
+     * Search students for candidate selection
+     * 
+     * @param \App\Models\Club $club
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function searchStudents(Club $club)
+    {
+        try {
+            // Authorization check - only club advisers can search students
+            if (Auth::user()->role !== 'TEACHER' || Auth::user()->user_id !== $club->club_adviser) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+
+            // Get the current active election for this club
+            $currentElection = Election::where('club_id', $club->club_id)
+                ->where('end_date', '>', now())
+                ->latest()
+                ->first();
+
+            // Get all students who are members of this club
+            $studentsQuery = User::where('role', 'STUDENT')
+                ->whereHas('clubMemberships', function ($query) use ($club) {
+                    $query->where('club_id', $club->club_id);
+                });
+
+            // If there's an active election, exclude students who are already candidates
+            if ($currentElection) {
+                $studentsQuery->whereDoesntHave('candidates', function ($query) use ($currentElection) {
+                    $query->where('election_id', $currentElection->election_id);
+                });
+            }
+
+            // Exclude students who already hold positions in OTHER clubs
+            // (Students can run for positions in their own club even if they have a position there)
+            $studentsQuery->whereDoesntHave('clubMemberships', function ($query) use ($club) {
+                $query->where('club_id', '!=', $club->club_id)
+                    ->whereNotNull('club_position')
+                    ->where('club_position', '!=', '');
+            });
+
+            $students = $studentsQuery
+                ->select('user_id', 'name', 'email', 'profile_picture')
+                ->orderBy('name')
+                ->get();
+
+            // Get additional info for club advisers about why students might not appear
+            $totalClubMembers = User::where('role', 'STUDENT')
+                ->whereHas('clubMemberships', function ($query) use ($club) {
+                    $query->where('club_id', $club->club_id);
+                })
+                ->count();
+
+            $studentsWithOtherPositions = User::where('role', 'STUDENT')
+                ->whereHas('clubMemberships', function ($query) use ($club) {
+                    $query->where('club_id', $club->club_id);
+                })
+                ->whereHas('clubMemberships', function ($query) use ($club) {
+                    $query->where('club_id', '!=', $club->club_id)
+                        ->whereNotNull('club_position')
+                        ->where('club_position', '!=', '');
+                })
+                ->with(['clubMemberships' => function ($query) use ($club) {
+                    $query->where('club_id', '!=', $club->club_id)
+                        ->whereNotNull('club_position')
+                        ->where('club_position', '!=', '')
+                        ->with('club');
+                }])
+                ->get();
+
+            $alreadyCandidates = [];
+            if ($currentElection) {
+                $alreadyCandidates = User::where('role', 'STUDENT')
+                    ->whereHas('clubMemberships', function ($query) use ($club) {
+                        $query->where('club_id', $club->club_id);
+                    })
+                    ->whereHas('candidates', function ($query) use ($currentElection) {
+                        $query->where('election_id', $currentElection->election_id);
+                    })
+                    ->with(['candidates' => function ($query) use ($currentElection) {
+                        $query->where('election_id', $currentElection->election_id);
+                    }])
+                    ->get();
+            }
+
+            return response()->json([
+                'success' => true,
+                'students' => $students,
+                'info' => [
+                    'total_club_members' => $totalClubMembers,
+                    'available_students' => $students->count(),
+                    'students_with_other_positions' => $studentsWithOtherPositions,
+                    'already_candidates' => $alreadyCandidates,
+                    'search_info' => 'Search by student name or email. Students with positions in other clubs or already added as candidates will not appear.'
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error in searchStudents: ' . $e->getMessage(), [
+                'club_id' => $club->club_id,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Error fetching students: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Check for changes in voting data for real-time updates
      *
      * @param Request $request
@@ -1055,6 +1173,7 @@ class VotingController extends Controller
 
         // Validate the request
         $validated = $request->validate([
+            'position' => 'required|string|max:100',
             'user_id' => 'required|exists:tbl_users,user_id',
             'partylist' => 'required|string|max:100',
         ]);
@@ -1087,6 +1206,7 @@ class VotingController extends Controller
 
             // Update the candidate
             $candidate->update([
+                'position' => $validated['position'],
                 'user_id' => $validated['user_id'],
                 'partylist' => $validated['partylist']
             ]);
@@ -1201,6 +1321,27 @@ class VotingController extends Controller
                     ->first();
 
                 if ($winner && $winner->votes_count > 0) {
+                    // Check if the winner already has a position in another club
+                    $winnerUser = User::find($winner->user_id);
+                    if ($winnerUser && $winnerUser->hasClubPosition($club->club_id)) {
+                        $currentPosition = $winnerUser->getCurrentClubPosition();
+                        // Log this issue but continue with other positions
+                        ActionLog::create_log(
+                            'voting_management',
+                            'warning',
+                            "Cannot assign position '{$position}' to {$winnerUser->first_name} {$winnerUser->last_name} - already holds '{$currentPosition->club_position}' in {$currentPosition->club->club_name}",
+                            [
+                                'election_id' => $electionId,
+                                'club_id' => $club->club_id,
+                                'user_id' => $winner->user_id,
+                                'blocked_position' => $position,
+                                'existing_position' => $currentPosition->club_position,
+                                'existing_club' => $currentPosition->club->club_name
+                            ]
+                        );
+                        continue; // Skip this position assignment
+                    }
+
                     // First, remove the position from any existing member who holds it
                     ClubMembership::where('club_id', $club->club_id)
                         ->where('club_position', $position)

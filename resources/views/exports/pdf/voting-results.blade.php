@@ -274,14 +274,42 @@
 
     <!-- Header -->
     <div class="header">
-        <h1>{{ $club->club_name }}</h1>
-        <h2>VOTING RESULTS REPORT</h2>
-        <p style="font-size: 11px; color: #6B7280; margin: 10px 0 0 0;">
-            Generated on {{ $export_date->format('F d, Y \a\t g:i A') }}
-        </p>
-        <p style="font-size: 10px; color: #7C3AED; margin: 5px 0 0 0; font-weight: bold;">
-            OFFICIAL ELECTION RESULTS - CONFIDENTIAL
-        </p>
+        <div style="display: table; width: 100%; margin-bottom: 15px;">
+            <div style="display: table-cell; width: 80px; vertical-align: middle;">
+                <div
+                    style="width: 70px; height: 70px; background-color: #7C3AED; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 24px;">
+                    CH
+                </div>
+            </div>
+            <div style="display: table-cell; vertical-align: middle; text-align: left; padding-left: 20px;">
+                <h1 style="margin: 0; font-size: 28px;">{{ $club->club_name }}</h1>
+                <h2 style="margin: 5px 0 0 0; font-size: 18px;">OFFICIAL VOTING RESULTS REPORT</h2>
+                <div
+                    style="margin-top: 10px; padding: 8px 15px; background-color: #7C3AED; color: white; border-radius: 20px; display: inline-block; font-size: 9px; font-weight: bold;">
+                    🏆 DEMOCRATIC ELECTION RESULTS
+                </div>
+            </div>
+        </div>
+
+        <div
+            style="background: linear-gradient(90deg, #7C3AED 0%, #8B5CF6 100%); color: white; padding: 12px 20px; border-radius: 8px; text-align: center; margin-top: 15px;">
+            <p style="font-size: 11px; margin: 0; font-weight: bold;">
+                📅 Generated on {{ $export_date->format('F d, Y \a\t g:i A') }}
+            </p>
+            <p style="font-size: 9px; margin: 3px 0 0 0; opacity: 0.9;">
+                Document Reference: VR-{{ $club->club_id }}-{{ $export_date->format('Ymd-His') }}
+            </p>
+        </div>
+
+        <div
+            style="background-color: #FEF2F2; border-left: 4px solid #EF4444; padding: 10px 15px; margin-top: 15px; border-radius: 0 8px 8px 0;">
+            <p style="font-size: 10px; color: #B91C1C; margin: 0; font-weight: bold;">
+                🔒 CONFIDENTIAL DOCUMENT - OFFICIAL ELECTION RESULTS
+            </p>
+            <p style="font-size: 9px; color: #DC2626; margin: 3px 0 0 0;">
+                Contains sensitive voting data. Handle according to privacy policies.
+            </p>
+        </div>
     </div>
 
     <!-- Club Information -->
@@ -303,15 +331,15 @@
             $votes = \App\Models\Vote::where('election_id', $election->election_id)->get();
             $voteDetails = \App\Models\VoteDetail::whereIn('vote_id', $votes->pluck('vote_id'))->get();
             $candidates = \App\Models\Candidate::where('election_id', $election->election_id)
-                ->with(['user', 'position'])
+                ->with(['user'])
                 ->get();
             $totalVotes = $votes->count();
             $eligibleVoters = \App\Models\ClubMembership::where('club_id', $club->club_id)
-                ->where('membership_status', 'ACTIVE')
+                ->where('club_role', 'MEMBER')
                 ->count();
             $participationRate = $eligibleVoters > 0 ? round(($totalVotes / $eligibleVoters) * 100, 2) : 0;
             $candidateVotes = $voteDetails->groupBy('candidate_id')->map->count();
-            $positions = $candidates->groupBy('position_id');
+            $positions = $candidates->groupBy('position');
         @endphp
 
         <div class="election-section {{ $electionIndex > 0 ? 'page-break' : '' }}">
@@ -424,7 +452,7 @@
                             <tr class="{{ $isWinner ? 'winner-row' : '' }}">
                                 <td style="{{ $index > 0 ? 'border-top: none;' : '' }}">
                                     @if ($index === 0)
-                                        <strong>{{ $candidate->position ? $candidate->position->position_name : 'Unknown Position' }}</strong>
+                                        <strong>{{ $candidate->position ?? 'Unknown Position' }}</strong>
                                         <br><small style="color: #6B7280;">{{ $positionCandidates->count() }}
                                             candidates</small>
                                     @endif
@@ -475,7 +503,7 @@
                     <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #065F46;">🏆 WINNERS SUMMARY</h4>
                     @foreach ($winners as $winner)
                         <p style="margin: 3px 0; font-size: 11px;">
-                            <strong>{{ $winner->position ? $winner->position->position_name : 'Unknown Position' }}:</strong>
+                            <strong>{{ $winner->position ?? 'Unknown Position' }}:</strong>
                             {{ $winner->user ? $winner->user->name : 'Unknown Candidate' }}
                             ({{ $candidateVotes->get($winner->candidate_id, 0) }} votes)
                         </p>
@@ -504,7 +532,7 @@
                 $avgParticipation = $elections->avg(function ($election) use ($club) {
                     $votes = \App\Models\Vote::where('election_id', $election->election_id)->count();
                     $eligible = \App\Models\ClubMembership::where('club_id', $club->club_id)
-                        ->where('membership_status', 'ACTIVE')
+                        ->where('club_role', 'MEMBER')
                         ->count();
                     return $eligible > 0 ? ($votes / $eligible) * 100 : 0;
                 });
@@ -542,25 +570,62 @@
 
     <!-- Signatures -->
     <div class="signatures">
+        <div
+            style="text-align: center; margin-bottom: 20px; padding: 15px; background-color: #F8FAFC; border-radius: 8px;">
+            <h3 style="color: #374151; font-size: 14px; margin: 0 0 10px 0;">OFFICIAL AUTHENTICATION</h3>
+            <p style="font-size: 10px; color: #6B7280; margin: 0;">
+                This document contains official election results verified and authenticated by the following
+                authorities:
+            </p>
+        </div>
+
         <div class="signature-row">
             <div class="signature-cell">
-                <div class="signature-line"></div>
-                <div class="signature-label">Prepared by</div>
-                <div class="signature-name">{{ $exported_by }}</div>
-                <div class="signature-title">Club Adviser</div>
+                <div
+                    style="border: 1px solid #E5E7EB; border-radius: 8px; padding: 15px; margin: 0 10px; background-color: #FEFEFE;">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Prepared by</div>
+                    <div class="signature-name">{{ $exported_by }}</div>
+                    <div class="signature-title">Club Adviser</div>
+                    <div style="font-size: 8px; color: #9CA3AF; margin-top: 5px;">
+                        Date: {{ $export_date->format('M d, Y') }}
+                    </div>
+                </div>
             </div>
             <div class="signature-cell">
-                <div class="signature-line"></div>
-                <div class="signature-label">Election Commissioner</div>
-                <div class="signature-name">_________________</div>
-                <div class="signature-title">Student Government</div>
+                <div
+                    style="border: 1px solid #E5E7EB; border-radius: 8px; padding: 15px; margin: 0 10px; background-color: #FEFEFE;">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Election Commissioner</div>
+                    <div class="signature-name">_________________________</div>
+                    <div class="signature-title">Student Government Officer</div>
+                    <div style="font-size: 8px; color: #9CA3AF; margin-top: 5px;">
+                        Date: _______________
+                    </div>
+                </div>
             </div>
             <div class="signature-cell">
-                <div class="signature-line"></div>
-                <div class="signature-label">Approved by</div>
-                <div class="signature-name">_________________</div>
-                <div class="signature-title">Principal</div>
+                <div
+                    style="border: 1px solid #E5E7EB; border-radius: 8px; padding: 15px; margin: 0 10px; background-color: #FEFEFE;">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Approved by</div>
+                    <div class="signature-name">_________________________</div>
+                    <div class="signature-title">School Administrator</div>
+                    <div style="font-size: 8px; color: #9CA3AF; margin-top: 5px;">
+                        Date: _______________
+                    </div>
+                </div>
             </div>
+        </div>
+
+        <div
+            style="margin-top: 20px; text-align: center; padding: 10px; background-color: #FEF3C7; border-radius: 8px; border: 1px solid #F59E0B;">
+            <p style="font-size: 9px; color: #92400E; margin: 0; font-weight: bold;">
+                ⚠️ IMPORTANT: This document requires official signatures before it becomes legally binding.
+            </p>
+            <p style="font-size: 8px; color: #B45309; margin: 5px 0 0 0;">
+                All signatures must be authenticated and witnessed according to school election policies.
+            </p>
         </div>
     </div>
 

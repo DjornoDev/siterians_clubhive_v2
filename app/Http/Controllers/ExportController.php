@@ -180,7 +180,17 @@ class ExportController extends Controller
         // Only teachers with club access can export voting results
 
         $format = $request->get('format', 'csv');
-        $elections = Election::where('club_id', $club->club_id)->get();
+        $electionId = $request->get('election_id');
+
+        // If specific election ID is provided, get only that election
+        if ($electionId) {
+            $elections = Election::where('club_id', $club->club_id)
+                ->where('election_id', $electionId)
+                ->get();
+        } else {
+            // Get all elections for the club
+            $elections = Election::where('club_id', $club->club_id)->get();
+        }
 
         switch ($format) {
             case 'csv':
@@ -189,6 +199,7 @@ class ExportController extends Controller
                 return $this->exportVotingResultsJson($elections, $club);
             case 'pdf':
                 return $this->exportVotingResultsPdf($elections, $club);
+            case 'excel':
             case 'table':
                 $votingExport = new VotingResultsExport($club);
                 return (new FastExcel($votingExport->collection()))

@@ -161,6 +161,14 @@ Route::middleware(['auth'])->group(function () {
         ->name('admin.users.bulk.store')
         ->middleware('role:ADMIN');
 
+    Route::get('/admin/users/template', [UserController::class, 'downloadTemplate'])
+        ->name('admin.users.template.download')
+        ->middleware('role:ADMIN');
+
+    Route::get('/admin/users/class-section-reference', [UserController::class, 'getClassSectionReference'])
+        ->name('admin.users.class-section-reference')
+        ->middleware('role:ADMIN');
+
     // AJAX Route for sections
     Route::get('/get-sections/{classId}', function ($classId) {
         $sections = App\Models\Section::where('class_id', $classId)->get();
@@ -277,7 +285,7 @@ Route::middleware(['auth'])->group(function () {
         Route::prefix('clubs/{club}/export')->group(function () {
             Route::get('/membership', [App\Http\Controllers\ExportController::class, 'exportClubMembership'])->name('clubs.export.membership');
             Route::get('/events', [App\Http\Controllers\ExportController::class, 'exportClubEvents'])->name('clubs.export.events');
-            Route::get('/voting-results', [App\Http\Controllers\ExportController::class, 'exportVotingResults'])->name('clubs.export.voting-results');
+            Route::match(['GET', 'POST'], '/voting-results', [App\Http\Controllers\ExportController::class, 'exportVotingResults'])->name('clubs.export.voting-results');
         });
     });
 

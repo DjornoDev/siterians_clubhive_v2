@@ -32,18 +32,54 @@
                 </div>
             </div>
 
-            <!-- Export Button -->
-            <div class="mt-4 flex justify-end">
-                <button id="export-csv-btn"
-                    class="flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled>
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                    </svg>
-                    Export Results to CSV
-                </button>
+            <!-- Export Buttons -->
+            <div class="mt-4 flex justify-end space-x-3">
+                <div class="relative inline-block text-left">
+                    <button id="export-dropdown-btn" type="button"
+                        class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled>
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        Export Results
+                        <svg class="w-4 h-4 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+
+                    <div id="export-dropdown"
+                        class="hidden origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                        <div class="py-1" role="menu">
+                            <a href="#" data-export-format="csv"
+                                class="export-option flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                role="menuitem">
+                                <svg class="w-4 h-4 mr-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+                                </svg>
+                                Export as CSV
+                            </a>
+                            <a href="#" data-export-format="excel"
+                                class="export-option flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                role="menuitem">
+                                <svg class="w-4 h-4 mr-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+                                </svg>
+                                Export as Excel
+                            </a>
+                            <a href="#" data-export-format="pdf"
+                                class="export-option flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                role="menuitem">
+                                <svg class="w-4 h-4 mr-3 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+                                </svg>
+                                Export as PDF Report
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -280,6 +316,73 @@
 
 @push('scripts')
     <script>
+        // Popup Notification System
+        function showNotification(message, type = 'error') {
+            // Remove existing notifications
+            const existingNotifications = document.querySelectorAll('.notification-popup');
+            existingNotifications.forEach(notification => notification.remove());
+
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className =
+                `notification-popup fixed top-4 right-4 z-50 max-w-sm w-full bg-white rounded-lg shadow-lg border-l-4 transform transition-all duration-300 ease-in-out translate-x-full`;
+
+            if (type === 'success') {
+                notification.className += ' border-green-400';
+            } else if (type === 'warning') {
+                notification.className += ' border-yellow-400';
+            } else {
+                notification.className += ' border-red-400';
+            }
+
+            notification.innerHTML = `
+                <div class="p-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            ${type === 'success' ? 
+                                '<svg class="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' :
+                                type === 'warning' ?
+                                '<svg class="h-6 w-6 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"></path></svg>' :
+                                '<svg class="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
+                            }
+                        </div>
+                        <div class="ml-3 w-0 flex-1">
+                            <p class="text-sm font-medium text-gray-900">
+                                ${type === 'success' ? 'Success' : type === 'warning' ? 'Warning' : 'Error'}
+                            </p>
+                            <p class="mt-1 text-sm text-gray-500">${message}</p>
+                        </div>
+                        <div class="ml-4 flex-shrink-0 flex">
+                            <button onclick="this.closest('.notification-popup').remove()" class="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none">
+                                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.classList.add('translate-x-full');
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }
+            }, 5000);
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const electionSelector = document.getElementById('election-selector');
             const dashboardContent = document.getElementById('dashboard-content');
@@ -301,6 +404,25 @@
                     noDataMessage.classList.remove('hidden');
                     clearInterval(refreshInterval);
                 }
+            });
+
+            // Event listener for export dropdown button
+            const exportDropdownBtn = document.getElementById('export-dropdown-btn');
+            if (exportDropdownBtn) {
+                exportDropdownBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    toggleExportDropdown();
+                });
+            }
+
+            // Event listeners for export options
+            const exportOptions = document.querySelectorAll('.export-option');
+            exportOptions.forEach(option => {
+                option.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const format = this.getAttribute('data-export-format');
+                    exportResults(format);
+                });
             });
 
             async function loadElections() {
@@ -372,11 +494,13 @@
 
                     if (data.success) {
                         currentElection = data.election;
-                        displayDashboard(
-                            data); // Set up an interval to refresh data every 10 seconds for real-time updates
+                        currentElectionData = data; // Store for export functions
+                        displayDashboard(data);
+
+                        // Set up an interval to refresh data every 30 seconds for real-time updates
                         refreshInterval = setInterval(() => {
                             loadElectionData(electionId);
-                        }, 30000); //refresh every 30 seconds
+                        }, 30000);
                     } else {
                         noDataMessage.classList.remove('hidden');
                         noDataMessage.querySelector('p').textContent = data.message ||
@@ -422,9 +546,10 @@
                 displayRecentActivity(recentActivity);
 
                 // Enable export button when data is available
-                const exportButton = document.getElementById('export-csv-btn');
-                exportButton.disabled = false;
-                exportButton.onclick = () => exportResultsToCsv(election, results, votes, eligibleVoters);
+                const exportButton = document.getElementById('export-dropdown-btn');
+                if (exportButton) {
+                    exportButton.disabled = false;
+                }
 
                 dashboardContent.classList.remove('hidden');
             }
@@ -496,25 +621,25 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         ${winners.map(winner => `
-                                            <div class="bg-white rounded-lg border border-yellow-200 p-4 shadow-sm">
-                                                <div class="flex items-start justify-between">
-                                                    <div class="flex-1">
-                                                        <div class="flex items-center mb-2">
-                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mr-2">
-                                                                WINNER
-                                                            </span>
-                                                        </div>
-                                                        <h3 class="font-semibold text-gray-900 text-lg">${winner.name}</h3>
-                                                        <p class="text-sm text-gray-600 mb-1">${winner.position}</p>
-                                                        <p class="text-xs text-gray-500">${winner.partylist}</p>
-                                                    </div>
-                                                    <div class="text-right">
-                                                        <div class="text-2xl font-bold text-yellow-600">${winner.votes}</div>
-                                                        <div class="text-xs text-gray-500">votes</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        `).join('')}
+                                                                <div class="bg-white rounded-lg border border-yellow-200 p-4 shadow-sm">
+                                                                    <div class="flex items-start justify-between">
+                                                                        <div class="flex-1">
+                                                                            <div class="flex items-center mb-2">
+                                                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mr-2">
+                                                                                    WINNER
+                                                                                </span>
+                                                                            </div>
+                                                                            <h3 class="font-semibold text-gray-900 text-lg">${winner.name}</h3>
+                                                                            <p class="text-sm text-gray-600 mb-1">${winner.position}</p>
+                                                                            <p class="text-xs text-gray-500">${winner.partylist}</p>
+                                                                        </div>
+                                                                        <div class="text-right">
+                                                                            <div class="text-2xl font-bold text-yellow-600">${winner.votes}</div>
+                                                                            <div class="text-xs text-gray-500">votes</div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            `).join('')}
                     </div>
                 `;
 
@@ -1006,7 +1131,9 @@
             // Function to export election results to CSV
             function exportResultsToCsv(election, results, votes, eligibleVoters) {
                 // Show loading state on button
-                const exportBtn = document.getElementById('export-csv-btn');
+                const exportBtn = document.getElementById('export-dropdown-btn');
+                if (!exportBtn) return;
+
                 const originalBtnText = exportBtn.innerHTML;
                 exportBtn.disabled = true;
                 exportBtn.innerHTML = `
@@ -1297,6 +1424,155 @@
                     exportBtn.innerHTML = originalBtnText;
                 }
             }
+
+            // Function to toggle export dropdown visibility
+            function toggleExportDropdown() {
+                const dropdown = document.getElementById('export-dropdown');
+                if (dropdown) {
+                    dropdown.classList.toggle('hidden');
+                }
+            }
+
+            // Function to handle export based on format selection
+            function exportResults(format) {
+                // Hide the dropdown first
+                const dropdown = document.getElementById('export-dropdown');
+                if (dropdown) {
+                    dropdown.classList.add('hidden');
+                }
+
+                // Get current election data
+                const electionSelector = document.getElementById('election-selector');
+                if (!electionSelector) {
+                    showNotification('Election selector not found', 'error');
+                    return;
+                }
+
+                const electionId = electionSelector.value;
+
+                if (!electionId) {
+                    showNotification('Please select an election first', 'warning');
+                    return;
+                }
+
+                // Get current election data from the stored variables
+                if (!currentElectionData) {
+                    showNotification('No election data available. Please select an election first.', 'warning');
+                    return;
+                }
+
+                const {
+                    election,
+                    results,
+                    votes,
+                    eligibleVoters
+                } = currentElectionData;
+
+                switch (format) {
+                    case 'csv':
+                        showNotification('Generating CSV export...', 'success');
+                        exportResultsToCsv(election, results, votes, eligibleVoters);
+                        break;
+                    case 'excel':
+                        showNotification('Generating Excel export...', 'success');
+                        exportResultsToExcel(election, results, votes, eligibleVoters);
+                        break;
+                    case 'pdf':
+                        showNotification('Generating PDF export...', 'success');
+                        exportResultsToPdf(election, results, votes, eligibleVoters);
+                        break;
+                    default:
+                        showNotification('Unknown export format: ' + format, 'error');
+                        console.error('Unknown export format:', format);
+                }
+            }
+
+            // Function to export results to Excel format
+            function exportResultsToExcel(election, results, votes, eligibleVoters) {
+                // Redirect to the export controller with Excel format
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ route('clubs.export.voting-results', $club) }}';
+                form.style.display = 'none';
+
+                // Add CSRF token
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+
+                // Add election ID
+                const electionInput = document.createElement('input');
+                electionInput.type = 'hidden';
+                electionInput.name = 'election_id';
+                electionInput.value = election.election_id;
+                form.appendChild(electionInput);
+
+                // Add format
+                const formatInput = document.createElement('input');
+                formatInput.type = 'hidden';
+                formatInput.name = 'format';
+                formatInput.value = 'excel';
+                form.appendChild(formatInput);
+
+                document.body.appendChild(form);
+                form.submit();
+                document.body.removeChild(form);
+            }
+
+            // Function to export results to PDF format
+            function exportResultsToPdf(election, results, votes, eligibleVoters) {
+                // Redirect to the export controller with PDF format
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ route('clubs.export.voting-results', $club) }}';
+                form.style.display = 'none';
+
+                // Add CSRF token
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+
+                // Add election ID
+                const electionInput = document.createElement('input');
+                electionInput.type = 'hidden';
+                electionInput.name = 'election_id';
+                electionInput.value = election.election_id;
+                form.appendChild(electionInput);
+
+                // Add format
+                const formatInput = document.createElement('input');
+                formatInput.type = 'hidden';
+                formatInput.name = 'format';
+                formatInput.value = 'pdf';
+                form.appendChild(formatInput);
+
+                document.body.appendChild(form);
+                form.submit();
+                document.body.removeChild(form);
+            }
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                const exportBtn = document.getElementById('export-dropdown-btn');
+                const dropdown = document.getElementById('export-dropdown');
+
+                if (exportBtn && dropdown && !exportBtn.contains(event.target) && !dropdown.contains(event
+                        .target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+
+            // Store current election data globally for export functions
+            let currentElectionData = null;
+
+            // Store reference to original loadElectionData function
+            const originalLoadElectionData = loadElectionData;
         });
     </script>
 @endpush

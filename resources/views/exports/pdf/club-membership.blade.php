@@ -226,7 +226,7 @@
             </div>
             <div class="stats-cell">
                 <div class="stats-label">Active Members</div>
-                <div class="stats-value">{{ $memberships->where('membership_status', 'ACTIVE')->count() }}</div>
+                <div class="stats-value">{{ $memberships->where('club_role', 'MEMBER')->count() }}</div>
             </div>
             <div class="stats-cell">
                 <div class="stats-label">Male Members</div>

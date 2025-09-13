@@ -214,11 +214,20 @@
         function toggleOptionsSection() {
             const questionType = document.getElementById('question_type').value;
             const optionsSection = document.getElementById('optionsSection');
+            const optionsContainer = document.getElementById('optionsContainer');
 
             if (questionType === 'select' || questionType === 'radio') {
                 optionsSection.classList.remove('hidden');
+                // Re-enable all option inputs
+                optionsContainer.querySelectorAll('input[name="options[]"]').forEach(input => {
+                    input.disabled = false;
+                });
             } else {
                 optionsSection.classList.add('hidden');
+                // Disable all option inputs to prevent them from being submitted
+                optionsContainer.querySelectorAll('input[name="options[]"]').forEach(input => {
+                    input.disabled = true;
+                });
             }
         }
 
@@ -253,6 +262,19 @@
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             toggleOptionsSection();
+        });
+
+        // Handle form submission to clean up disabled options
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const questionType = document.getElementById('question_type').value;
+
+            if (questionType === 'text' || questionType === 'textarea') {
+                // Remove all options fields from the form before submission
+                const optionsInputs = document.querySelectorAll('input[name="options[]"]');
+                optionsInputs.forEach(input => {
+                    input.remove();
+                });
+            }
         });
     </script>
 @endsection
