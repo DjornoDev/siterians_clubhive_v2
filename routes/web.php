@@ -209,7 +209,7 @@ Route::middleware(['auth'])->group(function () {
                 ->name('clubs.check-event-changes');
 
             Route::middleware('can:view,club')->group(function () {
-                Route::get('/events', [ClubController::class, 'events'])->name('clubs.events.index');
+                Route::get('/events', [EventController::class, 'index'])->name('clubs.events.index');
                 Route::get('/people', [ClubController::class, 'people'])->name('clubs.people.index');
                 Route::get('/about', [ClubController::class, 'about'])->name('clubs.about.index');
             });

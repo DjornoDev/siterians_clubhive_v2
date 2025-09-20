@@ -101,9 +101,10 @@
             </div>
         </div>
 
-        <!-- Filter and Search Bar -->
-        <div class="bg-white rounded-xl shadow-sm p-4 mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div class="relative w-full sm:w-auto">
+        <!-- Search Bar -->
+        <div class="bg-white rounded-xl shadow-sm p-4 mb-6">
+            <div class="relative max-w-md mx-auto">
+                <!-- Search Icon -->
                 <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                     <svg class="w-4 h-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
@@ -111,24 +112,21 @@
                             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                 </div>
+
+                <!-- Search Input -->
                 <input type="text" id="club-search" name="club_search_field"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5"
-                    placeholder="Search clubs..." autocomplete="off" readonly onfocus="this.removeAttribute('readonly');"
-                    onblur="this.setAttribute('readonly', 'readonly');">
-            </div>
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 pr-20 p-2.5"
+                    placeholder="Search clubs or advisers..." autocomplete="off" readonly
+                    onfocus="this.removeAttribute('readonly');" onblur="this.setAttribute('readonly', 'readonly');">
 
-            <div class="flex gap-2 w-full sm:w-auto">
-                <select id="adviser-filter"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                    <option value="">All Advisers</option>
-                    @foreach ($advisers as $adviser)
-                        <option value="{{ $adviser->name }}">{{ $adviser->name }}</option>
-                    @endforeach
-                </select>
-
-                <button id="clear-filters"
-                    class="bg-gray-100 text-gray-700 px-4 py-2.5 rounded-lg hover:bg-gray-200 transition-colors">
-                    Clear
+                <!-- Clear Button (inside input) -->
+                <button id="clear-search" type="button"
+                    class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 transition-colors"
+                    style="display: none;">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
                 </button>
             </div>
         </div>
@@ -168,8 +166,7 @@
                                 class="w-20 h-20 rounded-full border-3 border-white shadow-md bg-white flex items-center justify-center">
                                 @if ($club->club_logo && Storage::disk('public')->exists($club->club_logo))
                                     <img src="{{ asset(Storage::url($club->club_logo)) }}"
-                                        alt="{{ $club->club_name }} Logo"
-                                        class="w-full h-full rounded-full object-cover">
+                                        alt="{{ $club->club_name }} Logo" class="w-full h-full rounded-full object-cover">
                                 @else
                                     <div class="w-full h-full bg-gray-100 rounded-full flex items-center justify-center">
                                         <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor"
@@ -267,7 +264,7 @@
             });
         });
 
-        // Club Search & Filter Implementation
+        // Club Search Implementation
         document.addEventListener('DOMContentLoaded', function() {
             // Get just the club cards grid, not the stats summary grid
             const clubCardsContainer = document.querySelector(
@@ -275,30 +272,36 @@
             // Get all club cards - direct children divs of the container (excluding any with col-span-full)
             const clubCards = clubCardsContainer.querySelectorAll(':scope > div:not(.col-span-full)');
             const searchInput = document.getElementById('club-search');
-            const adviserFilter = document.getElementById('adviser-filter');
-            const clearFiltersBtn = document.getElementById('clear-filters');
+            const clearSearchBtn = document.getElementById('clear-search');
             const gridContainer = clubCardsContainer; // Create "no results" element that we'll show/hide as needed
             const noResultsEl = document.createElement('div');
             noResultsEl.className = 'col-span-full text-center py-10';
             noResultsEl.style.display = 'none';
-            noResultsEl.innerHTML = '<div class="text-gray-500 text-lg">No clubs match your search criteria.</div>';
+            noResultsEl.innerHTML = '<div class="text-gray-500 text-lg">No clubs found matching your search.</div>';
             gridContainer.appendChild(noResultsEl);
 
             // Search functionality
-            searchInput.addEventListener('input', filterClubs);
-
-            // Adviser filter functionality
-            adviserFilter.addEventListener('change', filterClubs); // Clear filters button
-            clearFiltersBtn.addEventListener('click', function() {
-                searchInput.value = '';
-                adviserFilter.selectedIndex = 0;
+            searchInput.addEventListener('input', function() {
                 filterClubs();
+                // Show/hide clear button based on input content
+                if (this.value.trim().length > 0) {
+                    clearSearchBtn.style.display = 'flex';
+                } else {
+                    clearSearchBtn.style.display = 'none';
+                }
             });
 
-            // Function to filter clubs based on search and filter criteria
+            // Clear search button
+            clearSearchBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                this.style.display = 'none';
+                filterClubs();
+                searchInput.focus();
+            });
+
+            // Function to filter clubs based on search criteria
             function filterClubs() {
                 const searchTerm = searchInput.value.toLowerCase().trim();
-                const selectedAdviser = adviserFilter.value.toLowerCase();
                 let visibleCount = 0;
 
                 clubCards.forEach(card => {
@@ -318,15 +321,14 @@
                         );
                         const clubAdviser = adviserLine ? adviserLine.textContent.toLowerCase() : '';
 
-                        // Check if club matches search term
+                        // Check if club matches search term (now includes adviser name)
                         const matchesSearch = searchTerm === '' ||
                             clubName.includes(searchTerm) ||
-                            clubDescription.includes(searchTerm);
+                            clubDescription.includes(searchTerm) ||
+                            clubAdviser.includes(searchTerm);
 
-                        // Check if club matches adviser filter
-                        const matchesAdviser = selectedAdviser === '' ||
-                            clubAdviser.includes(selectedAdviser); // Show or hide based on filters
-                        if (matchesSearch && matchesAdviser) {
+                        // Show or hide based on search
+                        if (matchesSearch) {
                             card.style.display = ''; // Reset to default display
                             visibleCount++;
                         } else {
@@ -352,14 +354,6 @@
             });
 
             searchInput.addEventListener('blur', function() {
-                this.classList.remove('ring-2', 'ring-blue-300');
-            });
-
-            adviserFilter.addEventListener('focus', function() {
-                this.classList.add('ring-2', 'ring-blue-300');
-            });
-
-            adviserFilter.addEventListener('blur', function() {
                 this.classList.remove('ring-2', 'ring-blue-300');
             });
         });

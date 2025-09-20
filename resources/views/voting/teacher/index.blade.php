@@ -1005,7 +1005,7 @@
 
     <script>
         // Election status
-        const isPublished = @json($election->status === 'published');
+        const isPublished = @json($election ? $election->status === 'published' : false);
 
         // Popup Notification System
         function showNotification(message, type = 'error') {
@@ -1188,25 +1188,25 @@
                             </div>
                         </div>
                         ${studentInfo.students_with_other_positions.length > 0 ? `
-                                                    <div class="mt-3">
-                                                        <span class="font-medium text-orange-600">Members with positions in other clubs (${studentInfo.students_with_other_positions.length}):</span>
-                                                        <ul class="mt-1 text-xs text-gray-600 list-disc list-inside">
-                                                            ${studentInfo.students_with_other_positions.map(student => 
-                                                                `<li>${student.name} - ${student.club_memberships.map(m => m.club_position + ' in ' + m.club.club_name).join(', ')}</li>`
-                                                            ).join('')}
-                                                        </ul>
-                                                    </div>
-                                                ` : ''}
+                                                        <div class="mt-3">
+                                                            <span class="font-medium text-orange-600">Members with positions in other clubs (${studentInfo.students_with_other_positions.length}):</span>
+                                                            <ul class="mt-1 text-xs text-gray-600 list-disc list-inside">
+                                                                ${studentInfo.students_with_other_positions.map(student => 
+                                                                    `<li>${student.name} - ${student.club_memberships.map(m => m.club_position + ' in ' + m.club.club_name).join(', ')}</li>`
+                                                                ).join('')}
+                                                            </ul>
+                                                        </div>
+                                                    ` : ''}
                         ${studentInfo.already_candidates.length > 0 ? `
-                                                    <div class="mt-3">
-                                                        <span class="font-medium text-blue-600">Already added as candidates (${studentInfo.already_candidates.length}):</span>
-                                                        <ul class="mt-1 text-xs text-gray-600 list-disc list-inside">
-                                                            ${studentInfo.already_candidates.map(student => 
-                                                                `<li>${student.name} - ${student.candidates.map(c => c.position).join(', ')}</li>`
-                                                            ).join('')}
-                                                        </ul>
-                                                    </div>
-                                                ` : ''}
+                                                        <div class="mt-3">
+                                                            <span class="font-medium text-blue-600">Already added as candidates (${studentInfo.already_candidates.length}):</span>
+                                                            <ul class="mt-1 text-xs text-gray-600 list-disc list-inside">
+                                                                ${studentInfo.already_candidates.map(student => 
+                                                                    `<li>${student.name} - ${student.candidates.map(c => c.position).join(', ')}</li>`
+                                                                ).join('')}
+                                                            </ul>
+                                                        </div>
+                                                    ` : ''}
                     </div>
                 `;
 

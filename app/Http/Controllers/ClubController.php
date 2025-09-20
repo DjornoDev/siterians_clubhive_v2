@@ -272,7 +272,7 @@ class ClubController extends Controller
 
         // Explicitly cast to boolean for JSON storage
         $club->members()->updateExistingPivot($user->user_id, [
-            'club_position' => $validated['club_position'],
+            'club_position' => $validated['club_position'] ?? null,
             'club_accessibility' => [
                 'manage_posts' => (bool) ($validated['manage_posts'] ?? false),
                 'manage_events' => (bool) ($validated['manage_events'] ?? false)

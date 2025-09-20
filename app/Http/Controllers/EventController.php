@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 
 class EventController extends Controller
 {
@@ -21,19 +23,17 @@ class EventController extends Controller
 
     public function index(Club $club, Request $request)
     {
-        Log::info('EventController index called', [
-            'club_id' => $club->club_id ?? null,
-            'user_id' => Auth::id()
-        ]);
 
         // Initialize default values first to ensure they're always available
         $todayCount = 0;
         $upcomingCount = 0;
         $pastCount = 0;
-        $todayEvents = collect()->paginate(9);
-        $upcomingEvents = collect()->paginate(9);
-        $pastEvents = collect()->paginate(9);
-        $events = collect()->paginate(9);
+        $pendingCount = 0;
+        $todayEvents = $this->emptyPaginator();
+        $upcomingEvents = $this->emptyPaginator();
+        $pastEvents = $this->emptyPaginator();
+        $pendingEvents = $this->emptyPaginator();
+        $events = $this->emptyPaginator();
         $eventTypes = collect();
 
         try {
@@ -58,29 +58,24 @@ class EventController extends Controller
             $today = now()->startOfDay();
             $endOfDay = now()->endOfDay();
 
-            Log::info('Count variables initialized', [
-                'todayCount' => $todayCount,
-                'upcomingCount' => $upcomingCount,
-                'pastCount' => $pastCount
-            ]);
-
             // Get total counts for tab badges (without search/filters applied)
             try {
                 $todayCount = (clone $baseQuery)->whereBetween('event_date', [$today, $endOfDay])->count();
                 $upcomingCount = (clone $baseQuery)->where('event_date', '>', $endOfDay)->count();
                 $pastCount = (clone $baseQuery)->where('event_date', '<', $today)->count();
 
-                Log::info('Counts calculated', [
-                    'todayCount' => $todayCount,
-                    'upcomingCount' => $upcomingCount,
-                    'pastCount' => $pastCount
-                ]);
+                // Get pending events count (only for club members and advisers)
+                $pendingCount = 0;
+                if ($isClubMember || $isClubAdviser) {
+                    $pendingCount = $club->events()->where('approval_status', 'pending')->count();
+                }
             } catch (\Exception $e) {
                 // Log error and use defaults
                 Log::error('Error calculating event counts: ' . $e->getMessage());
                 $todayCount = 0;
                 $upcomingCount = 0;
                 $pastCount = 0;
+                $pendingCount = 0;
             }
 
             // Create separate queries for each tab
@@ -93,8 +88,18 @@ class EventController extends Controller
             $pastQuery = clone $baseQuery;
             $pastQuery->where('event_date', '<', $today)->with('documents');
 
+            // Create pending events query (only for club members and advisers)
+            $pendingQuery = null;
+            if ($isClubMember || $isClubAdviser) {
+                $pendingQuery = $club->events()->where('approval_status', 'pending')->with('documents');
+            }
+
             // Apply search and filters to all queries
             $queries = [$todayQuery, $upcomingQuery, $pastQuery];
+            if ($pendingQuery) {
+                $queries[] = $pendingQuery;
+            }
+
             foreach ($queries as $query) {
                 if ($search) {
                     $query->where(function ($q) use ($search) {
@@ -104,7 +109,8 @@ class EventController extends Controller
                     });
                 }
 
-                if ($status) {
+                // Don't apply status filter to pending query since it's already filtered by status
+                if ($status && $query !== $pendingQuery) {
                     $query->where('approval_status', $status);
                 }
             }
@@ -114,6 +120,13 @@ class EventController extends Controller
             $upcomingEvents = $upcomingQuery->orderBy('event_date', 'asc')->paginate(9, ['*'], 'upcoming_page');
             $pastEvents = $pastQuery->orderBy('event_date', 'desc')->paginate(9, ['*'], 'past_page');
 
+            // Get pending events (only for club members and advisers)
+            if ($pendingQuery) {
+                $pendingEvents = $pendingQuery->orderBy('created_at', 'desc')->paginate(9, ['*'], 'pending_page');
+            } else {
+                $pendingEvents = $this->emptyPaginator();
+            }
+
             // Get the main events collection based on current tab
             switch ($tab) {
                 case 'upcoming':
@@ -122,6 +135,9 @@ class EventController extends Controller
                 case 'past':
                     $events = $pastEvents;
                     break;
+                case 'pending':
+                    $events = $pendingEvents ?? $this->emptyPaginator();
+                    break;
                 default:
                     $events = $todayEvents;
                     break;
@@ -129,13 +145,6 @@ class EventController extends Controller
 
             // Get event types for filter - empty for now since event_type column doesn't exist
             $eventTypes = collect();
-
-            // Final log before returning view
-            Log::info('About to return view with variables', [
-                'todayCount' => $todayCount,
-                'upcomingCount' => $upcomingCount,
-                'pastCount' => $pastCount
-            ]);
         } catch (\Exception $e) {
             Log::error('EventController index error: ' . $e->getMessage(), [
                 'club_id' => $club->club_id ?? null,
@@ -150,6 +159,8 @@ class EventController extends Controller
             $status = null;
             $isClubMember = false;
             $isClubAdviser = false;
+            $pendingEvents = $this->emptyPaginator();
+            $pendingCount = 0;
         }
 
         return view('clubs.events.index', compact(
@@ -164,9 +175,11 @@ class EventController extends Controller
             'todayEvents',
             'upcomingEvents',
             'pastEvents',
+            'pendingEvents',
             'todayCount',
             'upcomingCount',
             'pastCount',
+            'pendingCount',
             'eventTypes'
         ));
     }
@@ -678,6 +691,20 @@ class EventController extends Controller
         return response()->download(
             storage_path('app/public/' . $document->document_path),
             $document->original_name
+        );
+    }
+
+    /**
+     * Create an empty paginator for default values
+     */
+    private function emptyPaginator()
+    {
+        return new LengthAwarePaginator(
+            collect([]),
+            0,
+            9,
+            1,
+            ['path' => request()->url()]
         );
     }
 }

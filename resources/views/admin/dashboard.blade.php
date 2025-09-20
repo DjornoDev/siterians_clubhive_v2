@@ -206,28 +206,8 @@
 
         <!-- Quick Analytics Summary -->
         <div class="bg-white rounded-lg shadow-sm p-5 mb-6 border border-gray-200">
-            <!-- Header with responsive layout -->
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+            <div class="mb-4">
                 <h3 class="text-lg font-semibold text-gray-800">Quick Analytics</h3>
-                <!-- Time Filter -->
-                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                    <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
-                        <div class="relative">
-                            <select id="chartTimeFilter" onchange="updateCharts()"
-                                class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 text-sm font-medium text-gray-700 shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 w-full sm:w-auto min-w-[140px] cursor-pointer">
-                                <option value="6">Last 6 months</option>
-                                <option value="8" selected>Last 8 months</option>
-                                <option value="12">Last 12 months</option>
-                            </select>
-                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div class="text-center p-4 bg-gray-50 rounded-lg">
@@ -309,8 +289,17 @@
                 class="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg transition-shadow duration-300 lg:col-span-2 xl:col-span-1">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-gray-800">Monthly Active Users</h3>
-                    <div class="bg-green-50 p-2 rounded-full">
-                        <i class="fas fa-chart-line text-green-600"></i>
+                    <div class="flex items-center gap-3">
+                        <!-- Time Filter -->
+                        <select id="chartTimeFilter" onchange="updateCharts()"
+                            class="bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 min-w-[120px] cursor-pointer">
+                            <option value="6">Last 6 months</option>
+                            <option value="8" selected>Last 8 months</option>
+                            <option value="12">Last 12 months</option>
+                        </select>
+                        <div class="bg-green-50 p-2 rounded-full">
+                            <i class="fas fa-chart-line text-green-600"></i>
+                        </div>
                     </div>
                 </div>
                 <div class="relative h-48">

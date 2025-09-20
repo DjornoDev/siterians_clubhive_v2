@@ -136,6 +136,20 @@
                     </span>
                 </button>
 
+                @if ($isClubMember || $isClubAdviser)
+                    <button type="button" @click="activeTab = 'pending'"
+                        :class="activeTab === 'pending' ? 'border-orange-500 text-orange-600' :
+                            'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                        class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors">
+                        Pending Events
+                        <span
+                            :class="activeTab === 'pending' ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-900'"
+                            class="ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium">
+                            {{ $pendingCount ?? 0 }}
+                        </span>
+                    </button>
+                @endif
+
                 <button type="button" @click="activeTab = 'upcoming'"
                     :class="activeTab === 'upcoming' ? 'border-blue-500 text-blue-600' :
                         'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
@@ -222,6 +236,44 @@
                     </div>
                 @endif
             </div>
+
+            @if ($isClubMember || $isClubAdviser)
+                {{-- Pending Events --}}
+                <div x-show="activeTab === 'pending'" x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 transform translate-y-4"
+                    x-transition:enter-end="opacity-100 transform translate-y-0">
+
+                    @if (isset($pendingEvents) && $pendingEvents->count() > 0)
+                        <div class="space-y-4" id="events-container-pending">
+                            @foreach ($pendingEvents as $event)
+                                <div class="event-card bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-orange-200"
+                                    data-name="{{ strtolower($event->event_name) }}"
+                                    data-visibility="{{ $event->event_visibility }}"
+                                    data-status="{{ $event->approval_status }}">
+                                    @include('clubs.events.partials.event-card-content', [
+                                        'event' => $event,
+                                    ])
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <div class="mt-6">
+                            {{ isset($pendingEvents) ? $pendingEvents->appends(request()->query())->links() : '' }}
+                        </div>
+                    @else
+                        <div class="text-center py-12 bg-orange-50 rounded-lg border border-orange-200">
+                            <svg class="mx-auto h-12 w-12 text-orange-400" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">No pending events</h3>
+                            <p class="mt-1 text-sm text-gray-500">All events are either approved or there are no events
+                                awaiting approval.</p>
+                        </div>
+                    @endif
+                </div>
+            @endif
 
             {{-- Upcoming Events --}}
             <div x-show="activeTab === 'upcoming'" x-transition:enter="transition ease-out duration-300"
@@ -310,7 +362,7 @@
                 const statusFilter = document.getElementById('filter-status').value;
 
                 // Get all event containers
-                const containers = ['today', 'upcoming', 'past'];
+                const containers = ['today', 'pending', 'upcoming', 'past'];
 
                 containers.forEach(container => {
                     const events = document.querySelectorAll(`#events-container-${container} .event-card`);

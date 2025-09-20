@@ -634,12 +634,13 @@
                                             method="POST" class="inline">
                                             @csrf
                                             @method('PATCH')
-                                            <select name="status" onchange="this.form.submit()"
-                                                class="text-xs px-2 py-1 rounded-full border-0 focus:ring-2 focus:ring-blue-500
-                                                {{ $member->status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                                <option value="ACTIVE"
+                                            <select name="status" onchange="updateStatusColor(this); this.form.submit();"
+                                                oninput="updateStatusColor(this);"
+                                                class="status-select text-xs px-2 py-1 rounded-full border-0 focus:ring-2 focus:ring-blue-500"
+                                                data-current-status="{{ $member->status }}">
+                                                <option value="ACTIVE" class="bg-green-100 text-green-800"
                                                     {{ $member->status === 'ACTIVE' ? 'selected' : '' }}>Active</option>
-                                                <option value="INACTIVE"
+                                                <option value="INACTIVE" class="bg-red-100 text-red-800"
                                                     {{ $member->status === 'INACTIVE' ? 'selected' : '' }}>Inactive
                                                 </option>
                                             </select>
@@ -865,6 +866,87 @@
 
 @push('scripts')
     <script>
+        // Function to update status select colors dynamically
+        function updateStatusColor(selectElement) {
+            const selectedValue = selectElement.value;
+
+            // Remove existing color classes
+            selectElement.classList.remove('bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+
+            // Add appropriate color classes based on selected value
+            if (selectedValue === 'ACTIVE') {
+                selectElement.classList.add('bg-green-100', 'text-green-800');
+                selectElement.style.backgroundColor = '#dcfce7'; // green-100
+                selectElement.style.color = '#166534'; // green-800
+            } else if (selectedValue === 'INACTIVE') {
+                selectElement.classList.add('bg-red-100', 'text-red-800');
+                selectElement.style.backgroundColor = '#fecaca'; // red-100
+                selectElement.style.color = '#991b1b'; // red-800
+            }
+        }
+
+        // Initialize colors for all status selects on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update colors for all status select elements
+            document.querySelectorAll('.status-select').forEach(function(select) {
+                updateStatusColor(select);
+            });
+        });
+
+        // Class and Section filter functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const classSelect = document.getElementById('class');
+            const sectionSelect = document.getElementById('section');
+
+            // Get all sections and classes data from backend
+            const allSections = @json(\App\Models\Section::with('schoolClass')->get()->toArray());
+            const currentSection = "{{ request('section') }}";
+
+            // Handle class filter change
+            classSelect.addEventListener('change', function() {
+                const selectedClassId = this.value;
+                updateSectionOptions(selectedClassId);
+            });
+
+            function updateSectionOptions(classId) {
+                // Store current selection
+                const currentSelectedSection = sectionSelect.value;
+
+                // Clear current section options
+                sectionSelect.innerHTML = '<option value="">All Sections</option>';
+
+                // Filter sections based on selected class
+                let filteredSections = allSections;
+                if (classId) {
+                    filteredSections = allSections.filter(section =>
+                        section.class_id == classId
+                    );
+                }
+
+                // Add filtered sections to dropdown
+                filteredSections.forEach(section => {
+                    const option = document.createElement('option');
+                    option.value = section.section_id;
+                    option.textContent = section.section_name;
+                    // Keep the current selection if it's still valid
+                    if (currentSelectedSection == section.section_id) {
+                        option.selected = true;
+                    }
+                    sectionSelect.appendChild(option);
+                });
+
+                // If the previously selected section is no longer available, clear selection
+                if (currentSelectedSection && !filteredSections.some(s => s.section_id == currentSelectedSection)) {
+                    sectionSelect.value = '';
+                }
+            }
+
+            // Initialize sections on page load if a class is already selected
+            if (classSelect.value) {
+                updateSectionOptions(classSelect.value);
+            }
+        });
+
         @if (auth()->user()->user_id === $club->club_adviser)
             // Bulk delete functionality
             document.addEventListener('DOMContentLoaded', function() {

@@ -1,0 +1,32 @@
+[build]
+builder = "NIXPACKS"
+
+[build.nixpacksConfig]
+providers = ["php", "node"]
+
+[build.nixpacksConfig.php]
+version = "8.2"
+extensions = [
+    "ctype",
+    "curl", 
+    "dom",
+    "fileinfo",
+    "filter",
+    "hash",
+    "mbstring",
+    "openssl",
+    "pcre",
+    "pdo",
+    "pdo_mysql",
+    "session",
+    "tokenizer",
+    "xml",
+    "zip"
+]
+
+[deploy]
+startCommand = "php artisan serve --host=0.0.0.0 --port=$PORT"
+healthcheckPath = "/"
+healthcheckTimeout = 100
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
