@@ -11,15 +11,26 @@
                     <h1 class="text-2xl md:text-3xl font-bold">Club Management</h1>
                     <p class="text-blue-100 mt-1">Create and manage clubs for your students</p>
                 </div>
-                <button onclick="toggleClubModal()"
-                    class="bg-white text-blue-700 px-5 py-2.5 rounded-lg hover:bg-blue-50 transition-all duration-200 font-medium shadow-sm flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1.5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd"
-                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                            clip-rule="evenodd" />
-                    </svg>
-                    Add New Club
-                </button>
+                <div class="flex flex-wrap gap-3">
+                    <button onclick="toggleClubModal()"
+                        class="bg-white text-blue-700 px-5 py-2.5 rounded-lg hover:bg-blue-50 transition-all duration-200 font-medium shadow-sm flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        Add New Club
+                    </button>
+                    <a href="{{ route('admin.export.clubs', request()->query()) }}"
+                        class="bg-green-600 text-white px-5 py-2.5 rounded-lg hover:bg-green-700 transition-all duration-200 font-medium shadow-sm flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        Export Data
+                    </a>
+                </div>
             </div>
         </div>
 

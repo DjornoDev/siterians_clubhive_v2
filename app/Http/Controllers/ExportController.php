@@ -303,11 +303,8 @@ class ExportController extends Controller
                 'Description',
                 'Adviser Name',
                 'Adviser Email',
+                'Category',
                 'Member Count',
-                'Hunting Day',
-                'Requirements',
-                'Visibility',
-                'Status',
                 'Created At',
                 'Updated At'
             ]);
@@ -316,16 +313,13 @@ class ExportController extends Controller
                 fputcsv($file, [
                     $club->club_id,
                     $club->club_name,
-                    $club->club_description,
+                    strip_tags($club->club_description ?? ''),
                     $club->adviser ? $club->adviser->name : 'N/A',
                     $club->adviser ? $club->adviser->email : 'N/A',
-                    $club->members_count,
-                    $club->hunting_day ? 'Yes' : 'No',
-                    $club->club_requirements ?? 'N/A',
-                    $club->club_visibility,
-                    $club->club_status,
-                    $club->created_at,
-                    $club->updated_at
+                    $club->category ?? 'N/A',
+                    $club->members_count ?? 0,
+                    $club->created_at ? $club->created_at->format('Y-m-d H:i:s') : 'N/A',
+                    $club->updated_at ? $club->updated_at->format('Y-m-d H:i:s') : 'N/A'
                 ]);
             }
 
