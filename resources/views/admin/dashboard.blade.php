@@ -215,12 +215,13 @@
                     <div class="text-sm text-gray-600">Total Users</div>
                 </div>
                 <div class="text-center p-4 bg-gray-50 rounded-lg">
-                    <div class="text-2xl font-bold text-green-600 mb-1">{{ $eventStatistics['total'] ?? 0 }}</div>
-                    <div class="text-sm text-gray-600">Total Events</div>
-                </div>
-                <div class="text-center p-4 bg-gray-50 rounded-lg">
-                    <div class="text-2xl font-bold text-purple-600 mb-1">{{ $postStatistics['total'] ?? 0 }}</div>
-                    <div class="text-sm text-gray-600">Total Posts</div>
+                    <div class="text-2xl font-bold text-purple-600 mb-1">
+                        @php
+                            $totalClubs = \DB::table('tbl_clubs')->count();
+                        @endphp
+                        {{ $totalClubs }}
+                    </div>
+                    <div class="text-sm text-gray-600">Total Clubs</div>
                 </div>
                 <div class="text-center p-4 bg-gray-50 rounded-lg">
                     <div class="text-2xl font-bold text-orange-600 mb-1">
@@ -230,6 +231,10 @@
                         {{ $totalMemberships }}
                     </div>
                     <div class="text-sm text-gray-600">Club Memberships</div>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div class="text-2xl font-bold text-green-600 mb-1">{{ $eventStatistics['total'] ?? 0 }}</div>
+                    <div class="text-sm text-gray-600">Total Events</div>
                 </div>
             </div>
         </div>

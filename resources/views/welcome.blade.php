@@ -131,7 +131,7 @@
                     @endif
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="w-full text-left block px-4 py-2 text-sm text-[#4A6CF7]">
+                        <button type="submit" class="w-full text-left block px-4 py-2 text-sm text-[#2B34C9]">
                             <i class="fas fa-sign-out-alt mr-2 text-red-500"></i> Logout
                         </button>
                     </form>
@@ -240,7 +240,7 @@
                         class="bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-xl">
                         <div class="h-40 bg-[#4A6CF7] bg-opacity-10 overflow-hidden">
                             @if ($club->club_banner)
-                                <img src="{{ asset(Storage::url($club->club_banner)) }}"
+                                <img src="{{ Storage::url($club->club_banner) }}"
                                     alt="{{ $club->club_name }} Banner"
                                     class="w-full h-full object-cover transition-all duration-500 hover:scale-110">
                             @else

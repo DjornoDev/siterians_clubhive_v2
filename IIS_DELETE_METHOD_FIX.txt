@@ -1,0 +1,58 @@
+SITERIANS CLUBHIVE - IIS DELETE METHOD FIX GUIDE
+=================================================
+
+PROBLEMA: 405 Method Not Allowed error sa DELETE requests (user deletion)
+DAHILAN: IIS hindi nag-aallow ng DELETE HTTP method by default
+
+SOLUTION STEPS SA SERVER:
+========================
+
+1. UPLOAD WEB.CONFIG FILE
+   - Copy ang updated web.config file sa local mo
+   - Paste sa server: C:\inetpub\wwwroot\siteriansclubhive\public\web.config
+   - Replace ang existing file
+
+2. RESTART IIS
+   - Open Command Prompt as Administrator
+   - Run: iisreset
+   - Wait for "Internet services successfully restarted"
+
+3. ALTERNATIVE: IIS MANAGER METHOD (kung may access)
+   - Open IIS Manager
+   - Go to Sites → siteriansclubhive → Handler Mappings
+   - Find "PHP_via_FastCGI" handler
+   - Double-click to edit
+   - Change "Verbs" from "GET,POST" to "GET,HEAD,POST,PUT,DELETE,PATCH,OPTIONS"
+   - Click OK
+
+4. CHECK REQUIREMENTS
+   - Ensure URL Rewrite Module is installed sa IIS
+   - Kung wala, download from Microsoft IIS website
+
+5. TEST
+   - Go to admin/users page
+   - Try deleting a user
+   - Should work na without 405 error
+
+TROUBLESHOOTING:
+===============
+- Kung may error pa rin, check Event Viewer → Windows Logs → Application
+- Verify PHP handler path is correct sa IIS
+- Ensure Application Pool is running
+
+BACKUP REMINDER:
+===============
+- Always backup existing web.config before replacing
+- Keep copy ng working configuration
+
+FILES INVOLVED:
+==============
+- public/web.config (main fix)
+- routes/web.php (DELETE route exists na)
+- UserController.php (destroy method exists na)
+
+EXPECTED RESULT:
+===============
+- User deletion should work normally
+- No more 405 Method Not Allowed errors
+- All CRUD operations (Create, Read, Update, Delete) functional

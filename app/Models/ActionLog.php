@@ -60,6 +60,28 @@ class ActionLog extends Model
     }
 
     /**
+     * Static method to create failed login log entry with email
+     */
+    public static function create_failed_login_log($email, $description, $details = null)
+    {
+        // Try to find user by email to get their info
+        $user = User::where('email', $email)->first();
+
+        return self::create([
+            'user_id' => $user ? $user->user_id : null,
+            'user_name' => $user ? $user->name : $email,
+            'user_role' => $user ? $user->role : 'Unknown',
+            'action_category' => 'authentication',
+            'action_type' => 'login',
+            'action_description' => $description,
+            'action_details' => $details,
+            'status' => 'failed',
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+    }
+
+    /**
      * Scope for filtering by date range
      */
     public function scopeDateRange($query, $startDate, $endDate)
