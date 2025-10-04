@@ -714,24 +714,105 @@
 
                 // Keyboard shortcuts
                 document.addEventListener('keydown', function(e) {
-                    // Ctrl/Cmd + A to select all
+                    // Ctrl/Cmd + A to select all (only when no modal is open)
                     if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
-                        e.preventDefault();
-                        const selectAllCheckbox = document.getElementById('selectAllUsers');
-                        if (selectAllCheckbox) {
-                            selectAllCheckbox.checked = !selectAllCheckbox.checked;
-                            selectAllCheckbox.dispatchEvent(new Event('change'));
+                        // Check if any modal is currently open
+                        const addModal = document.getElementById('addUserModal');
+                        const editModal = document.getElementById('editUserModal');
+                        const bulkDeleteModal = document.getElementById('bulkDeleteModal');
+                        const bulkUploadModal = document.getElementById('bulkUploadModal');
+                        const deleteUserModal = document.getElementById('deleteUserModal');
+                        const viewModal = document.getElementById('userViewModal');
+                        const addSectionModal = document.getElementById('addSectionModal');
+                        const viewPasswordVerificationModal = document.getElementById('viewPasswordVerificationModal');
+                        const editPasswordVerificationModal = document.getElementById('editPasswordVerificationModal');
+                        const passwordVerificationModal = document.getElementById('passwordVerificationModal');
+                        
+                        const isModalOpen = (addModal && !addModal.classList.contains('hidden')) ||
+                                          (editModal && !editModal.classList.contains('hidden')) ||
+                                          (bulkDeleteModal && !bulkDeleteModal.classList.contains('hidden')) ||
+                                          (bulkUploadModal && !bulkUploadModal.classList.contains('hidden')) ||
+                                          (deleteUserModal && !deleteUserModal.classList.contains('hidden')) ||
+                                          (viewModal && !viewModal.classList.contains('hidden')) ||
+                                          (addSectionModal && !addSectionModal.classList.contains('hidden')) ||
+                                          (viewPasswordVerificationModal && !viewPasswordVerificationModal.classList.contains('hidden')) ||
+                                          (editPasswordVerificationModal && !editPasswordVerificationModal.classList.contains('hidden')) ||
+                                          (passwordVerificationModal && !passwordVerificationModal.classList.contains('hidden'));
+                        
+                        // Only prevent default and trigger select all if no modal is open
+                        if (!isModalOpen) {
+                            e.preventDefault();
+                            const selectAllCheckbox = document.getElementById('selectAllUsers');
+                            if (selectAllCheckbox) {
+                                selectAllCheckbox.checked = !selectAllCheckbox.checked;
+                                selectAllCheckbox.dispatchEvent(new Event('change'));
+                            }
                         }
+                        // If modal is open, let the browser handle Ctrl+A normally (for text selection)
                     }
 
-                    // Escape key to close modal
+                    // Escape key to close any open modal
                     if (e.key === 'Escape') {
+                        // Check and close each modal if it's open
                         const bulkDeleteModal = document.getElementById('bulkDeleteModal');
+                        const bulkUploadModal = document.getElementById('bulkUploadModal');
+                        const deleteUserModal = document.getElementById('deleteUserModal');
+                        const addModal = document.getElementById('addUserModal');
+                        const editModal = document.getElementById('editUserModal');
+                        const viewModal = document.getElementById('userViewModal');
+                        const addSectionModal = document.getElementById('addSectionModal');
+                        const viewPasswordVerificationModal = document.getElementById('viewPasswordVerificationModal');
+                        const editPasswordVerificationModal = document.getElementById('editPasswordVerificationModal');
+                        const passwordVerificationModal = document.getElementById('passwordVerificationModal');
+
                         if (bulkDeleteModal && !bulkDeleteModal.classList.contains('hidden')) {
                             closeBulkDeleteModal();
+                        } else if (bulkUploadModal && !bulkUploadModal.classList.contains('hidden')) {
+                            toggleBulkModal();
+                        } else if (deleteUserModal && !deleteUserModal.classList.contains('hidden')) {
+                            closeDeleteModal();
+                        } else if (addModal && !addModal.classList.contains('hidden')) {
+                            toggleUserModal();
+                        } else if (editModal && !editModal.classList.contains('hidden')) {
+                            closeEditModal();
+                        } else if (viewModal && !viewModal.classList.contains('hidden')) {
+                            closeViewModal();
+                        } else if (addSectionModal && !addSectionModal.classList.contains('hidden')) {
+                            toggleSectionModal();
+                        } else if (viewPasswordVerificationModal && !viewPasswordVerificationModal.classList.contains('hidden')) {
+                            closeViewPasswordModal();
+                        } else if (editPasswordVerificationModal && !editPasswordVerificationModal.classList.contains('hidden')) {
+                            closeEditPasswordVerificationModal();
+                        } else if (passwordVerificationModal && !passwordVerificationModal.classList.contains('hidden')) {
+                            closePasswordModal();
                         }
                     }
                 });
+
+                // Add click-outside functionality to all modals
+                function addClickOutsideListener(modalId, closeFunction) {
+                    const modal = document.getElementById(modalId);
+                    if (modal) {
+                        modal.addEventListener('click', function(e) {
+                            // Only close if clicking on the modal backdrop (not the modal content)
+                            if (e.target === modal) {
+                                closeFunction();
+                            }
+                        });
+                    }
+                }
+
+                // Apply click-outside to all modals
+                addClickOutsideListener('addUserModal', toggleUserModal);
+                addClickOutsideListener('editUserModal', closeEditModal);
+                addClickOutsideListener('userViewModal', closeViewModal);
+                addClickOutsideListener('addSectionModal', toggleSectionModal);
+                addClickOutsideListener('bulkDeleteModal', closeBulkDeleteModal);
+                addClickOutsideListener('bulkUploadModal', toggleBulkModal);
+                addClickOutsideListener('deleteUserModal', closeDeleteModal);
+                addClickOutsideListener('viewPasswordVerificationModal', closeViewPasswordModal);
+                addClickOutsideListener('editPasswordVerificationModal', closeEditPasswordVerificationModal);
+                addClickOutsideListener('passwordVerificationModal', closePasswordModal);
             }
 
             /**
@@ -1042,7 +1123,7 @@
                 // Clear password input when closing modal
                 document.getElementById('passwordInput').value = '';
                 // Clear any error message
-                const errorElement = document.getElementById('passwordError');
+                const errorElement = document.getElementById('generalPasswordError');
                 errorElement.classList.add('hidden');
                 errorElement.textContent = '';
                 // Remove any error styling
@@ -1070,7 +1151,7 @@
                 const password = document.getElementById('passwordInput').value;
                 const deleteForm = document.getElementById('deleteUserForm');
                 const userId = document.getElementById('userId').value;
-                const errorElement = document.getElementById('passwordError');
+                const errorElement = document.getElementById('generalPasswordError');
 
                 // Hide any previous error
                 errorElement.classList.add('hidden');
@@ -1315,9 +1396,11 @@
                     // Fill in user credentials section
                     const userCredName = document.getElementById('userCredName');
                     const userCredEmail = document.getElementById('userCredEmail');
+                    const userCredContactNo = document.getElementById('userCredContactNo');
 
                     if (userCredName) userCredName.textContent = userData.name || 'N/A';
                     if (userCredEmail) userCredEmail.textContent = userData.email || 'N/A';
+                    if (userCredContactNo) userCredContactNo.textContent = userData.contact_no || 'N/A';
 
                     // Set avatar initial
                     const avatar = document.getElementById('userAvatar');

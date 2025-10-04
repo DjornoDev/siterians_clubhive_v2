@@ -115,8 +115,8 @@
                 </div>
             </div>
 
-            <!-- Emergency Contacts Section - Only show for non-admin users -->
-            @if($user->role !== 'ADMIN')
+            <!-- Emergency Contacts Section - Only show for STUDENT users -->
+            @if($user->role === 'STUDENT')
             <div class="bg-red-50 rounded-lg p-6">
                 <h3 class="text-md font-semibold text-gray-900 mb-4">Emergency Contacts (Parents/Guardian)</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -192,10 +192,6 @@
                         }
                     ">{{ __('Save Profile') }}</x-primary-button>
 
-                @if (session('status') === 'profile-updated')
-                    <p x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 2000)"
-                        class="inline-block ml-3 text-sm text-gray-600">{{ __('Profile updated successfully!') }}</p>
-                @endif
             </div>
         </div>
     </form>
@@ -212,7 +208,7 @@
             <input type="hidden" id="modal_sex" name="sex">
             <input type="hidden" id="modal_contact_no" name="contact_no">
             <input type="hidden" id="modal_address" name="address">
-            @if($user->role !== 'ADMIN')
+            @if($user->role === 'STUDENT')
             <input type="hidden" id="modal_mother_name" name="mother_name">
             <input type="hidden" id="modal_mother_contact_no" name="mother_contact_no">
             <input type="hidden" id="modal_father_name" name="father_name">
@@ -273,8 +269,8 @@
                 document.getElementById('modal_address').value = document.getElementById('address')
                     .value;
                 
-                // Only copy parent/guardian info for non-admin users
-                @if($user->role !== 'ADMIN')
+                // Only copy parent/guardian info for STUDENT users
+                @if($user->role === 'STUDENT')
                 document.getElementById('modal_mother_name').value = document.getElementById(
                     'mother_name').value;
                 document.getElementById('modal_mother_contact_no').value = document.getElementById(

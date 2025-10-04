@@ -43,8 +43,10 @@
 
                     <div>
                         <label class="block text-sm font-medium mb-1">Contact No.</label>
-                        <input type="text" name="contact_no" id="editContactNo"
+                        <input type="text" name="contact_no" id="editContactNo" placeholder="09XXXXXXXXX"
                             class="w-full px-3 py-2 border rounded-lg">
+                        <p id="editContactNoError" class="text-red-500 text-xs mt-1 hidden"></p>
+                        <p class="text-gray-500 text-xs mt-1">Format: 09XXXXXXXXX (11 digits starting with 09)</p>
                     </div>
 
                     <div>
@@ -65,8 +67,9 @@
 
                     <div>
                         <label class="block text-sm font-medium mb-1">Mother's Contact No.</label>
-                        <input type="text" name="mother_contact_no" id="editMotherContactNo"
+                        <input type="text" name="mother_contact_no" id="editMotherContactNo" placeholder="09XXXXXXXXX"
                             class="w-full px-3 py-2 border rounded-lg">
+                        <p id="editMotherContactNoError" class="text-red-500 text-xs mt-1 hidden"></p>
                     </div>
 
                     <!-- Father's Information -->
@@ -83,6 +86,7 @@
                             <label class="block text-sm font-medium mb-1">Father's Contact Number</label>
                             <input type="tel" name="father_contact_no" id="editFatherContactNo"
                                 class="w-full px-3 py-2 border rounded-lg" placeholder="09XXXXXXXXX">
+                            <p id="editFatherContactNoError" class="text-red-500 text-xs mt-1 hidden"></p>
                         </div>
                     </div>
 
@@ -100,6 +104,7 @@
                             <label class="block text-sm font-medium mb-1">Guardian's Contact Number</label>
                             <input type="tel" name="guardian_contact_no" id="editGuardianContactNo"
                                 class="w-full px-3 py-2 border rounded-lg" placeholder="09XXXXXXXXX">
+                            <p id="editGuardianContactNoError" class="text-red-500 text-xs mt-1 hidden"></p>
                         </div>
                     </div>
 
@@ -132,6 +137,8 @@
                         <label class="block text-sm font-medium mb-1">Password</label>
                         <input type="password" name="password" id="editPassword"
                             class="w-full px-3 py-2 border rounded-lg" placeholder="Leave blank to keep current">
+                        <p id="editPasswordError" class="text-red-500 text-xs mt-1 hidden"></p>
+                        <p class="text-gray-500 text-xs mt-1">Minimum 8 characters required (leave blank to keep current)</p>
                     </div>
                 </div>
             </div>
@@ -152,8 +159,43 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const editEmailInput = document.getElementById('editEmail');
+        const editPasswordInput = document.getElementById('editPassword');
+        const editContactNoInput = document.getElementById('editContactNo');
+        const editMotherContactNoInput = document.getElementById('editMotherContactNo');
+        const editFatherContactNoInput = document.getElementById('editFatherContactNo');
+        const editGuardianContactNoInput = document.getElementById('editGuardianContactNo');
+        
         const editEmailError = document.getElementById('editEmailError');
+        const editPasswordError = document.getElementById('editPasswordError');
+        const editContactNoError = document.getElementById('editContactNoError');
+        const editMotherContactNoError = document.getElementById('editMotherContactNoError');
+        const editFatherContactNoError = document.getElementById('editFatherContactNoError');
+        const editGuardianContactNoError = document.getElementById('editGuardianContactNoError');
+        
         const editUserForm = document.getElementById('editUserForm');
+
+        // Philippine mobile number validation
+        function validatePhilippineMobile(number) {
+            const pattern = /^09\d{9}$/;
+            return pattern.test(number);
+        }
+
+        // Password validation
+        function validatePassword(password) {
+            return password.length >= 8;
+        }
+
+        // Generic function to show/hide validation error
+        function showValidationError(input, errorElement, message) {
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+            input.classList.add('border-red-500');
+        }
+
+        function hideValidationError(input, errorElement) {
+            errorElement.classList.add('hidden');
+            input.classList.remove('border-red-500');
+        }
 
         // Function to check if email exists (excluding current user)
         async function checkEmailExists(email, userId) {
@@ -219,12 +261,54 @@
                 editEmailError.classList.add('hidden');
                 this.classList.remove('border-red-500');
             }
-        }); // Form submission validation
+        });
+
+        // Validate password on input (only if not empty)
+        editPasswordInput.addEventListener('input', function() {
+            if (this.value.length > 0) {
+                if (!validatePassword(this.value)) {
+                    showValidationError(this, editPasswordError, 'Password must be at least 8 characters long.');
+                } else {
+                    hideValidationError(this, editPasswordError);
+                }
+            } else {
+                hideValidationError(this, editPasswordError);
+            }
+        });
+
+        // Validate contact numbers on blur
+        function addEditContactValidation(input, errorElement) {
+            input.addEventListener('blur', function() {
+                if (this.value.trim()) {
+                    if (!validatePhilippineMobile(this.value)) {
+                        showValidationError(this, errorElement, 'Invalid format. Use 09XXXXXXXXX (11 digits starting with 09).');
+                    } else {
+                        hideValidationError(this, errorElement);
+                    }
+                } else {
+                    hideValidationError(this, errorElement);
+                }
+            });
+        }
+        // Add validation to all contact number fields
+        addEditContactValidation(editContactNoInput, editContactNoError);
+        addEditContactValidation(editMotherContactNoInput, editMotherContactNoError);
+        addEditContactValidation(editFatherContactNoInput, editFatherContactNoError);
+        addEditContactValidation(editGuardianContactNoInput, editGuardianContactNoError);        // Form submission validation
         editUserForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const email = editEmailInput.value;
+            const password = editPasswordInput.value;
             let canSubmit = true;
+
+            // Reset all errors
+            editEmailError.classList.add('hidden');
+            editPasswordError.classList.add('hidden');
+            editContactNoError.classList.add('hidden');
+            editMotherContactNoError.classList.add('hidden');
+            editFatherContactNoError.classList.add('hidden');
+            editGuardianContactNoError.classList.add('hidden');
 
             // Only validate if email has changed
             if (email !== originalEmail) {
@@ -232,33 +316,48 @@
                 const result = await checkEmailExists(email, userId);
 
                 if (result.exists) {
-                    editEmailError.textContent = 'This email already exists in the database.';
-                    editEmailError.classList.remove('hidden');
-                    editEmailInput.classList.add('border-red-500');
+                    showValidationError(editEmailInput, editEmailError, 'This email already exists in the database.');
                     canSubmit = false;
                 } else {
-                    editEmailError.classList.add('hidden');
-                    editEmailInput.classList.remove('border-red-500');
+                    hideValidationError(editEmailInput, editEmailError);
                 }
             }
+
+            // Validate password if provided
+            if (password.trim() && !validatePassword(password)) {
+                showValidationError(editPasswordInput, editPasswordError, 'Password must be at least 8 characters long.');
+                canSubmit = false;
+            }
+
+            // Validate contact numbers (only if they have values)
+            const editContactFields = [
+                {input: editContactNoInput, error: editContactNoError},
+                {input: editMotherContactNoInput, error: editMotherContactNoError},
+                {input: editFatherContactNoInput, error: editFatherContactNoError},
+                {input: editGuardianContactNoInput, error: editGuardianContactNoError}
+            ];
+
+            editContactFields.forEach(field => {
+                if (field.input.value.trim() && !validatePhilippineMobile(field.input.value)) {
+                    showValidationError(field.input, field.error, 'Invalid format. Use 09XXXXXXXXX (11 digits starting with 09).');
+                    canSubmit = false;
+                }
+            });
 
             // If validation passes, check if we need password verification
             if (canSubmit) {
                 const emailChanged = email !== originalEmail;
-                const passwordChanged = document.getElementById('editPassword').value.trim() !== '';
+                const passwordChanged = password.trim() !== '';
 
                 // If either email or password is being changed, show password verification modal
                 if (emailChanged || passwordChanged) {
                     // Store form data in hidden field
                     const formData = new FormData(this);
-                    document.getElementById('editVerifiedUserId').value = this.action.split('/')
-                        .pop();
-                    document.getElementById('editOriginalFormData').value = JSON.stringify(Object
-                        .fromEntries(formData));
+                    document.getElementById('editVerifiedUserId').value = this.action.split('/').pop();
+                    document.getElementById('editOriginalFormData').value = JSON.stringify(Object.fromEntries(formData));
 
                     // Show password verification modal
-                    document.getElementById('editPasswordVerificationModal').classList.remove(
-                        'hidden');
+                    document.getElementById('editPasswordVerificationModal').classList.remove('hidden');
                 } else {
                     // If no sensitive fields are being changed, submit form normally
                     this.submit();

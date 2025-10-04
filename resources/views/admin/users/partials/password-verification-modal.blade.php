@@ -24,7 +24,7 @@
                         placeholder="Enter your password">
                 </div>
                 <!-- Error message container (hidden by default) -->
-                <div id="passwordError" class="mt-2 text-sm text-red-600 hidden"></div>
+                <div id="generalPasswordError" class="mt-2 text-sm text-red-600 hidden"></div>
             </div>
 
             <div class="flex justify-end gap-3 mt-6">

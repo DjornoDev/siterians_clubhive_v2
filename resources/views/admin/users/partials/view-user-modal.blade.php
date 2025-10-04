@@ -145,14 +145,18 @@
                 </svg>
                 User Credentials
             </h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div class="bg-gray-50 p-3 rounded-lg">
-                    <p class="text-xs text-gray-500 uppercase">Username</p>
+                    <p class="text-xs text-gray-500 uppercase">Name</p>
                     <p id="userCredName" class="text-gray-800 font-medium mt-1"></p>
                 </div>
                 <div class="bg-gray-50 p-3 rounded-lg">
                     <p class="text-xs text-gray-500 uppercase">Email Address</p>
                     <p id="userCredEmail" class="text-gray-800 font-medium mt-1"></p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase">Contact no.</p>
+                    <p id="userCredContactNo" class="text-gray-800 font-medium mt-1"></p>
                 </div>
             </div>
         </div>

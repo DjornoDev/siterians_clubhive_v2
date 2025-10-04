@@ -23,7 +23,6 @@
                         @error('name')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
-                        <p id="nameError" class="text-red-500 text-xs mt-1 hidden"></p>
                     </div>
 
                     <div>
@@ -64,11 +63,13 @@
 
                     <div>
                         <label class="block text-sm font-medium mb-1">Contact No.</label>
-                        <input type="text" name="contact_no" id="contactNo"
+                        <input type="text" name="contact_no" id="contactNo" placeholder="09XXXXXXXXX"
                             class="w-full px-3 py-2 border rounded-lg @error('contact_no') border-red-500 @enderror">
                         @error('contact_no')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
+                        <p id="contactNoError" class="text-red-500 text-xs mt-1 hidden"></p>
+                        <p class="text-gray-500 text-xs mt-1">Format: 09XXXXXXXXX (11 digits starting with 09)</p>
                     </div>
 
                     <div>
@@ -96,11 +97,12 @@
 
                     <div>
                         <label class="block text-sm font-medium mb-1">Mother's Contact No.</label>
-                        <input type="text" name="mother_contact_no" id="motherContactNo"
+                        <input type="text" name="mother_contact_no" id="motherContactNo" placeholder="09XXXXXXXXX"
                             class="w-full px-3 py-2 border rounded-lg @error('mother_contact_no') border-red-500 @enderror">
                         @error('mother_contact_no')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
+                        <p id="motherContactNoError" class="text-red-500 text-xs mt-1 hidden"></p>
                     </div>
 
                     <!-- Father's Information -->
@@ -124,6 +126,7 @@
                             @error('father_contact_no')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
+                            <p id="fatherContactNoError" class="text-red-500 text-xs mt-1 hidden"></p>
                         </div>
                     </div>
 
@@ -148,6 +151,7 @@
                             @error('guardian_contact_no')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
+                            <p id="guardianContactNoError" class="text-red-500 text-xs mt-1 hidden"></p>
                         </div>
                     </div>
 
@@ -193,11 +197,13 @@
                     <div class="mt-6">
                         <label class="block text-sm font-medium mb-1">Password <span
                                 class="text-red-500">*</span></label>
-                        <input type="password" name="password" required
+                        <input type="password" name="password" id="addPasswordInput" required
                             class="w-full px-3 py-2 border rounded-lg @error('password') border-red-500 @enderror">
                         @error('password')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
+                        <p id="addPasswordError" class="text-red-500 text-xs mt-1 hidden"></p>
+                        <p class="text-gray-500 text-xs mt-1">Minimum 8 characters required</p>
                     </div>
                 </div>
             </div>
@@ -220,10 +226,44 @@
         const form = document.getElementById('addUserForm');
         const nameInput = document.getElementById('userName');
         const emailInput = document.getElementById('userEmail');
-        const nameError = document.getElementById('nameError');
+        const passwordInput = document.getElementById('addPasswordInput');
+        const contactNoInput = document.getElementById('contactNo');
+        const motherContactNoInput = document.getElementById('motherContactNo');
+        const fatherContactNoInput = document.getElementById('fatherContactNo');
+        const guardianContactNoInput = document.getElementById('guardianContactNo');
+        
         const emailError = document.getElementById('emailError');
+        const passwordError = document.getElementById('addPasswordError');
+        const contactNoError = document.getElementById('contactNoError');
+        const motherContactNoError = document.getElementById('motherContactNoError');
+        const fatherContactNoError = document.getElementById('fatherContactNoError');
+        const guardianContactNoError = document.getElementById('guardianContactNoError');
+        
         const formErrors = document.getElementById('formErrors');
         const errorMessageGeneral = document.getElementById('errorMessageGeneral');
+
+        // Philippine mobile number validation
+        function validatePhilippineMobile(number) {
+            const pattern = /^09\d{9}$/;
+            return pattern.test(number);
+        }
+
+        // Password validation
+        function validatePassword(password) {
+            return password.length >= 8;
+        }
+
+        // Generic function to show/hide validation error
+        function showValidationError(input, errorElement, message) {
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+            input.classList.add('border-red-500');
+        }
+
+        function hideValidationError(input, errorElement) {
+            errorElement.classList.add('hidden');
+            input.classList.remove('border-red-500');
+        }
 
         // Function to check if user exists
         async function checkUserExists(fieldName, value) {
@@ -250,20 +290,6 @@
             }
         }
 
-        // Validate name on blur
-        nameInput.addEventListener('blur', async function() {
-            if (this.value.trim()) {
-                const result = await checkUserExists('name', this.value);
-                if (result.exists) {
-                    nameError.textContent = 'This name already exists in the database.';
-                    nameError.classList.remove('hidden');
-                    this.classList.add('border-red-500');
-                } else {
-                    nameError.classList.add('hidden');
-                    this.classList.remove('border-red-500');
-                }
-            }
-        });
 
         // Validate email on blur
         emailInput.addEventListener('blur', async function() {
@@ -280,25 +306,54 @@
             }
         });
 
+        // Validate password on input
+        passwordInput.addEventListener('input', function() {
+            if (this.value.length > 0) {
+                if (!validatePassword(this.value)) {
+                    showValidationError(this, passwordError, 'Password must be at least 8 characters long.');
+                } else {
+                    hideValidationError(this, passwordError);
+                }
+            } else {
+                hideValidationError(this, passwordError);
+            }
+        });
+
+        // Validate contact numbers on blur
+        function addContactValidation(input, errorElement) {
+            input.addEventListener('blur', function() {
+                if (this.value.trim()) {
+                    if (!validatePhilippineMobile(this.value)) {
+                        showValidationError(this, errorElement, 'Invalid format. Use 09XXXXXXXXX (11 digits starting with 09).');
+                    } else {
+                        hideValidationError(this, errorElement);
+                    }
+                } else {
+                    hideValidationError(this, errorElement);
+                }
+            });
+        }
+
+        // Add validation to all contact number fields
+        addContactValidation(contactNoInput, contactNoError);
+        addContactValidation(motherContactNoInput, motherContactNoError);
+        addContactValidation(fatherContactNoInput, fatherContactNoError);
+        addContactValidation(guardianContactNoInput, guardianContactNoError);
+
         // Form submission
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
             // Reset errors
-            nameError.classList.add('hidden');
             emailError.classList.add('hidden');
+            passwordError.classList.add('hidden');
+            contactNoError.classList.add('hidden');
+            motherContactNoError.classList.add('hidden');
+            fatherContactNoError.classList.add('hidden');
+            guardianContactNoError.classList.add('hidden');
             formErrors.classList.add('hidden');
 
             let hasErrors = false;
-
-            // Check name
-            const nameResult = await checkUserExists('name', nameInput.value);
-            if (nameResult.exists) {
-                nameError.textContent = 'This name already exists in the database.';
-                nameError.classList.remove('hidden');
-                nameInput.classList.add('border-red-500');
-                hasErrors = true;
-            }
 
             // Check email
             const emailResult = await checkUserExists('email', emailInput.value);
@@ -308,6 +363,27 @@
                 emailInput.classList.add('border-red-500');
                 hasErrors = true;
             }
+
+            // Validate password
+            if (!validatePassword(passwordInput.value)) {
+                showValidationError(passwordInput, passwordError, 'Password must be at least 8 characters long.');
+                hasErrors = true;
+            }
+
+            // Validate contact numbers (only if they have values)
+            const contactFields = [
+                {input: contactNoInput, error: contactNoError},
+                {input: motherContactNoInput, error: motherContactNoError},
+                {input: fatherContactNoInput, error: fatherContactNoError},
+                {input: guardianContactNoInput, error: guardianContactNoError}
+            ];
+
+            contactFields.forEach(field => {
+                if (field.input.value.trim() && !validatePhilippineMobile(field.input.value)) {
+                    showValidationError(field.input, field.error, 'Invalid format. Use 09XXXXXXXXX (11 digits starting with 09).');
+                    hasErrors = true;
+                }
+            });
 
             if (hasErrors) {
                 formErrors.classList.remove('hidden');
