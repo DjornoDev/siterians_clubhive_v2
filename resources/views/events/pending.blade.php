@@ -309,7 +309,11 @@
                                 Reason</label>
                             <textarea name="rejection_reason" id="rejection_reason" rows="4" required
                                 class="w-full text-xs sm:text-sm rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
-                                placeholder="Explain why this event cannot be approved..."></textarea>
+                                placeholder="Explain why this event cannot be approved..." minlength="10" maxlength="500"></textarea>
+                            <div class="text-xs text-gray-500 mt-1">Minimum 10 characters required</div>
+                            @error('rejection_reason')
+                                <div class="text-red-500 text-xs mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
 
@@ -348,6 +352,17 @@
         document.getElementById('reject-modal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeRejectModal();
+            }
+        });
+
+        // Form validation
+        document.getElementById('reject-form').addEventListener('submit', function(e) {
+            const reason = document.getElementById('rejection_reason').value;
+            
+            if (reason.length < 10) {
+                e.preventDefault();
+                alert('Rejection reason must be at least 10 characters long.');
+                return false;
             }
         });
     </script>

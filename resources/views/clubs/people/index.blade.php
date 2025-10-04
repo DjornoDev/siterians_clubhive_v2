@@ -296,32 +296,31 @@
                             $inactiveMembers = $allMembers->where('status', 'INACTIVE')->count();
                             $activePercentage =
                                 $totalMembers > 0 ? round(($activeMembers / $totalMembers) * 100, 1) : 0;
+
+                            // Monthly Engagement Data
+                            $currentMonth = now()->format('Y-m');
+                            $monthlyNewMembers = $allMembers->filter(function ($member) use ($currentMonth) {
+                                return $member->joined_date && 
+                                       \Carbon\Carbon::parse($member->joined_date)->format('Y-m') === $currentMonth;
+                            })->count();
+                            
+                            $monthlyPosts = \App\Models\Post::where('club_id', $club->club_id)
+                                ->whereYear('post_date', now()->year)
+                                ->whereMonth('post_date', now()->month)
+                                ->count();
+                            
+                            $monthlyEvents = \App\Models\Event::where('club_id', $club->club_id)
+                                ->whereYear('event_date', now()->year)
+                                ->whereMonth('event_date', now()->month)
+                                ->count();
+                            
+                            $totalMonthlyEngagement = $monthlyNewMembers + $monthlyPosts + $monthlyEvents;
                         @endphp
 
                         <!-- Stats Cards Row - Compact Design -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <!-- Total Members Card - Compact -->
-                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="text-blue-600 text-xs font-medium uppercase tracking-wide">Total Members
-                                        </p>
-                                        <p class="text-2xl font-bold text-gray-900 mt-1">{{ $totalMembers }}</p>
-                                        <p class="text-gray-600 text-xs">
-                                            {{ $totalMembers > 1 ? 'students' : ($totalMembers == 1 ? 'student' : 'No students yet') }}
-                                        </p>
-                                    </div>
-                                    <div class="p-2 bg-blue-100 rounded">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600"
-                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <!-- Member Status Card - Compact -->
+                            <!-- Member Status Card - Enhanced with Total Members -->
                             <div class="bg-white border border-gray-200 rounded-lg p-4">
                                 <div class="flex items-center justify-between mb-3">
                                     <h4 class="text-sm font-semibold text-gray-900">Member Status</h4>
@@ -329,42 +328,30 @@
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600"
                                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                         </svg>
                                     </div>
                                 </div>
 
-                                <div class="space-y-2">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center">
-                                            <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                                            <span class="text-xs font-medium text-gray-700">Active</span>
-                                        </div>
-                                        <span class="text-lg font-bold text-green-600">{{ $activeMembers }}</span>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center">
-                                            <div class="w-3 h-3 bg-gray-400 rounded-full mr-2"></div>
-                                            <span class="text-xs font-medium text-gray-700">Inactive</span>
-                                        </div>
-                                        <span class="text-lg font-bold text-gray-500">{{ $inactiveMembers }}</span>
-                                    </div>
+                                <!-- Chart.js Pie Chart -->
+                                <div class="h-48 flex items-center justify-center mb-4">
+                                    <canvas id="memberStatusChart"></canvas>
+                                </div>
 
-                                    <!-- Compact Progress Bar -->
-                                    <div class="mt-2">
-                                        <div class="flex justify-between text-xs text-gray-600 mb-1">
-                                            <span>Activity Rate</span>
-                                            <span>{{ $activePercentage }}%</span>
-                                        </div>
-                                        <div class="w-full bg-gray-200 rounded-full h-2">
-                                            <div class="bg-green-500 h-2 rounded-full transition-all duration-1000"
-                                                style="width: {{ $activePercentage }}%"></div>
-                                        </div>
+                                <!-- Summary Stats -->
+                                <div class="grid grid-cols-2 gap-3 text-center">
+                                    <div class="p-2 bg-green-50 rounded-lg">
+                                        <div class="text-lg font-bold text-green-600">{{ $activeMembers }}</div>
+                                        <div class="text-xs text-gray-600">Active</div>
+                                    </div>
+                                    <div class="p-2 bg-gray-50 rounded-lg">
+                                        <div class="text-lg font-bold text-gray-500">{{ $inactiveMembers }}</div>
+                                        <div class="text-xs text-gray-600">Inactive</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Grade Distribution Card - Compact -->
+                            <!-- Grade Distribution Card - Pie Chart -->
                             <div class="bg-white border border-gray-200 rounded-lg p-4">
                                 <div class="flex items-center justify-between mb-3">
                                     <h4 class="text-sm font-semibold text-gray-900">Grade Distribution</h4>
@@ -372,50 +359,99 @@
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-purple-600"
                                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                                d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
                                         </svg>
                                     </div>
                                 </div>
 
                                 @if ($membersByGrade->count() > 0)
-                                    <div class="space-y-1.5">
-                                        @foreach ($membersByGrade->sortKeys() as $grade => $gradeMembers)
-                                            @php
-                                                $percentage =
-                                                    $totalMembers > 0
-                                                        ? round(($gradeMembers->count() / $totalMembers) * 100, 1)
-                                                        : 0;
-                                            @endphp
+                                    @php
+                                        $colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#84CC16'];
+                                        $gradeData = [];
+                                        $colorIndex = 0;
+                                        foreach ($membersByGrade->sortKeys() as $grade => $gradeMembers) {
+                                            $percentage = $totalMembers > 0 ? round(($gradeMembers->count() / $totalMembers) * 100, 1) : 0;
+                                            $gradeData[] = [
+                                                'grade' => $grade,
+                                                'count' => $gradeMembers->count(),
+                                                'percentage' => $percentage,
+                                                'color' => $colors[$colorIndex % count($colors)]
+                                            ];
+                                            $colorIndex++;
+                                        }
+                                    @endphp
+                                    
+                                    <!-- Horizontal Bar Chart -->
+                                    <div class="space-y-4 py-2">
+                                        @foreach ($gradeData as $data)
                                             <div class="flex items-center justify-between">
-                                                <div class="flex items-center flex-1">
-                                                    <span class="text-xs font-medium text-gray-700 w-12">Grade
-                                                        {{ $grade }}</span>
-                                                    <div class="flex-1 mx-2">
-                                                        <div class="w-full bg-gray-200 rounded-full h-1.5">
-                                                            <div class="bg-blue-500 h-1.5 rounded-full transition-all duration-1000"
-                                                                style="width: {{ $percentage }}%"></div>
+                                                <!-- Grade Label -->
+                                                <div class="flex items-center w-16">
+                                                    <div class="w-4 h-4 rounded-sm mr-2" style="background-color: {{ $data['color'] }}"></div>
+                                                    <span class="text-sm font-medium text-gray-700">G{{ $data['grade'] }}</span>
+                                                </div>
+                                                
+                                                <!-- Progress Bar -->
+                                                <div class="flex-1 mx-3">
+                                                    <div class="w-full bg-gray-200 rounded-lg h-6 relative overflow-hidden">
+                                                        <div class="h-6 rounded-lg transition-all duration-1000 flex items-center justify-end pr-3" 
+                                                             style="width: {{ $data['percentage'] }}%; background-color: {{ $data['color'] }}">
+                                                            @if($data['percentage'] > 20)
+                                                                <span class="text-sm font-bold text-white">{{ $data['count'] }}</span>
+                                                            @endif
                                                         </div>
+                                                        @if($data['percentage'] <= 20)
+                                                            <span class="absolute right-3 top-0 h-6 flex items-center text-sm font-bold text-gray-700">{{ $data['count'] }}</span>
+                                                        @endif
                                                     </div>
-                                                    <div class="text-right">
-                                                        <span
-                                                            class="text-xs font-bold text-gray-900">{{ $gradeMembers->count() }}</span>
-                                                        <span
-                                                            class="text-xs text-gray-500 ml-1">({{ $percentage }}%)</span>
-                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Percentage -->
+                                                <div class="w-12 text-right">
+                                                    <span class="text-sm font-bold text-gray-900">{{ $data['percentage'] }}%</span>
                                                 </div>
                                             </div>
                                         @endforeach
+                                        
+                                        <!-- Bottom Summary -->
+                                        <div class="mt-6 pt-4 border-t border-gray-200">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-xs font-medium text-gray-600 uppercase tracking-wide">Total Students</span>
+                                                <span class="text-xl font-bold text-purple-600">{{ $totalMembers }}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 @else
                                     <div class="text-center py-3">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-300 mx-auto mb-1"
                                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                                d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
                                         </svg>
                                         <p class="text-xs text-gray-500">No grade data available</p>
                                     </div>
                                 @endif
+                            </div>
+                            
+                            <!-- Monthly Engagement Card -->
+                            <div class="bg-white border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="text-sm font-semibold text-gray-900">Monthly Engagement</h4>
+                                    <div class="p-1.5 bg-orange-100 rounded">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-600"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                        </svg>
+                                    </div>
+                                </div>
+
+                                <!-- Chart.js Line Chart -->
+                                <div class="h-72">
+                                    <canvas id="engagementChart"></canvas>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1360,5 +1396,160 @@
                 alert('An error occurred while rejecting the request');
             }
         }
+    </script>
+
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        // Member Status Pie Chart
+        const memberStatusCtx = document.getElementById('memberStatusChart').getContext('2d');
+        const memberStatusChart = new Chart(memberStatusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Active Members', 'Inactive Members'],
+                datasets: [{
+                    data: [{{ $activeMembers }}, {{ $inactiveMembers }}],
+                    backgroundColor: ['#10B981', '#9CA3AF'],
+                    borderWidth: 0,
+                    cutout: '60%'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = {{ $totalMembers }};
+                                const percentage = Math.round((context.parsed / total) * 100);
+                                return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Monthly Engagement Line Chart
+        @php
+            $months = [];
+            $postsData = [];
+            $eventsData = [];
+            
+            for ($i = 5; $i >= 0; $i--) {
+                $date = now()->subMonths($i);
+                $months[] = $date->format('M Y');
+                
+                // Get actual posts count for this month
+                $monthPosts = \App\Models\Post::where('club_id', $club->club_id)
+                    ->whereYear('post_date', $date->year)
+                    ->whereMonth('post_date', $date->month)
+                    ->count();
+                $postsData[] = $monthPosts;
+                
+                // Get actual events count for this month
+                $monthEvents = \App\Models\Event::where('club_id', $club->club_id)
+                    ->where('approval_status', 'approved')
+                    ->whereYear('event_date', $date->year)
+                    ->whereMonth('event_date', $date->month)
+                    ->count();
+                $eventsData[] = $monthEvents;
+            }
+        @endphp
+
+        const engagementCtx = document.getElementById('engagementChart').getContext('2d');
+        const engagementChart = new Chart(engagementCtx, {
+            type: 'line',
+            data: {
+                labels: {!! json_encode($months) !!},
+                datasets: [{
+                    label: 'Posts',
+                    data: {!! json_encode($postsData) !!},
+                    borderColor: '#10B981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#10B981',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5
+                }, {
+                    label: 'Events',
+                    data: {!! json_encode($eventsData) !!},
+                    borderColor: '#8B5CF6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#8B5CF6',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#ffffff',
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    x: {
+                        display: true,
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    y: {
+                        display: true,
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            stepSize: 1,
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
     </script>
 @endpush

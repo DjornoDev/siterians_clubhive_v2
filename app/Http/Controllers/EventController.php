@@ -617,6 +617,21 @@ class EventController extends Controller
             'rejection_reason' => null, // Clear any previous rejection reason
         ]);
 
+        // Log event approval
+        ActionLog::create_log(
+            'event_management',
+            'approved',
+            "Approved event: {$event->event_name}",
+            [
+                'event_id' => $event->event_id,
+                'event_name' => $event->event_name,
+                'club_id' => $event->club_id,
+                'club_name' => $event->club->club_name,
+                'organizer_id' => $event->organizer_id,
+                'organizer_name' => $event->organizer->name
+            ]
+        );
+
         return redirect()->route('events.pending')->with('success', 'Event approved successfully.');
     }
 
@@ -625,13 +640,27 @@ class EventController extends Controller
      */
     public function reject(Request $request, Event $event)
     {
+        // Log the rejection attempt
+        Log::info('Event rejection attempt', [
+            'event_id' => $event->event_id,
+            'event_name' => $event->event_name,
+            'user_id' => Auth::id(),
+            'current_status' => $event->approval_status,
+            'request_data' => $request->all()
+        ]);
+
         // Check if user is main club adviser (SSLG)
         if (!MainClubService::isMainClubAdviser(Auth::id())) {
+            Log::warning('Unauthorized rejection attempt', ['user_id' => Auth::id()]);
             abort(403, 'Unauthorized. Only SSLG adviser can reject events.');
         }
 
         // Only reject pending events
         if ($event->approval_status !== 'pending') {
+            Log::warning('Attempted to reject non-pending event', [
+                'event_id' => $event->event_id,
+                'current_status' => $event->approval_status
+            ]);
             return redirect()->back()->with('error', 'Event has already been processed.');
         }
 
@@ -639,14 +668,48 @@ class EventController extends Controller
             'rejection_reason' => 'required|string|min:10|max:500',
         ]);
 
-        $event->update([
-            'approval_status' => 'rejected',
-            'rejection_reason' => $validated['rejection_reason'],
-            'approved_at' => null,
-            'approved_by' => null,
-        ]);
+        try {
+            $event->update([
+                'approval_status' => 'rejected',
+                'rejection_reason' => $validated['rejection_reason'],
+                'approved_at' => null,
+                'approved_by' => null,
+            ]);
 
-        return redirect()->route('events.pending')->with('success', 'Event rejected successfully.');
+            // Log successful rejection
+            Log::info('Event rejected successfully', [
+                'event_id' => $event->event_id,
+                'event_name' => $event->event_name,
+                'rejection_reason' => $validated['rejection_reason'],
+                'rejected_by' => Auth::id()
+            ]);
+
+            // Log action for audit trail
+            ActionLog::create_log(
+                'event_management',
+                'rejected',
+                "Rejected event: {$event->event_name}",
+                [
+                    'event_id' => $event->event_id,
+                    'event_name' => $event->event_name,
+                    'club_id' => $event->club_id,
+                    'club_name' => $event->club->club_name,
+                    'rejection_reason' => $validated['rejection_reason'],
+                    'organizer_id' => $event->organizer_id,
+                    'organizer_name' => $event->organizer->name
+                ]
+            );
+
+            return redirect()->route('events.pending')->with('success', 'Event rejected successfully.');
+        } catch (\Exception $e) {
+            Log::error('Event rejection failed', [
+                'event_id' => $event->event_id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()->with('error', 'Failed to reject event: ' . $e->getMessage());
+        }
     }
 
     /**

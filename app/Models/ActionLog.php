@@ -266,20 +266,20 @@ class ActionLog extends Model
     public static function create_event_log($action, $event, $details = [])
     {
         $descriptions = [
-            'created' => "Created new event: {$event->title}",
-            'updated' => "Updated event: {$event->title}",
-            'deleted' => "Deleted event: {$event->title}",
-            'approved' => "Approved event: {$event->title}",
-            'rejected' => "Rejected event: {$event->title}",
+            'created' => "Created new event: {$event->event_name}",
+            'updated' => "Updated event: {$event->event_name}",
+            'deleted' => "Deleted event: {$event->event_name}",
+            'approved' => "Approved event: {$event->event_name}",
+            'rejected' => "Rejected event: {$event->event_name}",
         ];
 
         return self::create_log(
             'event_management',
             $action,
-            $descriptions[$action] ?? "Performed {$action} on event: {$event->title}",
+            $descriptions[$action] ?? "Performed {$action} on event: {$event->event_name}",
             array_merge([
                 'event_id' => $event->event_id,
-                'event_title' => $event->title,
+                'event_name' => $event->event_name,
                 'event_date' => $event->event_date,
             ], $details)
         );

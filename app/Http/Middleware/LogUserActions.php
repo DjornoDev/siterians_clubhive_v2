@@ -66,6 +66,9 @@ class LogUserActions
             'voting.toggle-published',
             'profile.update',
             'profile.destroy',
+            // Event approval/rejection routes (these should have their own specific logging)
+            'events.approve',
+            'events.reject',
             // Navigation and read-only routes
             'dashboard',
             'home.index',
