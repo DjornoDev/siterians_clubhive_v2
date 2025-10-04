@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Hashids\Hashids;
 use App\Models\Club;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -32,6 +33,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         config(['app.timezone' => 'Asia/Manila']); // Set your school's timezone
+
+        // Code para ma-force to load to https://
+        //Lahat ng Laravel-generated links (routes, assets, images, scripts) → gagawin https://
+        if (config('app.env') === 'production') {
+        URL::forceScheme('https');
+        }
 
         Route::bind('club', function ($value) {
             // First try to decode as hashid

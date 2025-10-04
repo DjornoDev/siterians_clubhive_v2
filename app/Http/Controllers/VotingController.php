@@ -323,6 +323,16 @@ class VotingController extends Controller
             ]);
         }
 
+        // Check if trying to publish an election without candidates
+        if (!$election->is_published) {
+            if (!$election->hasCandidates()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot publish election without any candidates. Please add candidates first before publishing the election.'
+                ], 422);
+            }
+        }
+
         // Toggle is_published status and force updated_at timestamp change to ensure checksum change
         $oldStatus = $election->is_published;
         $election->update([
@@ -339,7 +349,8 @@ class VotingController extends Controller
                 'election_id' => $election->election_id,
                 'title' => $election->title,
                 'old_status' => $oldStatus,
-                'new_status' => $election->is_published
+                'new_status' => $election->is_published,
+                'candidates_count' => $election->getCandidatesCount()
             ]
         );
 

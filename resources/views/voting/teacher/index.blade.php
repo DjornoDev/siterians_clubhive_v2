@@ -1491,7 +1491,9 @@
                     showNotification('Election status updated successfully', 'success');
                     setTimeout(() => location.reload(), 1000); // Refresh to show updated status
                 } else {
-                    showNotification('Error toggling publish status', 'error');
+                    // Show the specific error message from the server
+                    const errorMessage = data.message || 'Error toggling publish status';
+                    showNotification(errorMessage, 'error');
                 }
             } catch (error) {
                 console.error('Error toggling publish status:', error);

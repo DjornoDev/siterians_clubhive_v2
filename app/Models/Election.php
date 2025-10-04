@@ -41,4 +41,24 @@ class Election extends Model
     {
         return $this->belongsTo(Club::class, 'club_id');
     }
+
+    /**
+     * Check if the election has any candidates
+     * 
+     * @return bool
+     */
+    public function hasCandidates()
+    {
+        return $this->candidates()->count() > 0;
+    }
+
+    /**
+     * Get the total number of candidates in this election
+     * 
+     * @return int
+     */
+    public function getCandidatesCount()
+    {
+        return $this->candidates()->count();
+    }
 }

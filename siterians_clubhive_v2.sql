@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 20, 2025 at 03:28 AM
+-- Generation Time: Sep 23, 2025 at 05:28 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -35,7 +35,7 @@ CREATE TABLE `action_logs` (
   `action_category` varchar(255) NOT NULL,
   `action_type` varchar(255) NOT NULL,
   `action_description` varchar(255) NOT NULL,
-  `action_details` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`action_details`)),
+  `action_details` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `status` enum('success','failed') NOT NULL DEFAULT 'success',
   `ip_address` varchar(255) DEFAULT NULL,
   `user_agent` varchar(255) DEFAULT NULL,
@@ -515,7 +515,8 @@ INSERT INTO `action_logs` (`id`, `user_id`, `user_name`, `user_role`, `action_ca
 (498, 1, 'Daron Pogi', 'ADMIN', 'authentication', 'login', 'User logged in successfully', '{\"login_time\":\"2025-09-18T16:00:19.672135Z\",\"ip_address\":\"127.0.0.1\",\"user_agent\":\"Mozilla\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\/537.36 (KHTML, like Gecko) Chrome\\/140.0.0.0 Safari\\/537.36\"}', 'success', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-18 16:00:19', '2025-09-18 16:00:19'),
 (499, 1, 'Daron Pogi', 'ADMIN', 'authentication', 'login', 'User logged in', '{\"route\":\"login\",\"uri\":\"\\/login\",\"method\":\"GET\",\"parameters\":[],\"response_code\":302}', 'success', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-18 16:00:21', '2025-09-18 16:00:21'),
 (500, 1, 'Daron Pogi', 'ADMIN', 'authentication', 'logout', 'User logged out', '{\"logout_time\":\"2025-09-18T16:00:31.247810Z\"}', 'success', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-18 16:00:31', '2025-09-18 16:00:31'),
-(501, 1, 'Daron Pogi', 'ADMIN', 'authentication', 'login', 'User logged in successfully', '{\"login_time\":\"2025-09-18T16:00:35.922460Z\",\"ip_address\":\"127.0.0.1\",\"user_agent\":\"Mozilla\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\/537.36 (KHTML, like Gecko) Chrome\\/140.0.0.0 Safari\\/537.36\"}', 'success', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-18 16:00:35', '2025-09-18 16:00:35');
+(501, 1, 'Daron Pogi', 'ADMIN', 'authentication', 'login', 'User logged in successfully', '{\"login_time\":\"2025-09-18T16:00:35.922460Z\",\"ip_address\":\"127.0.0.1\",\"user_agent\":\"Mozilla\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\/537.36 (KHTML, like Gecko) Chrome\\/140.0.0.0 Safari\\/537.36\"}', 'success', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-18 16:00:35', '2025-09-18 16:00:35'),
+(502, 1, 'Daron Pogi', 'ADMIN', 'authentication', 'login', 'User logged in successfully', '{\"login_time\":\"2025-09-21T06:46:09.363617Z\",\"ip_address\":\"127.0.0.1\",\"user_agent\":\"Mozilla\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\/537.36 (KHTML, like Gecko) Chrome\\/140.0.0.0 Safari\\/537.36\"}', 'success', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-21 06:46:09', '2025-09-21 06:46:09');
 
 -- --------------------------------------------------------
 
@@ -552,7 +553,7 @@ CREATE TABLE `club_questions` (
   `club_id` bigint(20) UNSIGNED NOT NULL,
   `question` varchar(255) NOT NULL,
   `question_type` enum('text','textarea','select','radio') NOT NULL,
-  `options` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`options`)),
+  `options` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `is_required` tinyint(1) NOT NULL DEFAULT 1,
   `order` int(11) NOT NULL DEFAULT 0,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
@@ -729,8 +730,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('Lkzw0JXdk3adstdkp9qBT3WqPX1e8teUAHI3zF16', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiUjEySDlYT2ZsSUtOcXBiOGJKQ2o4dEZ3VjZuOW5zREl6YnRVRXF3VyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9kYXNoYm9hcmQiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxO30=', 1758211941),
-('m5Od55IBOemPX8OeRRWNlykscei4N4X9a08BqpFE', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiN1NTSTQ4cjJnb0h4eUs1cVhmeVFpRzViaktvQlJGRWY4bFhYUTVUaCI7czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czozNzoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL2FkbWluL2Rhc2hib2FyZCI7fXM6OToiX3ByZXZpb3VzIjthOjE6e3M6MzoidXJsIjtzOjI3OiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvbG9naW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1758330896);
+('1YIKLvaFpt5UsPRzi92clX5o7mcNcEwSrSpkfWr7', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiS3NWV0FiWWZqaGk1VG5JMTJtT2JMU3R0Vk15dXVHczh3NVF5SUxibyI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6NDA6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9leHBvcnQvY2x1YnMiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxO30=', 1758438381),
+('YNJcYtPdfBYDf86vAXe8NLXV7VlexdX12d3tR0aQ', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoidk1pVGZGMjBJeTdTMlhzMk9JcW9UWDJ2OTN4STdHS2ZSa3VEYTQ1aCI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1758535070);
 
 -- --------------------------------------------------------
 
@@ -742,7 +743,7 @@ CREATE TABLE `tbl_candidates` (
   `candidate_id` bigint(20) UNSIGNED NOT NULL,
   `election_id` bigint(20) UNSIGNED NOT NULL,
   `user_id` bigint(20) UNSIGNED NOT NULL,
-  `position` text NOT NULL,
+  `position` varchar(255) NOT NULL,
   `partylist` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -864,9 +865,9 @@ CREATE TABLE `tbl_club_membership` (
   `club_id` bigint(20) UNSIGNED NOT NULL,
   `user_id` bigint(20) UNSIGNED NOT NULL,
   `club_role` enum('ADVISER','MEMBER') NOT NULL,
-  `club_position` text DEFAULT NULL,
+  `club_position` varchar(255) DEFAULT NULL,
   `joined_date` datetime NOT NULL,
-  `club_accessibility` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`club_accessibility`)),
+  `club_accessibility` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1527,7 +1528,7 @@ ALTER TABLE `tbl_vote_details`
 -- AUTO_INCREMENT for table `action_logs`
 --
 ALTER TABLE `action_logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=502;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=503;
 
 --
 -- AUTO_INCREMENT for table `club_questions`

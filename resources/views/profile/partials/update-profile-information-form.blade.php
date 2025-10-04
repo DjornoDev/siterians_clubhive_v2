@@ -80,13 +80,13 @@
                         </div>
 
                         <div>
-                            <x-input-label for="sex" :value="__('Gender')" />
+                            <x-input-label for="sex" :value="__('Sex')" />
                             <select id="sex" name="sex"
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                <option value="">Select Gender</option>
-                                <option value="Male" {{ old('sex', $user->sex) === 'Male' ? 'selected' : '' }}>Male
+                                <option value="">Select Sex</option>
+                                <option value="Male" {{ (old('sex', $user->sex) === 'Male' || old('sex', $user->sex) === 'MALE') ? 'selected' : '' }}>Male
                                 </option>
-                                <option value="Female" {{ old('sex', $user->sex) === 'Female' ? 'selected' : '' }}>
+                                <option value="Female" {{ (old('sex', $user->sex) === 'Female' || old('sex', $user->sex) === 'FEMALE') ? 'selected' : '' }}>
                                     Female</option>
                             </select>
                             <x-input-error class="mt-2" :messages="$errors->get('sex')" />
@@ -115,7 +115,8 @@
                 </div>
             </div>
 
-            <!-- Emergency Contacts Section -->
+            <!-- Emergency Contacts Section - Only show for non-admin users -->
+            @if($user->role !== 'ADMIN')
             <div class="bg-red-50 rounded-lg p-6">
                 <h3 class="text-md font-semibold text-gray-900 mb-4">Emergency Contacts (Parents/Guardian)</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -177,6 +178,7 @@
                     </div>
                 </div>
             </div>
+            @endif
 
             <!-- Save Button -->
             <div class="pt-4">
@@ -210,12 +212,14 @@
             <input type="hidden" id="modal_sex" name="sex">
             <input type="hidden" id="modal_contact_no" name="contact_no">
             <input type="hidden" id="modal_address" name="address">
+            @if($user->role !== 'ADMIN')
             <input type="hidden" id="modal_mother_name" name="mother_name">
             <input type="hidden" id="modal_mother_contact_no" name="mother_contact_no">
             <input type="hidden" id="modal_father_name" name="father_name">
             <input type="hidden" id="modal_father_contact_no" name="father_contact_no">
             <input type="hidden" id="modal_guardian_name" name="guardian_name">
             <input type="hidden" id="modal_guardian_contact_no" name="guardian_contact_no">
+            @endif
             <input id="confirm_email_change" name="confirm_email_change" type="hidden" value="1">
             <!-- Include profile_picture if it's been uploaded -->
             <input type="hidden" id="modal_has_profile_picture" name="modal_has_profile_picture" value="0">
@@ -268,6 +272,9 @@
                     'contact_no').value;
                 document.getElementById('modal_address').value = document.getElementById('address')
                     .value;
+                
+                // Only copy parent/guardian info for non-admin users
+                @if($user->role !== 'ADMIN')
                 document.getElementById('modal_mother_name').value = document.getElementById(
                     'mother_name').value;
                 document.getElementById('modal_mother_contact_no').value = document.getElementById(
@@ -280,6 +287,7 @@
                     'guardian_name').value;
                 document.getElementById('modal_guardian_contact_no').value = document.getElementById(
                     'guardian_contact_no').value;
+                @endif
 
                 // Check if a new profile picture was selected
                 if (profilePictureInput.files && profilePictureInput.files[0]) {

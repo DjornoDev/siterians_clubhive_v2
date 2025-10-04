@@ -220,13 +220,24 @@
                                     clip-rule="evenodd" />
                             </svg>
                         </div>
-                        <div class="ml-3">
-                            <h4 class="font-semibold text-red-800 mb-2">Bulk Upload Errors:</h4>
+                        <div class="ml-3 flex-1">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold text-red-800">Bulk Upload Errors:</h4>
+                                <button type="button" onclick="toggleInstructionsModal()" 
+                                    class="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 flex items-center">
+                                    <i class="fas fa-list mr-1"></i>
+                                    View Available Classes
+                                </button>
+                            </div>
                             <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
                                 @foreach (session('bulk_errors') as $row => $messages)
                                     <li><strong>{{ $row }}:</strong> {{ implode(', ', $messages) }}</li>
                                 @endforeach
                             </ul>
+                            <p class="text-xs text-red-600 mt-2 italic">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Click "View Available Classes" to see the exact class and section names to use.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -362,6 +373,9 @@
             {{-- Add this modal partial include at the bottom near other modals --}}
             <!-- Bulk Upload Modal -->
             @include('admin.users.partials.bulk-upload-modal')
+
+            <!-- Instructions Modal -->
+            @include('admin.users.partials.instructions-modal')
 
             <!-- Edit User Modal -->
             @include('admin.users.partials.edit-user-modal')
