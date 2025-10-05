@@ -146,26 +146,45 @@ $canAccessVotingPage =
                     </div>
                 @endif
             </div>
-        @endif <!-- Club Header Section -->
-        <div class="mb-8">
+        @endif 
+        <!-- Club Header Section -->
+        <div class="mb-6 sm:mb-8">
             <!-- Club Banner -->
-            <div class="h-60 sm:h-80 w-full rounded-xl overflow-hidden shadow-lg mb-4">
+            <div class="h-48 sm:h-64 md:h-80 w-full rounded-lg sm:rounded-xl overflow-hidden shadow-lg mb-6 sm:mb-4">
                 <img src="{{ Storage::url($club->club_banner) }}" alt="Club Banner"
                     class="w-full h-full object-cover cursor-pointer transition-transform duration-500 hover:scale-105"
                     @click="showFullGallery = 'club_banner'; currentImageIndex = 0;">
             </div>
 
             <!-- Club Logo and Name -->
-            <div class="flex flex-col sm:flex-row items-center sm:space-x-6 text-center sm:text-left">
-                <div
-                    class="h-24 w-24 sm:h-32 sm:w-32 rounded-full shadow-lg border-4 border-white -mt-12 overflow-hidden sm:ml-4 mb-4 sm:mb-0">
-                    <img src="{{ Storage::url($club->club_logo) }}" alt="Club Logo"
-                        class="w-full h-full object-cover cursor-pointer transition-all duration-300 hover:scale-110"
-                        @click="showFullGallery = 'club_logo'; currentImageIndex = 0;">
+            <div class="flex flex-col sm:flex-row items-center sm:items-start sm:space-x-6 text-center sm:text-left px-4 sm:px-0">
+                <!-- Club Logo -->
+                <div class="relative mb-4 sm:mb-0">
+                    <div class="h-20 w-20 sm:h-24 sm:w-24 md:h-32 md:w-32 rounded-full shadow-xl border-4 border-white -mt-10 sm:-mt-12 overflow-hidden bg-white flex-shrink-0">
+                        <img src="{{ Storage::url($club->club_logo) }}" alt="Club Logo"
+                            class="w-full h-full object-cover cursor-pointer transition-all duration-300 hover:scale-110"
+                            @click="showFullGallery = 'club_logo'; currentImageIndex = 0;">
+                    </div>
                 </div>
-                <div>
-                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">{{ $club->club_name }}</h1>
-                    <p class="text-gray-600">{{ $club->members_count }} Members</p>
+                
+                <!-- Club Info -->
+                <div class="flex-1 min-w-0">
+                    <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 leading-tight mb-2 break-words">
+                        {{ $club->club_name }}
+                    </h1>
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm sm:text-base">
+                        <p class="text-gray-600 flex items-center justify-center sm:justify-start">
+                            <svg class="w-4 h-4 mr-1 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            {{ $club->members_count }} Members
+                        </p>
+                        @if($club->club_category)
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ $club->club_category }}
+                            </span>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
@@ -349,7 +368,7 @@ $canAccessVotingPage =
                             class="post-container bg-white rounded-xl shadow-lg mb-5 sm:mb-6 overflow-hidden transform transition-all hover:shadow-xl">
                             <!-- Post Header -->
                             <div class="p-3 sm:p-5 flex items-center justify-between border-b border-gray-200">
-                                <div class="flex items-center space-x-2 sm:space-x-3">
+                                <div class="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1 mr-3">
                                     <div
                                         class="h-10 w-10 sm:h-12 sm:w-12 rounded-full overflow-hidden ring-2 ring-blue-400 flex-shrink-0">
                                         @if ($post->author->profile_picture)
@@ -357,25 +376,28 @@ $canAccessVotingPage =
                                                 alt="{{ $post->author->name }}" class="h-full w-full object-cover">
                                         @else
                                             <div
-                                                class="h-full w-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold">
+                                                class="h-full w-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold text-sm sm:text-base">
                                                 {{ strtoupper(substr($post->author->name, 0, 1)) }}
                                             </div>
                                         @endif
                                     </div>
-                                    <div class="overflow-hidden">
-                                        <div class="font-bold text-gray-800 truncate">{{ $post->author->name }}</div>
-                                        <div class="text-xs text-gray-500 flex flex-wrap gap-1 sm:gap-0">
-                                            <span>{{ $post->post_date->diffForHumans() }}</span>
-                                            <span class="hidden sm:inline mx-1 text-blue-400">•</span>
-                                            <span class="font-medium text-blue-600">{{ $post->author->role }}</span>
-                                            <span class="hidden sm:inline mx-1">|</span>
-                                            <span
-                                                class="block sm:inline font-medium text-indigo-600 truncate max-w-[120px] sm:max-w-none">{{ $club->club_name }}</span>
-                                            <span class="hidden sm:inline mx-1">|</span>
-                                            <span class="block sm:inline">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="font-bold text-gray-800 text-sm sm:text-base truncate">{{ $post->author->name }}</div>
+                                        <div class="text-xs sm:text-sm text-gray-500 space-y-1">
+                                            <!-- First line: Date and Role -->
+                                            <div class="flex items-center gap-1 flex-wrap">
+                                                <span class="whitespace-nowrap">{{ $post->post_date->diffForHumans() }}</span>
+                                                <span class="text-blue-400">•</span>
+                                                <span class="font-medium text-blue-600 whitespace-nowrap">{{ $post->author->role }}</span>
+                                            </div>
+                                            <!-- Second line: Club and Visibility -->
+                                            <div class="flex items-center gap-1 flex-wrap">
+                                                <span class="font-medium text-indigo-600 truncate max-w-32 sm:max-w-48">{{ $club->club_name }}</span>
+                                                <span class="text-gray-400">•</span>
                                                 @include('clubs.partials.post-visibility-badge', [
                                                     'post' => $post,
-                                                ])</span>
+                                                ])
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

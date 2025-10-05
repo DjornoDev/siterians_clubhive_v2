@@ -234,58 +234,59 @@
 
         <!-- Election Status and Statistics -->
         @if ($hasOngoingElection || $recentElections->count() > 0)
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
-                <div class="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-4 border-b border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor"
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-6 sm:mb-8">
+                <div class="bg-gradient-to-r from-gray-50 to-blue-50 px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 flex items-center">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
                                 </path>
                             </svg>
-                            Election Status & Statistics
+                            <span class="hidden sm:inline">Election Status & Statistics</span>
+                            <span class="sm:hidden">Election Status</span>
                         </h3>
                         @if ($hasOngoingElection)
                             <span
-                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                <span class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
+                                class="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-green-100 text-green-800">
+                                <span class="w-2 h-2 bg-green-400 rounded-full mr-1 sm:mr-2 animate-pulse"></span>
                                 Live Election
                             </span>
                         @endif
                     </div>
                 </div>
 
-                <div class="p-6">
+                <div class="p-4 sm:p-6">
                     @if ($hasOngoingElection)
                         <!-- Current Election Stats -->
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                            <div class="bg-blue-50 rounded-lg p-4 text-center border border-blue-200">
-                                <div class="text-2xl font-bold text-blue-600">{{ $totalVotes }}</div>
-                                <div class="text-sm text-blue-700">Total Votes Cast</div>
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+                            <div class="bg-blue-50 rounded-lg p-3 sm:p-4 text-center border border-blue-200">
+                                <div class="text-lg sm:text-2xl font-bold text-blue-600">{{ $totalVotes }}</div>
+                                <div class="text-xs sm:text-sm text-blue-700">Total Votes Cast</div>
                             </div>
-                            <div class="bg-emerald-50 rounded-lg p-4 text-center border border-emerald-200">
-                                <div class="text-2xl font-bold text-emerald-600">{{ $eligibleVoters }}</div>
-                                <div class="text-sm text-emerald-700">Eligible Voters</div>
+                            <div class="bg-emerald-50 rounded-lg p-3 sm:p-4 text-center border border-emerald-200">
+                                <div class="text-lg sm:text-2xl font-bold text-emerald-600">{{ $eligibleVoters }}</div>
+                                <div class="text-xs sm:text-sm text-emerald-700">Eligible Voters</div>
                             </div>
-                            <div class="bg-amber-50 rounded-lg p-4 text-center border border-amber-200">
-                                <div class="text-2xl font-bold text-amber-600">{{ $votePercentage }}%</div>
-                                <div class="text-sm text-amber-700">Participation Rate</div>
+                            <div class="bg-amber-50 rounded-lg p-3 sm:p-4 text-center border border-amber-200">
+                                <div class="text-lg sm:text-2xl font-bold text-amber-600">{{ $votePercentage }}%</div>
+                                <div class="text-xs sm:text-sm text-amber-700">Participation Rate</div>
                             </div>
-                            <div class="bg-purple-50 rounded-lg p-4 text-center border border-purple-200">
-                                <div class="text-2xl font-bold text-purple-600">{{ $candidates->count() }}</div>
-                                <div class="text-sm text-purple-700">Positions Contested</div>
+                            <div class="bg-purple-50 rounded-lg p-3 sm:p-4 text-center border border-purple-200">
+                                <div class="text-lg sm:text-2xl font-bold text-purple-600">{{ $candidates->count() }}</div>
+                                <div class="text-xs sm:text-sm text-purple-700">Positions Contested</div>
                             </div>
                         </div>
 
                         <!-- Election Progress Bar -->
                         <div class="mb-6">
-                            <div class="flex justify-between text-sm font-medium text-gray-700 mb-2">
+                            <div class="flex justify-between text-xs sm:text-sm font-medium text-gray-700 mb-2">
                                 <span>Voting Progress</span>
                                 <span>{{ $votePercentage }}%</span>
                             </div>
-                            <div class="w-full bg-gray-200 rounded-full h-3">
-                                <div class="bg-gradient-to-r from-blue-500 to-emerald-500 h-3 rounded-full transition-all duration-300"
+                            <div class="w-full bg-gray-200 rounded-full h-2 sm:h-3">
+                                <div class="bg-gradient-to-r from-blue-500 to-emerald-500 h-2 sm:h-3 rounded-full transition-all duration-300"
                                     style="width: {{ $votePercentage }}%"></div>
                             </div>
                             <div class="flex justify-between text-xs text-gray-500 mt-1">
@@ -296,16 +297,16 @@
 
                         <!-- Time Remaining -->
                         @if ($election)
-                            <div class="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-4 border border-orange-200">
-                                <div class="flex items-center">
-                                    <svg class="w-5 h-5 text-orange-500 mr-2" fill="none" stroke="currentColor"
+                            <div class="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-3 sm:p-4 border border-orange-200">
+                                <div class="flex items-start sm:items-center">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 mr-2 mt-0.5 sm:mt-0 flex-shrink-0" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
-                                    <div>
-                                        <div class="font-semibold text-orange-800">Election ends on:</div>
-                                        <div class="text-sm text-orange-700">
+                                    <div class="min-w-0">
+                                        <div class="font-semibold text-orange-800 text-sm sm:text-base">Election ends on:</div>
+                                        <div class="text-xs sm:text-sm text-orange-700 break-words">
                                             {{ \Carbon\Carbon::parse($election->end_date)->format('F j, Y \a\t g:i A') }}
                                         </div>
                                         <div class="text-xs text-orange-600 mt-1">
@@ -320,8 +321,8 @@
                     @if ($recentElections->count() > 0)
                         <!-- Election History -->
                         <div class="{{ $hasOngoingElection ? 'mt-6 pt-6 border-t border-gray-200' : '' }}">
-                            <h4 class="font-semibold text-gray-900 mb-4 flex items-center">
-                                <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor"
+                            <h4 class="font-semibold text-gray-900 mb-4 flex items-center text-sm sm:text-base">
+                                <svg class="w-4 h-4 mr-2 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -338,14 +339,14 @@
                                         $pastParticipation =
                                             $eligibleVoters > 0 ? round(($pastVotes / $eligibleVoters) * 100, 1) : 0;
                                     @endphp
-                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                        <div class="flex-1">
-                                            <div class="font-medium text-gray-900">{{ $pastElection->title }}</div>
-                                            <div class="text-sm text-gray-600">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 rounded-lg gap-3">
+                                        <div class="flex-1 min-w-0">
+                                            <div class="font-medium text-gray-900 text-sm sm:text-base truncate">{{ $pastElection->title }}</div>
+                                            <div class="text-xs sm:text-sm text-gray-600">
                                                 Ended {{ \Carbon\Carbon::parse($pastElection->end_date)->diffForHumans() }}
                                             </div>
                                         </div>
-                                        <div class="flex items-center space-x-4 text-sm">
+                                        <div class="flex items-center justify-between sm:justify-end space-x-4 text-sm">
                                             <div class="text-center">
                                                 <div class="font-semibold text-blue-600">{{ $pastVotes }}</div>
                                                 <div class="text-xs text-gray-500">Votes</div>
@@ -1166,62 +1167,14 @@
                 if (data.success) {
                     allStudents = data.students;
                     studentInfo = data.info;
-                    updateStudentInfoDisplay();
+                    // Student info display moved to club people page
                 }
             } catch (error) {
                 console.error('Error fetching students:', error);
             }
         }
 
-        function updateStudentInfoDisplay() {
-            // Update the info section with current statistics
-            if (studentInfo) {
-                const infoHtml = `
-                    <div class="mt-4 p-3 bg-gray-50 rounded-lg">
-                        <h4 class="font-medium text-gray-900 mb-2">Current Club Statistics</h4>
-                        <div class="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <span class="font-medium">Total Club Members:</span> ${studentInfo.total_club_members}
-                            </div>
-                            <div>
-                                <span class="font-medium">Available for Selection:</span> ${studentInfo.available_students}
-                            </div>
-                        </div>
-                        ${studentInfo.students_with_other_positions.length > 0 ? `
-                                                        <div class="mt-3">
-                                                            <span class="font-medium text-orange-600">Members with positions in other clubs (${studentInfo.students_with_other_positions.length}):</span>
-                                                            <ul class="mt-1 text-xs text-gray-600 list-disc list-inside">
-                                                                ${studentInfo.students_with_other_positions.map(student => 
-                                                                    `<li>${student.name} - ${student.club_memberships.map(m => m.club_position + ' in ' + m.club.club_name).join(', ')}</li>`
-                                                                ).join('')}
-                                                            </ul>
-                                                        </div>
-                                                    ` : ''}
-                        ${studentInfo.already_candidates.length > 0 ? `
-                                                        <div class="mt-3">
-                                                            <span class="font-medium text-blue-600">Already added as candidates (${studentInfo.already_candidates.length}):</span>
-                                                            <ul class="mt-1 text-xs text-gray-600 list-disc list-inside">
-                                                                ${studentInfo.already_candidates.map(student => 
-                                                                    `<li>${student.name} - ${student.candidates.map(c => c.position).join(', ')}</li>`
-                                                                ).join('')}
-                                                            </ul>
-                                                        </div>
-                                                    ` : ''}
-                    </div>
-                `;
-
-                // Insert this after the blue info box
-                const infoSection = document.querySelector('.bg-blue-50');
-                if (infoSection && !document.querySelector('#student-stats')) {
-                    const statsDiv = document.createElement('div');
-                    statsDiv.id = 'student-stats';
-                    statsDiv.innerHTML = infoHtml;
-                    infoSection.parentNode.insertBefore(statsDiv, infoSection.nextSibling);
-                } else if (document.querySelector('#student-stats')) {
-                    document.querySelector('#student-stats').innerHTML = infoHtml;
-                }
-            }
-        }
+        // Removed updateStudentInfoDisplay() - moved to club people page where it's more appropriate
 
         function openCandidateModal() {
             if (!checkElectionStatus('add candidate')) {

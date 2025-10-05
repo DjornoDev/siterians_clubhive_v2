@@ -1,13 +1,13 @@
 <!-- resources/views/clubs/posts/partials/edit.blade.php -->
 <div x-cloak>
     <!-- Backdrop -->
-    <div x-show="showEditModal" class="fixed inset-0 bg-black/20 transition-opacity z-50"
+    <div x-show="showEditModal" class="fixed inset-0 bg-black/20 transition-opacity z-[9999]"
         x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
         x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200">
     </div>
 
     <!-- Modal Content -->
-    <div x-show="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4"
+    <div x-show="showEditModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4"
         @click.away="showEditModal = false">
         <div class="bg-white rounded-xl shadow-lg w-full max-w-2xl transform transition-all max-h-[90vh] flex flex-col"
             @click.stop x-transition:enter="ease-out duration-300"

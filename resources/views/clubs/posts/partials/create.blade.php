@@ -76,14 +76,17 @@
 })">
     <button @click="showCreatePostModal = true"
         class="w-full flex items-center justify-between bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 text-blue-700 font-medium px-4 sm:px-5 py-3 rounded-lg text-center transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 shadow-sm">
-        <div class="flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+        <div class="flex items-center min-w-0 flex-1 mr-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
-            <span class="text-sm sm:text-base">Create a post for {{ $club->club_name }}</span>
+            <div class="truncate" title="Create a post for {{ $club->club_name }}">
+                <span class="text-sm sm:text-base sm:hidden">Create a post</span>
+                <span class="text-sm sm:text-base hidden sm:inline">Create a post for {{ Str::limit($club->club_name, 20, '...') }}</span>
+            </div>
         </div>
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24"
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
             stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
         </svg>
@@ -92,7 +95,7 @@
     <!-- Modal -->
     <div x-cloak>
         <!-- Backdrop with blur -->
-        <div x-show="showCreatePostModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity z-50"
+        <div x-show="showCreatePostModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity z-[9999]"
             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
@@ -100,18 +103,20 @@
 
         <!-- Modal Content -->
         <div x-show="showCreatePostModal"
-            class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
+            class="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4"
             @keydown.escape.window="showCreatePostModal = false">
-            <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl transform transition-all" @click.stop
+            <div class="bg-white rounded-lg sm:rounded-xl shadow-xl w-full max-w-lg sm:max-w-2xl h-[95vh] sm:h-[90vh] flex flex-col transform transition-all" @click.stop
                 x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-8 scale-95"
                 x-transition:enter-end="opacity-100 translate-y-0 scale-100" x-transition:leave="ease-in duration-200"
                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
                 x-transition:leave-end="opacity-0 translate-y-8 scale-95">
-                <div class="flex justify-between items-center border-b border-gray-200 p-5">
-                    <h2 class="text-xl font-bold text-gray-800">Create New Post</h2>
+                
+                <!-- Header - Fixed -->
+                <div class="flex justify-between items-center border-b border-gray-200 p-3 sm:p-5 flex-shrink-0">
+                    <h2 class="text-lg sm:text-xl font-bold text-gray-800">Create New Post</h2>
                     <button @click="showCreatePostModal = false"
-                        class="text-gray-500 hover:text-gray-700 focus:outline-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        class="text-gray-500 hover:text-gray-700 focus:outline-none p-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M6 18L18 6M6 6l12 12" />
@@ -119,16 +124,17 @@
                     </button>
                 </div>
 
-                <div class="p-6">
-                    <form action="{{ route('clubs.posts.store', $club) }}" method="POST" enctype="multipart/form-data"
+                <!-- Scrollable Content -->
+                <div class="p-3 sm:p-6 overflow-y-auto flex-1">
+                    <form id="createPostForm" action="{{ route('clubs.posts.store', $club) }}" method="POST" enctype="multipart/form-data"
                         @submit="isSubmitting = true">
                         @csrf
 
-                        <div class="mb-5">
+                        <div class="mb-4">
                             <label for="post_caption"
                                 class="block text-sm font-medium text-gray-700 mb-1">Caption</label>
-                            <textarea name="post_caption" id="post_caption" rows="5" placeholder="Share what's on your mind..."
-                                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>{{ old('post_caption') }}</textarea>
+                            <textarea name="post_caption" id="post_caption" rows="3" placeholder="Share what's on your mind..."
+                                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm" required>{{ old('post_caption') }}</textarea>
                             @error('post_caption')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -327,29 +333,33 @@
                             @enderror
                         </div>
 
-                        <div class="flex justify-end space-x-3 mt-8">
-                            <button type="button" @click="showCreatePostModal = false"
-                                class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors">
-                                Cancel
-                            </button>
-                            <button type="submit"
-                                class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
-                                :disabled="isSubmitting">
-                                <span x-show="!isSubmitting">Post</span>
-                                <span x-show="isSubmitting" class="flex items-center">
-                                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10"
-                                            stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor"
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                        </path>
-                                    </svg>
-                                    Posting...
-                                </span>
-                            </button>
-                        </div>
                     </form>
+                </div>
+                
+                <!-- Footer Buttons - Fixed at bottom -->
+                <div class="border-t border-gray-200 p-3 sm:p-4 flex-shrink-0 bg-gray-50">
+                    <div class="flex justify-end space-x-2 sm:space-x-3">
+                        <button type="button" @click="showCreatePostModal = false"
+                            class="bg-white border border-gray-300 text-gray-700 px-3 sm:px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm">
+                            Cancel
+                        </button>
+                        <button type="submit" form="createPostForm"
+                            class="bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center text-sm"
+                            :disabled="isSubmitting">
+                            <span x-show="!isSubmitting">Post</span>
+                            <span x-show="isSubmitting" class="flex items-center">
+                                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                        stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                    </path>
+                                </svg>
+                                Posting...
+                            </span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

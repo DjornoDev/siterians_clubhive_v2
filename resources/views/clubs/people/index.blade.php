@@ -3,19 +3,17 @@
 
 @section('club_content')
     <div class="w-full max-w-none mx-auto px-4 sm:px-6 lg:px-8" x-data="editMember()">
-        <div class="flex items-center justify-between mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">{{ $club->club_name }} Members</h1>
+        <div class="flex items-center justify-between mb-6 sm:mb-8">
+            <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 truncate">{{ $club->club_name }} Members</h1>
         </div>
-
-
-
+        
         <!-- Club Settings Row -->
         @if (auth()->user()->user_id === $club->club_adviser)
-            <div class="bg-white rounded-lg border border-gray-200 p-4 mb-6">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="p-2 bg-blue-100 rounded-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none"
+            <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex items-center gap-2 sm:gap-3">
+                        <div class="p-2 bg-blue-100 rounded-lg flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -23,26 +21,25 @@
                                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <h3 class="text-sm font-medium text-gray-900">Club Settings</h3>
-                            <p class="text-xs text-gray-500">Manage club preferences and policies</p>
+                            <p class="text-xs text-gray-500 hidden sm:block">Manage club preferences and policies</p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-4">
-                        <!-- Membership Approval Toggle -->
-                        <div class="flex items-center gap-3">
-                            <div class="text-sm text-right">
-                                <span class="font-medium text-gray-700">Membership Approval</span>
-                                <p class="text-xs text-gray-500">Require approval for new members</p>
-                            </div>
-                            <label class="inline-flex relative items-center cursor-pointer">
-                                <input type="checkbox" id="approval-toggle" {{ $club->requires_approval ? 'checked' : '' }}
-                                    class="sr-only peer" onchange="toggleApprovalRequirement()">
-                                <div
-                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
-                                </div>
-                            </label>
+                    
+                    <!-- Membership Approval Toggle -->
+                    <div class="flex items-center justify-between sm:justify-end gap-3">
+                        <div class="text-sm">
+                            <span class="font-medium text-gray-700 text-sm">Membership Approval</span>
+                            <p class="text-xs text-gray-500 hidden sm:block">Require approval for new members</p>
                         </div>
+                        <label class="inline-flex relative items-center cursor-pointer flex-shrink-0">
+                            <input type="checkbox" id="approval-toggle" {{ $club->requires_approval ? 'checked' : '' }}
+                                class="sr-only peer" onchange="toggleApprovalRequirement()">
+                            <div
+                                class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+                            </div>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -51,18 +48,18 @@
         <!-- Member Management Actions -->
         @if (auth()->user()->user_id === $club->club_adviser)
             <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
-                <div class="p-6 border-b border-gray-100">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h2 class="text-lg font-semibold text-gray-900">Member Management</h2>
-                            <p class="text-sm text-gray-600">Add new members or export existing member data</p>
+                <div class="p-4 sm:p-6 border-b border-gray-100">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="min-w-0">
+                            <h2 class="text-base sm:text-lg font-semibold text-gray-900">Member Management</h2>
+                            <p class="text-sm text-gray-600 hidden sm:block">Add new members or export existing member data</p>
                         </div>
-                        <div class="flex items-center gap-3">
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
                             <!-- Add Member Button -->
                             <div x-data="memberModal()">
                                 <button @click="isModalOpen = true"
-                                    class="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-sm">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                    class="w-full sm:w-auto bg-blue-600 text-white px-4 sm:px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-sm text-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20"
                                         fill="currentColor">
                                         <path fill-rule="evenodd"
                                             d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
@@ -73,21 +70,25 @@
 
                                 {{-- Add Member Modal --}}
                                 <div x-cloak x-show="isModalOpen"
-                                    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+                                    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-[9999]"
                                     @click.self="isModalOpen = false">
-                                    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl"
+                                    <div class="bg-white rounded-lg sm:rounded-xl shadow-xl w-full max-w-sm sm:max-w-lg lg:max-w-2xl max-h-[95vh] flex flex-col"
                                         @click.outside="isModalOpen = false">
                                         <form @submit.prevent="submitForm" method="POST"
-                                            action="{{ route('clubs.members.store', $club) }}">
-                                            <div class="p-6">
-                                                <h3 class="text-xl font-semibold mb-4">Add Members to {{ $club->club_name }}
-                                                </h3>
+                                            action="{{ route('clubs.members.store', $club) }}" class="flex flex-col h-full">
+                                            <!-- Modal Header -->
+                                            <div class="p-4 sm:p-6 border-b border-gray-200 flex-shrink-0">
+                                                <h3 class="text-lg sm:text-xl font-semibold">Add Members to {{ Str::limit($club->club_name, 30, '...') }}</h3>
+                                            </div>
+                                            
+                                            <!-- Modal Content -->
+                                            <div class="p-4 sm:p-6 flex-1 overflow-y-auto">
 
                                                 <!-- Search Input -->
                                                 <div class="relative mb-4">
                                                     <div
                                                         class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-                                                        <svg class="w-5 h-5 text-gray-500" fill="none"
+                                                        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" fill="none"
                                                             stroke="currentColor" viewBox="0 0 24 24"
                                                             xmlns="http://www.w3.org/2000/svg">
                                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -98,10 +99,10 @@
                                                     <input type="text" x-model="searchTerm"
                                                         @input.debounce.300ms="searchStudents"
                                                         placeholder="Search students by name or email"
-                                                        class="w-full pl-10 pr-10 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                                        class="w-full pl-9 sm:pl-10 pr-10 py-2 sm:py-3 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                                     <!-- Loading Spinner -->
-                                                    <div x-show="isLoading" class="absolute right-3 top-3">
-                                                        <svg class="animate-spin h-5 w-5 text-blue-500"
+                                                    <div x-show="isLoading" class="absolute right-3 top-2 sm:top-3">
+                                                        <svg class="animate-spin h-4 w-4 sm:h-5 sm:w-5 text-blue-500"
                                                             xmlns="http://www.w3.org/2000/svg" fill="none"
                                                             viewBox="0 0 24 24">
                                                             <circle class="opacity-25" cx="12" cy="12" r="10"
@@ -456,6 +457,167 @@
                         </div>
                     </div>
                 </div>
+        @endif
+
+        <!-- Detailed Member Statistics -->
+        @if (auth()->user()->user_id === $club->club_adviser)
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+                <div class="p-4 sm:p-6 border-b border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-base sm:text-lg font-semibold text-gray-900">Detailed Member Statistics</h2>
+                            <p class="text-sm text-gray-600 hidden sm:block">Comprehensive overview of member positions and availability</p>
+                        </div>
+                        <div class="p-2 bg-blue-100 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-4 sm:p-6">
+                    @php
+                        // Get detailed member statistics
+                        $totalClubMembers = $allMembers->count();
+                        $membersWithOtherPositions = $allMembers->filter(function($member) {
+                            return $member->clubMemberships->where('club_position', '!=', 'Member')->count() > 0;
+                        });
+                        $availableForSelection = $totalClubMembers - $membersWithOtherPositions->count();
+                        
+                        // Get members who are already candidates in current elections
+                        $currentCandidates = collect();
+                        if ($club->elections()->where('end_date', '>', now())->exists()) {
+                            $currentElection = $club->elections()->where('end_date', '>', now())->first();
+                            $currentCandidates = \App\Models\Candidate::where('election_id', $currentElection->election_id)
+                                ->with('user')
+                                ->get()
+                                ->groupBy('user_id')
+                                ->map(function($candidates) {
+                                    return [
+                                        'user' => $candidates->first()->user,
+                                        'positions' => $candidates->pluck('position')->toArray()
+                                    ];
+                                });
+                        }
+                    @endphp
+                    
+                    <!-- Summary Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6">
+                        <div class="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-lg sm:text-2xl font-bold text-blue-600">{{ $totalClubMembers }}</div>
+                                    <div class="text-xs sm:text-sm text-blue-700">Total Club Members</div>
+                                </div>
+                                <div class="p-2 bg-blue-100 rounded-full">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-green-50 p-3 sm:p-4 rounded-lg border border-green-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-lg sm:text-2xl font-bold text-green-600">{{ $availableForSelection }}</div>
+                                    <div class="text-xs sm:text-sm text-green-700">Available for Selection</div>
+                                </div>
+                                <div class="p-2 bg-green-100 rounded-full">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Detailed Breakdowns -->
+                    @if ($membersWithOtherPositions->count() > 0)
+                        <div class="mb-6 p-3 sm:p-4 bg-orange-50 rounded-lg border border-orange-200">
+                            <h4 class="font-medium text-orange-700 text-sm sm:text-base mb-3 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                                </svg>
+                                Members with positions in other clubs ({{ $membersWithOtherPositions->count() }})
+                            </h4>
+                            <div class="space-y-3 max-h-60 overflow-y-auto">
+                                @foreach ($membersWithOtherPositions as $member)
+                                    <div class="bg-white p-3 rounded-lg border border-orange-100 shadow-sm">
+                                        <div class="flex items-start gap-3">
+                                            <div class="flex-shrink-0">
+                                                @if ($member->profile_picture)
+                                                    <img src="{{ asset('storage/profile_pictures/' . $member->profile_picture) }}" 
+                                                         alt="{{ $member->name }}" 
+                                                         class="w-8 h-8 rounded-full object-cover">
+                                                @else
+                                                    <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                                                        <span class="text-orange-600 font-medium text-sm">{{ strtoupper(substr($member->name, 0, 1)) }}</span>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <h5 class="font-medium text-gray-900 text-sm">{{ $member->name }}</h5>
+                                                <div class="mt-1 space-y-1">
+                                                    @foreach ($member->clubMemberships->where('club_position', '!=', 'Member') as $membership)
+                                                        <div class="flex items-center text-xs text-gray-600">
+                                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800 mr-2">
+                                                                {{ $membership->club_position }}
+                                                            </span>
+                                                            <span class="truncate">{{ $membership->club->club_name }}</span>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                    
+                    @if ($currentCandidates->count() > 0)
+                        <div class="p-3 sm:p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <h4 class="font-medium text-blue-700 text-sm sm:text-base mb-3 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Already added as candidates ({{ $currentCandidates->count() }})
+                            </h4>
+                            <div class="space-y-3 max-h-60 overflow-y-auto">
+                                @foreach ($currentCandidates as $candidate)
+                                    <div class="bg-white p-3 rounded-lg border border-blue-100 shadow-sm">
+                                        <div class="flex items-start gap-3">
+                                            <div class="flex-shrink-0">
+                                                @if ($candidate['user']->profile_picture)
+                                                    <img src="{{ asset('storage/profile_pictures/' . $candidate['user']->profile_picture) }}" 
+                                                         alt="{{ $candidate['user']->name }}" 
+                                                         class="w-8 h-8 rounded-full object-cover">
+                                                @else
+                                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                                        <span class="text-blue-600 font-medium text-sm">{{ strtoupper(substr($candidate['user']->name, 0, 1)) }}</span>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <h5 class="font-medium text-gray-900 text-sm">{{ $candidate['user']->name }}</h5>
+                                                <div class="mt-1 flex flex-wrap gap-1">
+                                                    @foreach ($candidate['positions'] as $position)
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                            {{ $position }}
+                                                        </span>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
         @endif
 
         <!-- 3. Filters and Table Section -->

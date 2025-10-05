@@ -109,8 +109,11 @@
                     <!-- Mobile Navigation -->
                     <div class="flex justify-between items-center py-3 md:hidden">
                         <!-- Club Name/Logo for Mobile -->
-                        <div>
-                            <h2 class="text-lg font-semibold text-blue-600">{{ $club->club_name }}</h2>
+                        <div class="min-w-0 flex-1 mr-4">
+                            <h2 class="text-sm sm:text-base md:text-lg font-semibold text-blue-600 truncate" 
+                                title="{{ $club->club_name }}">
+                                {{ $club->club_name }}
+                            </h2>
                         </div>
 
                         <!-- Mobile Menu Button -->

@@ -139,30 +139,36 @@
                             class="bg-white rounded-xl shadow-md mb-6 overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100">
                             <!-- Post Header with enhanced styling -->
                             <div
-                                class="p-5 flex items-center justify-between border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-                                <div class="flex items-center space-x-3">
-                                    <div class="h-12 w-12 rounded-full overflow-hidden ring-2 ring-blue-400 shadow-md">
+                                class="p-3 sm:p-5 flex items-center justify-between border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+                                <div class="flex items-center space-x-2 sm:space-x-3 flex-1 overflow-hidden">
+                                    <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-full overflow-hidden ring-2 ring-blue-400 shadow-md flex-shrink-0 relative">
                                         @if ($post->author->profile_picture)
                                             <img src="{{ asset('storage/profile_pictures/' . $post->author->profile_picture) }}"
-                                                alt="{{ $post->author->name }}" class="h-full w-full object-cover">
+                                                alt="{{ $post->author->name }}" class="absolute inset-0 w-full h-full object-cover object-center">
                                         @else
                                             <div
-                                                class="h-full w-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold">
+                                                class="h-full w-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold text-sm sm:text-base">
                                                 {{ strtoupper(substr($post->author->name, 0, 1)) }}
                                             </div>
                                         @endif
                                     </div>
-                                    <div>
-                                        <div class="font-bold text-gray-800">{{ $post->author->name }}</div>
-                                        <div class="text-xs text-gray-500 flex items-center flex-wrap">
-                                            <span>{{ $post->post_date->diffForHumans() }}</span>
-                                            <span class="mx-1 text-blue-400">•</span>
-                                            <span class="font-medium text-blue-600">{{ $post->author->role }}</span>
-                                            <span class="mx-1">|</span>
-                                            <a href="{{ route('clubs.show', $post->club) }}"
-                                                class="font-medium text-indigo-600 hover:text-indigo-800 hover:underline">
-                                                {{ $post->club->club_name }}
-                                            </a>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="font-bold text-gray-800 text-sm sm:text-base truncate">{{ $post->author->name }}</div>
+                                        <div class="text-xs sm:text-sm text-gray-500 space-y-1">
+                                            <!-- First line: Date and Role -->
+                                            <div class="flex items-center gap-1 flex-wrap">
+                                                <span class="whitespace-nowrap">{{ $post->post_date->diffForHumans() }}</span>
+                                                <span class="text-blue-400">•</span>
+                                                <span class="font-medium text-blue-600 whitespace-nowrap">{{ $post->author->role }}</span>
+                                            </div>
+                                            <!-- Second line: Club name (truncated) -->
+                                            <div class="flex items-center min-w-0">
+                                                <span class="text-gray-400 mr-1 flex-shrink-0">📍</span>
+                                                <a href="{{ route('clubs.show', $post->club) }}"
+                                                    class="font-medium text-indigo-600 hover:text-indigo-800 hover:underline truncate">
+                                                    {{ $post->club->club_name }}
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -654,23 +660,25 @@
                             @forelse($upcomingEvents as $event)
                                 <div
                                     class="group bg-white border border-gray-100 rounded-lg p-4 hover:border-indigo-200 hover:bg-indigo-50 transition-all duration-200 shadow-sm hover:shadow">
-                                    <div class="flex items-center space-x-4">
+                                    <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                                         <!-- Event Date Badge -->
                                         <div
-                                            class="bg-indigo-100 text-indigo-800 rounded-lg p-2 text-center w-14 h-14 flex flex-col items-center justify-center group-hover:bg-indigo-200 transition-colors">
-                                            <span class="text-xl font-bold">{{ $event->event_date->format('d') }}</span>
+                                            class="bg-indigo-100 text-indigo-800 rounded-lg p-2 text-center w-14 h-14 flex flex-col items-center justify-center group-hover:bg-indigo-200 transition-colors flex-shrink-0">
+                                            <span class="text-lg sm:text-xl font-bold">{{ $event->event_date->format('d') }}</span>
                                             <span class="text-xs uppercase">{{ $event->event_date->format('M') }}</span>
                                         </div>
 
                                         <!-- Event Details -->
-                                        <div class="flex-1">
+                                        <div class="flex-1 min-w-0">
                                             <h3
-                                                class="font-semibold text-gray-800 group-hover:text-indigo-700 transition-colors">
+                                                class="font-semibold text-gray-800 group-hover:text-indigo-700 transition-colors text-sm sm:text-base truncate">
                                                 {{ $event->event_name }}</h3>
-                                            <div class="flex flex-wrap items-center text-xs text-gray-500 mt-1">
-                                                <span class="flex items-center">
+                                            
+                                            <!-- Time and Location - Responsive Layout -->
+                                            <div class="flex flex-col sm:flex-row sm:items-center text-xs text-gray-500 mt-1 space-y-1 sm:space-y-0 sm:space-x-3">
+                                                <span class="flex items-center whitespace-nowrap">
                                                     <svg xmlns="http://www.w3.org/2000/svg"
-                                                        class="h-3 w-3 mr-1 text-indigo-500" fill="none"
+                                                        class="h-3 w-3 mr-1 text-indigo-500 flex-shrink-0" fill="none"
                                                         viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
                                                             stroke-width="2"
@@ -682,10 +690,10 @@
                                                         All day
                                                     @endif
                                                 </span>
-                                                <span class="mx-2">•</span>
-                                                <span class="flex items-center">
+                                                
+                                                <span class="flex items-center min-w-0">
                                                     <svg xmlns="http://www.w3.org/2000/svg"
-                                                        class="h-3 w-3 mr-1 text-indigo-500" fill="none"
+                                                        class="h-3 w-3 mr-1 text-indigo-500 flex-shrink-0" fill="none"
                                                         viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
                                                             stroke-width="2"
@@ -693,19 +701,23 @@
                                                         <path stroke-linecap="round" stroke-linejoin="round"
                                                             stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                                     </svg>
-                                                    {{ $event->event_location }}
+                                                    <span class="truncate">{{ $event->event_location }}</span>
                                                 </span>
                                             </div>
-                                            <div
-                                                class="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full inline-block mt-2 group-hover:bg-indigo-100 transition-colors">
-                                                {{ $event->club->club_name }}
+                                            
+                                            <!-- Club Name - Responsive with Truncation -->
+                                            <div class="mt-2">
+                                                <div
+                                                    class="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full inline-block group-hover:bg-indigo-100 transition-colors max-w-full">
+                                                    <span class="truncate block max-w-48 sm:max-w-64">{{ $event->club->club_name }}</span>
+                                                </div>
                                             </div>
                                         </div>
 
                                         <!-- Action Button -->
                                         <a href="{{ route('events.index') }}"
-                                            class="text-white bg-indigo-600 hover:bg-indigo-700 transition-colors p-2 rounded-full flex items-center justify-center shadow-sm group-hover:shadow">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                            class="text-white bg-indigo-600 hover:bg-indigo-700 transition-colors p-2 rounded-full flex items-center justify-center shadow-sm group-hover:shadow flex-shrink-0 self-start sm:self-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M14 5l7 7m0 0l-7 7m7-7H3" />

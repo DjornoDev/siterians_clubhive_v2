@@ -123,12 +123,12 @@
         @endif
 
         {{-- Tab Navigation --}}
-        <div class="border-b border-gray-200 mb-8">
-            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+        <div class="border-b border-gray-200 mb-6 sm:mb-8">
+            <nav class="-mb-px flex overflow-x-auto scrollbar-hide space-x-4 sm:space-x-6 lg:space-x-8 pb-1" aria-label="Tabs">
                 <button type="button" @click="activeTab = 'today'"
                     :class="activeTab === 'today' ? 'border-blue-500 text-blue-600' :
                         'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                    class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors">
+                    class="flex-shrink-0 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors">
                     Today's Events
                     <span :class="activeTab === 'today' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-900'"
                         class="ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium">
@@ -140,7 +140,7 @@
                     <button type="button" @click="activeTab = 'pending'"
                         :class="activeTab === 'pending' ? 'border-orange-500 text-orange-600' :
                             'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                        class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors">
+                        class="flex-shrink-0 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors">
                         Pending Events
                         <span
                             :class="activeTab === 'pending' ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-900'"
@@ -153,7 +153,7 @@
                 <button type="button" @click="activeTab = 'upcoming'"
                     :class="activeTab === 'upcoming' ? 'border-blue-500 text-blue-600' :
                         'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                    class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors">
+                    class="flex-shrink-0 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors">
                     Upcoming Events
                     <span :class="activeTab === 'upcoming' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-900'"
                         class="ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium">
@@ -164,7 +164,7 @@
                 <button type="button" @click="activeTab = 'past'"
                     :class="activeTab === 'past' ? 'border-blue-500 text-blue-600' :
                         'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                    class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors">
+                    class="flex-shrink-0 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors">
                     Past Events
                     <span :class="activeTab === 'past' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-900'"
                         class="ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium">
@@ -175,29 +175,33 @@
         </div>
 
         {{-- Filters and Search --}}
-        <div class="mb-6 bg-white rounded-lg border border-gray-200 p-4">
-            <div class="flex flex-col sm:flex-row gap-4">
-                <div class="flex-1">
+        <div class="mb-6 bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
+            <div class="flex flex-col gap-3 sm:gap-4">
+                <!-- Search Bar -->
+                <div class="w-full">
                     <input type="text" id="search-events" placeholder="Search events..."
-                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        class="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
-                <div class="flex gap-3">
+                
+                <!-- Filters Row -->
+                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <select id="filter-visibility"
-                        class="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        class="flex-1 px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">All Visibility</option>
                         <option value="PUBLIC">Public</option>
                         <option value="CLUB_ONLY">Club Only</option>
                     </select>
                     <select id="filter-status"
-                        class="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        class="flex-1 px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">All Status</option>
                         <option value="approved">Approved</option>
                         <option value="pending">Pending</option>
                         <option value="rejected">Rejected</option>
                     </select>
                     <button type="button" onclick="clearFilters()"
-                        class="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50">
-                        Clear
+                        class="px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                        <span class="hidden sm:inline">Clear Filters</span>
+                        <span class="sm:hidden">Clear</span>
                     </button>
                 </div>
             </div>
